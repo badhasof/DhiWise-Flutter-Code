@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../auth_gate.dart';
 import '../presentation/app_navigation_screen/app_navigation_screen.dart';
 import '../presentation/create_profile_screen/create_profile_screen.dart';
 import '../presentation/onboardimg_screen/onboardimg_screen.dart';
@@ -68,8 +67,6 @@ class AppRoutes {
 
   static const String appNavigationScreen = '/app_navigation_screen';
 
-  static const String authGate = '/auth_gate';
-
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> get routes => {
@@ -95,7 +92,6 @@ class AppRoutes {
         quizFourTenScreen: QuizFourTenScreen.builder,
         signInScreen: SignInScreen.builder,
         appNavigationScreen: AppNavigationScreen.builder,
-        authGate: (context) => const AuthGate(),
         initialRoute: SignInScreen.builder
       };
 }
