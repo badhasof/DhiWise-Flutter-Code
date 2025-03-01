@@ -92,6 +92,6 @@ class AppRoutes {
         quizFourTenScreen: QuizFourTenScreen.builder,
         signInScreen: SignInScreen.builder,
         appNavigationScreen: AppNavigationScreen.builder,
-        initialRoute: SignInScreen.builder
+        initialRoute: AppNavigationScreen.builder
       };
 }
