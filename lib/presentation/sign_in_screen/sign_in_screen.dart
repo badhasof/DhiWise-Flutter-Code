@@ -62,7 +62,7 @@ class SignInScreen extends StatelessWidget {
                     _buildSignInButton(context),
                     SizedBox(height: 24.h),
                     Text(
-                      "lbl_forgot_password".tr,
+                      "Forgot Password",
                       style: CustomTextStyles.titleMediumDeeporangeA200,
                     ),
                     SizedBox(height: 138.h),
@@ -76,19 +76,19 @@ class SignInScreen extends StatelessWidget {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "msg_by_signing_in_to".tr,
+                            text: "By signing in to LinguaX, you agree to our ",
                             style: CustomTextStyles.bodyMediumGray700,
                           ),
                           TextSpan(
-                            text: "lbl_terms".tr,
+                            text: "Terms of Service",
                             style: CustomTextStyles.titleSmallBold,
                           ),
                           TextSpan(
-                            text: "lbl_and".tr,
+                            text: " and ",
                             style: CustomTextStyles.bodyMediumGray700,
                           ),
                           TextSpan(
-                            text: "lbl_privacy_policy".tr,
+                            text: "Privacy Policy",
                             style: CustomTextStyles.titleSmallBold,
                           )
                         ],
@@ -118,7 +118,7 @@ class SignInScreen extends StatelessWidget {
       ),
       centerTitle: true,
       title: AppbarTitle(
-        text: "lbl_sign_in".tr,
+        text: "Sign In",
       ),
     );
   }
@@ -132,7 +132,7 @@ class SignInScreen extends StatelessWidget {
         builder: (context, usernameFieldController) {
           return CustomTextFormField(
             controller: usernameFieldController,
-            hintText: "msg_username_or_email".tr,
+            hintText: "Username or Email",
             hintStyle: CustomTextStyles.titleMediumGray500Medium,
             textInputType: TextInputType.emailAddress,
             contentPadding: EdgeInsets.symmetric(
@@ -141,7 +141,7 @@ class SignInScreen extends StatelessWidget {
             ),
             validator: (value) {
               if (value == null || (!isValidEmail(value, isRequired: true))) {
-                return "err_msg_please_enter_valid_email".tr;
+                return "Please enter a valid email";
               }
               return null;
             },
@@ -159,7 +159,7 @@ class SignInScreen extends StatelessWidget {
         builder: (context, state) {
           return CustomTextFormField(
             controller: state.passwordFieldController,
-            hintText: "lbl_password".tr,
+            hintText: "Password",
             hintStyle: CustomTextStyles.titleMediumGray500Medium,
             textInputAction: TextInputAction.done,
             textInputType: TextInputType.visiblePassword,
@@ -192,7 +192,7 @@ class SignInScreen extends StatelessWidget {
             validator: (value) {
               if (value == null ||
                   (!isValidPassword(value, isRequired: true))) {
-                return "err_msg_please_enter_valid_password".tr;
+                return "Please enter a valid password";
               }
               return null;
             },
@@ -206,7 +206,7 @@ class SignInScreen extends StatelessWidget {
   Widget _buildSignInButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "lbl_sign_in".tr,
+      text: "Sign In",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       buttonStyle: CustomButtonStyles.fillDeepOrange,
       onPressed: () {
@@ -219,7 +219,7 @@ class SignInScreen extends StatelessWidget {
   Widget _buildGoogleSignInButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "msg_sign_in_with_google".tr,
+      text: "Sign in with Google",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       leftIcon: Container(
         margin: EdgeInsets.only(right: 8.h),
@@ -242,7 +242,7 @@ class SignInScreen extends StatelessWidget {
   Widget _buildFacebookSignInButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "msg_sign_in_with_facebook".tr,
+      text: "Sign in with Facebook",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       leftIcon: Container(
         margin: EdgeInsets.only(right: 8.h),
@@ -264,7 +264,7 @@ class SignInScreen extends StatelessWidget {
   Widget _buildAppleSignInButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "msg_sign_in_with_apple".tr,
+      text: "Sign in with Apple",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       leftIcon: Container(
         margin: EdgeInsets.only(right: 8.h),
