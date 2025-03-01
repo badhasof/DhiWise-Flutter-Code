@@ -232,8 +232,8 @@ class SignInScreen extends StatelessWidget {
       ),
       buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
       onPressed: () {
-        // Navigate to AuthGate widget for Google Sign-In
-        Navigator.pushNamed(context, AppRoutes.authGate);
+        // Use the direct Google Sign-In method
+        _signInWithGoogle(context);
       },
     );
   }
