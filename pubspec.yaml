@@ -1,0 +1,40 @@
+name: badhaso_s_application2
+description: A new Flutter project.
+version: 1.0.0+1
+environment: 
+  sdk: ^3.6.0
+dependencies: 
+  flutter: 
+    sdk: flutter
+  flutter_localizations: 
+    sdk: flutter
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.0.16
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.7
+  shared_preferences: ^2.3.4
+  connectivity_plus: ^6.1.1
+  responsive_grid_list: ^1.4.0
+  flutter_staggered_grid_view: ^0.7.0
+  flutter_facebook_auth: ^6.0.4
+  google_sign_in: ^6.2.1
+  # Firebase dependencies
+dev_dependencies: 
+  flutter_test: 
+    sdk: flutter
+flutter: 
+  uses-material-design: true
+  assets: 
+    - assets/
+    - assets/images/
+  fonts: 
+    - family: Lato
+      fonts: 
+        - asset: assets/fonts/LatoBold.ttf
+          weight: 700
+        - asset: assets/fonts/LatoBlack.ttf
+          weight: 900
+        - asset: assets/fonts/LatoRegular.ttf
+          weight: 400
+        - asset: assets/fonts/LatoMedium.ttf
+          weight: 500

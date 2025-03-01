@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "861015223952",
+    "project_id": "linguax-9b060",
+    "storage_bucket": "linguax-9b060.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:861015223952:android:8f19174c4bd6a72870b215",
+        "android_client_info": {
+          "package_name": "com.linguax.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPFGnm880YI_Fm1sWy5DawjrAQmtSDPEc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
