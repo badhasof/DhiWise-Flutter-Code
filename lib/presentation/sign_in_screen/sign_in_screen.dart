@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/app_export.dart';
 import '../../core/utils/validation_functions.dart';
 
@@ -11,6 +13,7 @@ import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_text_form_field.dart';
 import 'bloc/sign_in_bloc.dart';
 import 'models/sign_in_model.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 // ignore_for_file: must_be_immutable
 class SignInScreen extends StatelessWidget {
@@ -229,7 +232,8 @@ class SignInScreen extends StatelessWidget {
       ),
       buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
       onPressed: () {
-        _signInWithGoogle(context);
+        // Navigate to AuthGate widget for Google Sign-In
+        Navigator.pushNamed(context, AppRoutes.authGate);
       },
     );
   }
@@ -283,7 +287,16 @@ class SignInScreen extends StatelessWidget {
       final email = state.usernameFieldController?.text ?? '';
       final password = state.passwordFieldController?.text ?? '';
       
-
+      // Validate email and password
+      if (email.isEmpty || password.isEmpty) {
+        throw Exception('Email and password cannot be empty');
+      }
+      
+      // Sign in with email and password
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       
       // Navigate to home screen or next screen
       // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
@@ -300,9 +313,39 @@ class SignInScreen extends StatelessWidget {
 
   void _signInWithGoogle(BuildContext context) async {
     try {
-
+      // Use the iOS client ID from firebase_options.dart
+      final clientId = '861015223952-bp6a6en3rtf4d2jrvk1l1jf2765q47et.apps.googleusercontent.com';
       
-
+      // Create a GoogleSignIn instance with the iOS client ID
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: clientId,
+        scopes: ['email', 'profile'],
+      );
+      
+      // Start the sign-in process
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      
+      // If the user canceled the sign-in, return
+      if (googleUser == null) return;
+      
+      // Get the authentication details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      
+      // Sign in to Firebase with the Google credential
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      
+      // Navigate to home screen or next screen
+      // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Successfully signed in with Google')),
+      );
     } catch (e) {
       print("Google Sign-In Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -313,9 +356,31 @@ class SignInScreen extends StatelessWidget {
 
   void _signInWithFacebook(BuildContext context) async {
     try {
-
+      // Import the flutter_facebook_auth package
+      final LoginResult result = await FacebookAuth.instance.login();
       
-      
+      // Check if the login was successful
+      if (result.status == LoginStatus.success) {
+        // Get the access token
+        final AccessToken accessToken = result.accessToken!;
+        
+        // Create a credential from the access token
+        final OAuthCredential credential = FacebookAuthProvider.credential(
+          accessToken.token,
+        );
+        
+        // Sign in to Firebase with the Facebook credential
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        
+        // Navigate to home screen or next screen
+        // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Successfully signed in with Facebook')),
+        );
+      } else {
+        throw Exception('Facebook login failed: ${result.message}');
+      }
     } catch (e) {
       print("Facebook Sign-In Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
