@@ -59,4 +59,34 @@ class ImageConstant {
 
   static String imgPlayProgress = '$imagePath/img_play_progress.svg';
 
+  static String imgPath38 = '$imagePath/img_path_38.svg';
+
+  static String imgPath30 = '$imagePath/img_path_30.svg';
+
+  static String imgPath44 = '$imagePath/img_path_44.svg';
+
+  static String imgPath26 = '$imagePath/img_path_26.svg';
+
+  static String imgEllipse34 = '$imagePath/img_ellipse_34.png';
+
+  static String imgEllipse35 = '$imagePath/img_ellipse_35.svg';
+
+  static String imgEllipse36 = '$imagePath/img_ellipse_36.png';
+  
+  // Adding missing image constants
+  static String imgCheckmarkDeepOrangeA200 = '$imagePath/img_checkmark_deep_orange_a200.svg';
+  
+  static String imgTelevision = '$imagePath/img_television.svg';
+  
+  static String imgEdit = '$imagePath/img_edit.svg';
+  
+  static String imgSettingsDeepOrangeA200 = '$imagePath/img_settings_deep_orange_a200.svg';
+  
+  static String imgFire = '$imagePath/img_fire.png';
+  
+  static String imgSearch = '$imagePath/img_search.svg';
+  
+  static String imgTropy = '$imagePath/img_tropy.svg';
+  
+  static String imgArrowRight = '$imagePath/img_arrow_right.svg';
 }
