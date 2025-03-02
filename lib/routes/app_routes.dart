@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../presentation/app_navigation_screen/app_navigation_screen.dart';
 import '../presentation/create_profile_screen/create_profile_screen.dart';
+import '../presentation/create_profile_one_screen/create_profile_one_screen.dart';
+import '../presentation/create_profile_two_screen/create_profile_two_screen.dart';
 import '../presentation/onboardimg_screen/onboardimg_screen.dart';
 import '../presentation/quiz_four_screen/quiz_four_screen.dart';
 import '../presentation/quiz_one_screen/quiz_one_screen.dart';
@@ -27,6 +29,10 @@ class AppRoutes {
   static const String quizFourScreen = '/quiz_four_screen';
 
   static const String createProfileScreen = '/create_profile_screen';
+  
+  static const String createProfileOneScreen = '/create_profile_one_screen';
+  
+  static const String createProfileTwoScreen = '/create_profile_two_screen';
 
   static const String signInScreen = '/sign_in_screen';
 
@@ -50,6 +56,8 @@ class AppRoutes {
         quizThreeScreen: QuizThreeScreen.builder,
         quizFourScreen: QuizFourScreen.builder,
         createProfileScreen: CreateProfileScreen.builder,
+        createProfileOneScreen: CreateProfileOneScreen.builder,
+        createProfileTwoScreen: CreateProfileTwoScreen.builder,
         signInScreen: SignInScreen.builder,
         appNavigationScreen: AppNavigationScreen.builder,
         initialRoute: AppNavigationScreen.builder,
