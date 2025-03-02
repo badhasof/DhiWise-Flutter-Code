@@ -79,7 +79,7 @@ class OnboardimgScreen extends StatelessWidget {
             text: "lbl_get_started".tr,
             buttonStyle: CustomButtonStyles.fillDeepOrange,
             onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.quizOneScreen);
+              Navigator.pushNamed(context, AppRoutes.quizScreen);
             },
           ),
           CustomElevatedButton(
