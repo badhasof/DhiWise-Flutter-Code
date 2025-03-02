@@ -567,8 +567,16 @@ class CreateProfileTwoScreen extends StatelessWidget {
       buttonStyle: CustomButtonStyles.fillDeepOrange,
       onPressed: () {
         if (_formKey.currentState!.validate()) {
-          // Form is valid, proceed with profile creation
-          // You can add navigation or other actions here
+          // Get the user's name from the controller
+          final nameController = context.read<CreateProfileTwoBloc>().state.nameFieldController;
+          final userName = nameController?.text ?? '';
+          
+          // Navigate to the profile one screen with the user's name
+          Navigator.pushNamed(
+            context, 
+            AppRoutes.createProfileOneScreen,
+            arguments: {'userName': userName}
+          );
         } else {
           // Form validation failed, errors will be shown automatically
         }

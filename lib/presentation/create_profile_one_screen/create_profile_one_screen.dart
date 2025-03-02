@@ -2,22 +2,28 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_outlined_button.dart';
+import '../../widgets/custom_elevated_button.dart';
 import 'bloc/create_profile_one_bloc.dart';
 import 'models/create_profile_one_model.dart';
 
 class CreateProfileOneScreen extends StatelessWidget {
-  const CreateProfileOneScreen({Key? key})
+  final String? userName;
+
+  const CreateProfileOneScreen({Key? key, this.userName})
       : super(
           key: key,
         );
 
   static Widget builder(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final userName = args?['userName'] as String?;
+    
     return BlocProvider<CreateProfileOneBloc>(
       create: (context) => CreateProfileOneBloc(CreateProfileOneState(
-        createProfileOneModelObj: CreateProfileOneModel(),
+        createProfileOneModelObj: CreateProfileOneModel(userName: userName),
       ))
         ..add(CreateProfileOneInitialEvent()),
-      child: CreateProfileOneScreen(),
+      child: CreateProfileOneScreen(userName: userName),
     );
   }
 
@@ -58,11 +64,11 @@ class CreateProfileOneScreen extends StatelessWidget {
                               spacing: 8,
                               children: [
                                 Text(
-                                  "lbl_welcome_amber".tr,
+                                  "Welcome ${state.createProfileOneModelObj?.userName ?? 'User'}",
                                   style: theme.textTheme.titleLarge,
                                 ),
                                 Text(
-                                  "msg_your_profile_has".tr,
+                                  "Your profile has been successfully created.\nLet's start your learning journey",
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.center,
@@ -89,13 +95,28 @@ class CreateProfileOneScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildContinueButtonSection(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.maxFinite,
+      padding: EdgeInsets.only(
+        left: 16.h,
+        right: 16.h,
+        top: 14.h,
+        bottom: 51.5.h,
+      ),
+      decoration: AppDecoration.outlinePrimary,
       child: Column(
+        spacing: 10,
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CustomOutlinedButton(
-            text: "lbl_continue".tr,
+          CustomElevatedButton(
+            height: 48.h,
+            text: "Continue",
+            buttonStyle: CustomButtonStyles.fillDeepOrange,
+            onPressed: () {
+              // Navigate to the next screen
+              Navigator.pushNamed(context, AppRoutes.homeScreen);
+            },
           )
         ],
       ),
