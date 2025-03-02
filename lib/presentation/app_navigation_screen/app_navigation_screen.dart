@@ -107,21 +107,9 @@ class AppNavigationScreen extends StatelessWidget {
                             ),
                             _buildScreenTitle(
                               context,
-                              screenTitle: "Quiz/One One",
-                              onTapScreenTitle: () =>
-                                  onTapScreenTitle(AppRoutes.quizOneOneScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
                               screenTitle: "Quiz/Two",
                               onTapScreenTitle: () =>
                                   onTapScreenTitle(AppRoutes.quizTwoScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Two One",
-                              onTapScreenTitle: () =>
-                                  onTapScreenTitle(AppRoutes.quizTwoOneScreen),
                             ),
                             _buildScreenTitle(
                               context,
@@ -131,21 +119,9 @@ class AppNavigationScreen extends StatelessWidget {
                             ),
                             _buildScreenTitle(
                               context,
-                              screenTitle: "Quiz/Three One",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizThreeOneScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
                               screenTitle: "Quiz/Four",
                               onTapScreenTitle: () =>
                                   onTapScreenTitle(AppRoutes.quizFourScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four One",
-                              onTapScreenTitle: () =>
-                                  onTapScreenTitle(AppRoutes.quizFourOneScreen),
                             ),
                             _buildScreenTitle(
                               context,
@@ -153,60 +129,6 @@ class AppNavigationScreen extends StatelessWidget {
                               onTapScreenTitle: () => onTapScreenTitle(
                                   AppRoutes.createProfileScreen),
                             ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Two",
-                              onTapScreenTitle: () =>
-                                  onTapScreenTitle(AppRoutes.quizFourTwoScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Three",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizFourThreeScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Four",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizFourFourScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Five",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizFourFiveScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Six",
-                              onTapScreenTitle: () =>
-                                  onTapScreenTitle(AppRoutes.quizFourSixScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Seven",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizFourSevenScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Eight",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizFourEightScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Nine",
-                              onTapScreenTitle: () => onTapScreenTitle(
-                                  AppRoutes.quizFourNineScreen),
-                            ),
-                            _buildScreenTitle(
-                              context,
-                              screenTitle: "Quiz/Four Ten",
-                              onTapScreenTitle: () =>
-                                  onTapScreenTitle(AppRoutes.quizFourTenScreen),
-                            )
                           ],
                         ),
                       ),
