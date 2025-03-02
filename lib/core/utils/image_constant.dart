@@ -48,4 +48,15 @@ class ImageConstant {
   static String imgApple = '$imagePath/img_icon_logoapple.svg';
   
   static String imgSettingsGray500 = '$imagePath/img_settings_gray_500.svg';
+
+  static String imgIllustrationWellDone = '$imagePath/img_illustration_well_done.svg';
+
+  static String imgClose = '$imagePath/img_close.svg';
+
+  static String imgIsolationModeGray10002 = '$imagePath/img_isolation_mode_gray_100_02.svg';
+
+  static String imgSignal = '$imagePath/img_signal.svg';
+
+  static String imgPlayProgress = '$imagePath/img_play_progress.svg';
+
 }
