@@ -139,6 +139,12 @@ class SignInScreen extends StatelessWidget {
               horizontal: 16.h,
               vertical: 20.h,
             ),
+            fillColor: theme.colorScheme.onPrimaryContainer,
+            filled: true,
+            borderDecoration: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.h),
+              borderSide: BorderSide.none,
+            ),
             validator: (value) {
               if (value == null || (!isValidEmail(value, isRequired: true))) {
                 return "Please enter a valid email";
@@ -188,6 +194,12 @@ class SignInScreen extends StatelessWidget {
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.h,
               vertical: 20.h,
+            ),
+            fillColor: theme.colorScheme.onPrimaryContainer,
+            filled: true,
+            borderDecoration: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.h),
+              borderSide: BorderSide.none,
             ),
             validator: (value) {
               if (value == null ||
