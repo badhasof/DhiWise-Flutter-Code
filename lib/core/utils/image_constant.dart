@@ -96,4 +96,26 @@ class ImageConstant {
   static String imgContrast = '$imagePath/img_contrast.svg';
   
   static String imgFrame1686560216 = '$imagePath/img_frame_1686560216.svg';
+  
+  // Adding navigation bar icons
+  static String imgNavHomeDeepOrangeA200 = '$imagePath/img_nav_home_deep_orange_a200.svg';
+  
+  static String imgNavVocabularyGray600 = '$imagePath/img_nav_vocabulary_gray_600.svg';
+  
+  static String imgNavLearning = '$imagePath/img_nav_learning.svg';
+  
+  static String imgNavProgress = '$imagePath/img_nav_progress.svg';
+  
+  static String imgNavProfile = '$imagePath/img_nav_profile.png';
+  
+  // Additional missing constants
+  static String imgClock = '$imagePath/img_clock.svg';
+  
+  static String imgImage11 = '$imagePath/img_image_11.png';
+  
+  static String imgImage12 = '$imagePath/img_image_12.png';
+  
+  static String imgEllipse314x8 = '$imagePath/img_ellipse_31_4x8.png';
+  
+  static String imgUserDeepOrangeA200 = '$imagePath/img_user_deep_orange_a200.svg';
 }

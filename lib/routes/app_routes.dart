@@ -9,6 +9,7 @@ import '../presentation/quiz_three_screen/quiz_three_screen.dart';
 import '../presentation/quiz_two_screen/quiz_two_screen.dart';
 import '../presentation/sign_in_screen/sign_in_screen.dart';
 import '../presentation/home_screen/home_initial_page.dart';
+import '../presentation/home_screen/home_screen.dart';
 import '../presentation/profile_page/profile_page.dart';
 import '../presentation/vocabulary_page/vocabulary_page.dart';
 
@@ -38,6 +39,8 @@ class AppRoutes {
   static const String vocabularyPage = '/vocabulary_page';
   
   static const String profilePage = '/profile_page';
+  
+  static const String homeScreen = '/home_screen';
 
   static Map<String, WidgetBuilder> get routes => {
         onboardimgScreen: OnboardimgScreen.builder,
@@ -52,6 +55,7 @@ class AppRoutes {
         initialRoute: AppNavigationScreen.builder,
         homeInitialPage: HomeInitialPage.builder,
         vocabularyPage: VocabularyPage.builder,
-        profilePage: ProfilePage.builder
+        profilePage: ProfilePage.builder,
+        homeScreen: HomeScreen.builder
       };
 }

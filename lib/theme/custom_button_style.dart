@@ -13,14 +13,23 @@ class CustomButtonStyles {
         padding: EdgeInsets.zero,
       );
       
+  static ButtonStyle get fillDeepOrangeA => ElevatedButton.styleFrom(
+        backgroundColor: appTheme.deepOrangeA200.withOpacity(0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.h),
+        ),
+        elevation: 0,
+        padding: EdgeInsets.zero,
+      );
+      
   // Outline button styles
   static ButtonStyle get outlineBlack => ElevatedButton.styleFrom(
         backgroundColor: theme.colorScheme.onPrimaryContainer,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14.h),
         ),
-        shadowColor: appTheme.black900.withOpacity(0.08),
-        elevation: 2,
+        shadowColor: appTheme.black900.withOpacity(0.06),
+        elevation: 1,
         padding: EdgeInsets.zero,
       );
       
@@ -30,7 +39,9 @@ class CustomButtonStyles {
           color: theme.colorScheme.primary,
           width: 1,
         ),
-        shape: RoundedRectangleBorder(),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
         padding: EdgeInsets.zero,
       );
       

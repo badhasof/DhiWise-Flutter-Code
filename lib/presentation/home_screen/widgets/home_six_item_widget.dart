@@ -54,7 +54,7 @@ class HomeSixItemWidget extends StatelessWidget {
                                         horizontal: 8.h,
                                         vertical: 2.h,
                                       ),
-                                      decoration: AppDecoration.fillDeeporange50
+                                      decoration: AppDecoration.fillDeepOrange50
                                           .copyWith(
                                         borderRadius:
                                             BorderRadiusStyle.circleBorder8,
@@ -175,7 +175,7 @@ class HomeSixItemWidget extends StatelessWidget {
                                         horizontal: 8.h,
                                         vertical: 2.h,
                                       ),
-                                      decoration: AppDecoration.fillDeeporange50
+                                      decoration: AppDecoration.fillDeepOrange50
                                           .copyWith(
                                         borderRadius:
                                             BorderRadiusStyle.circleBorder8,
@@ -297,7 +297,7 @@ class HomeSixItemWidget extends StatelessWidget {
                                         horizontal: 8.h,
                                         vertical: 2.h,
                                       ),
-                                      decoration: AppDecoration.fillDeeporange50
+                                      decoration: AppDecoration.fillDeepOrange50
                                           .copyWith(
                                         borderRadius:
                                             BorderRadiusStyle.circleBorder8,
