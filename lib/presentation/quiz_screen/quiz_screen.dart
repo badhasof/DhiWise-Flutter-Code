@@ -4,6 +4,7 @@ import '../../theme/custom_button_style.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/custom_outlined_button.dart';
+import '../../widgets/custom_elevated_button.dart';
 import 'bloc/quiz_bloc.dart';
 import 'models/quiz_model.dart';
 
@@ -99,13 +100,17 @@ class QuizScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildContinueButtonSection(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.maxFinite,
+      padding: EdgeInsets.all(16.h),
+      decoration: AppDecoration.outlinePrimary,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CustomOutlinedButton(
+          CustomElevatedButton(
+            height: 48.h,
             text: "lbl_continue".tr,
+            buttonStyle: CustomButtonStyles.fillDeepOrange,
             onPressed: () {
               Navigator.pushNamed(context, AppRoutes.quizOneScreen);
             },
