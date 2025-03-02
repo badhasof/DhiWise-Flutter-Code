@@ -86,6 +86,9 @@ class OnboardimgScreen extends StatelessWidget {
             height: 48.h,
             text: "msg_i_already_have_an".tr,
             buttonTextStyle: CustomTextStyles.titleMediumDeeporangeA200,
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.signInScreen);
+            },
           )
         ],
       ),
