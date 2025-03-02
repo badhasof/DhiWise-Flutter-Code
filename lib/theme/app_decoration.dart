@@ -13,7 +13,7 @@ class AppDecoration {
         color: appTheme.deepOrange30001,
       );
   static BoxDecoration get fillDeepOrange50 => BoxDecoration(
-        color: appTheme.deepOrange100,
+        color: appTheme.deepOrange50,
       );
   static BoxDecoration get fillDeepOrangeA => BoxDecoration(
         color: appTheme.deepOrangeA100,

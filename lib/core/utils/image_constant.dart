@@ -89,4 +89,11 @@ class ImageConstant {
   static String imgTropy = '$imagePath/img_tropy.svg';
   
   static String imgArrowRight = '$imagePath/img_arrow_right.svg';
+  
+  // Adding missing image constants for home_six_item_widget.dart
+  static String imgImage10 = '$imagePath/img_image_10.png';
+  
+  static String imgContrast = '$imagePath/img_contrast.svg';
+  
+  static String imgFrame1686560216 = '$imagePath/img_frame_1686560216.svg';
 }
