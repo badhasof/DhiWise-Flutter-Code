@@ -110,12 +110,12 @@ class CreateProfileScreen extends StatelessWidget {
             text: "lbl_create_profile".tr,
             buttonStyle: CustomButtonStyles.fillDeepOrange,
             onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.quizFourTwoScreen);
+              Navigator.pushNamed(context, AppRoutes.signInScreen);
             },
           ),
           GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.quizFourTwoScreen);
+              Navigator.pushNamed(context, AppRoutes.signInScreen);
             },
             child: Text(
               "msg_i_ll_do_it_later".tr,
