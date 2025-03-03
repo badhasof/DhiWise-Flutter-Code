@@ -110,7 +110,7 @@ class CreateProfileScreen extends StatelessWidget {
             text: "lbl_create_profile".tr,
             buttonStyle: CustomButtonStyles.fillDeepOrange,
             onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.signInScreen);
+              Navigator.pushNamed(context, AppRoutes.signUpScreen);
             },
           ),
           GestureDetector(
