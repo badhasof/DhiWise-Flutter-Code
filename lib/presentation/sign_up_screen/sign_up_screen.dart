@@ -3,33 +3,32 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/app_export.dart';
 import '../../core/utils/validation_functions.dart';
-
-
 import '../../theme/custom_button_style.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/app_bar/appbar_title.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_text_form_field.dart';
-import 'bloc/sign_in_bloc.dart';
-import 'models/sign_in_model.dart';
+import 'bloc/sign_up_bloc.dart';
+import 'models/sign_up_model.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 // ignore_for_file: must_be_immutable
-class SignInScreen extends StatelessWidget {
-  SignInScreen({Key? key})
+class SignUpScreen extends StatelessWidget {
+  SignUpScreen({Key? key})
       : super(
           key: key,
         );
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   static Widget builder(BuildContext context) {
-    return BlocProvider<SignInBloc>(
-      create: (context) => SignInBloc(SignInState(
-        signInModelObj: SignInModel(),
+    return BlocProvider<SignUpBloc>(
+      create: (context) => SignUpBloc(SignUpState(
+        signUpModelObj: SignUpModel(),
       ))
-        ..add(SignInInitialEvent()),
-      child: SignInScreen(),
+        ..add(SignUpInitialEvent()),
+      child: SignUpScreen(),
     );
   }
 
@@ -40,6 +39,7 @@ class SignInScreen extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Form(
+          key: _formKey,
           child: Container(
             width: double.maxFinite,
             margin: EdgeInsets.only(bottom: 32.h),
@@ -55,38 +55,35 @@ class SignInScreen extends StatelessWidget {
                       child: _buildAppBar(context),
                     ),
                     SizedBox(height: 22.h),
-                    _buildUsernameField(context),
+                    _buildEmailField(context),
                     SizedBox(height: 16.h),
                     _buildPasswordField(context),
+                    SizedBox(height: 16.h),
+                    _buildConfirmPasswordField(context),
                     SizedBox(height: 24.h),
-                    _buildSignInButton(context),
-                    SizedBox(height: 24.h),
-                    Text(
-                      "Forgot Password",
-                      style: CustomTextStyles.titleMediumDeeporangeA200,
-                    ),
+                    _buildSignUpButton(context),
                     SizedBox(height: 24.h),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.signUpScreen);
+                        Navigator.pushNamed(context, AppRoutes.signInScreen);
                       },
                       child: Text(
-                        "Don't have an account? Sign Up",
+                        "Already have an account? Sign In",
                         style: CustomTextStyles.titleMediumDeeporangeA200,
                       ),
                     ),
-                    SizedBox(height: 90.h),
-                    _buildGoogleSignInButton(context),
+                    SizedBox(height: 80.h),
+                    _buildGoogleSignUpButton(context),
                     SizedBox(height: 12.h),
-                    _buildFacebookSignInButton(context),
+                    _buildFacebookSignUpButton(context),
                     SizedBox(height: 12.h),
-                    _buildAppleSignInButton(context),
+                    _buildAppleSignUpButton(context),
                     SizedBox(height: 24.h),
                     RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "By signing in to LinguaX, you agree to our ",
+                            text: "By signing up to LinguaX, you agree to our ",
                             style: CustomTextStyles.bodyMediumGray700,
                           ),
                           TextSpan(
@@ -125,24 +122,27 @@ class SignInScreen extends StatelessWidget {
       leading: AppbarLeadingImage(
         imagePath: ImageConstant.imgArrowDown,
         margin: EdgeInsets.only(left: 14.h),
+        onTap: () {
+          Navigator.pop(context);
+        },
       ),
       centerTitle: true,
       title: AppbarTitle(
-        text: "Sign In",
+        text: "Sign Up",
       ),
     );
   }
 
   /// Section Widget
-  Widget _buildUsernameField(BuildContext context) {
+  Widget _buildEmailField(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
-      child: BlocSelector<SignInBloc, SignInState, TextEditingController?>(
-        selector: (state) => state.usernameFieldController,
-        builder: (context, usernameFieldController) {
+      child: BlocSelector<SignUpBloc, SignUpState, TextEditingController?>(
+        selector: (state) => state.emailFieldController,
+        builder: (context, emailFieldController) {
           return CustomTextFormField(
-            controller: usernameFieldController,
-            hintText: "Username or Email",
+            controller: emailFieldController,
+            hintText: "Email Address",
             hintStyle: CustomTextStyles.titleMediumGray500Medium,
             textInputType: TextInputType.emailAddress,
             contentPadding: EdgeInsets.symmetric(
@@ -171,17 +171,16 @@ class SignInScreen extends StatelessWidget {
   Widget _buildPasswordField(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
-      child: BlocBuilder<SignInBloc, SignInState>(
+      child: BlocBuilder<SignUpBloc, SignUpState>(
         builder: (context, state) {
           return CustomTextFormField(
             controller: state.passwordFieldController,
             hintText: "Password",
             hintStyle: CustomTextStyles.titleMediumGray500Medium,
-            textInputAction: TextInputAction.done,
             textInputType: TextInputType.visiblePassword,
             suffix: InkWell(
               onTap: () {
-                context.read<SignInBloc>().add(ChangePasswordVisibilityEvent(
+                context.read<SignUpBloc>().add(ChangePasswordVisibilityEvent(
                     value: !state.isShowPassword));
               },
               child: Container(
@@ -216,6 +215,12 @@ class SignInScreen extends StatelessWidget {
                   (!isValidPassword(value, isRequired: true))) {
                 return "Please enter a valid password";
               }
+              
+              // Validate password match whenever password changes
+              if (state.confirmPasswordFieldController?.text.isNotEmpty == true) {
+                context.read<SignUpBloc>().add(ValidatePasswordMatchEvent());
+              }
+              
               return null;
             },
           );
@@ -225,23 +230,104 @@ class SignInScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildSignInButton(BuildContext context) {
+  Widget _buildConfirmPasswordField(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.h),
+      child: BlocBuilder<SignUpBloc, SignUpState>(
+        builder: (context, state) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomTextFormField(
+                controller: state.confirmPasswordFieldController,
+                hintText: "Confirm Password",
+                hintStyle: CustomTextStyles.titleMediumGray500Medium,
+                textInputAction: TextInputAction.done,
+                textInputType: TextInputType.visiblePassword,
+                suffix: InkWell(
+                  onTap: () {
+                    context.read<SignUpBloc>().add(ChangeConfirmPasswordVisibilityEvent(
+                        value: !state.isShowConfirmPassword));
+                  },
+                  child: Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: 16.h,
+                      vertical: 20.h,
+                    ),
+                    child: CustomImageView(
+                      imagePath: ImageConstant.imgSettingsGray500,
+                      height: 24.h,
+                      width: 24.h,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                suffixConstraints: BoxConstraints(
+                  maxHeight: 64.h,
+                ),
+                obscureText: state.isShowConfirmPassword,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.h,
+                  vertical: 20.h,
+                ),
+                fillColor: theme.colorScheme.onPrimaryContainer,
+                filled: true,
+                borderDecoration: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.h),
+                  borderSide: BorderSide.none,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please confirm your password";
+                  }
+                  if (value != state.passwordFieldController?.text) {
+                    return "Passwords do not match";
+                  }
+                  
+                  // Validate password match whenever confirm password changes
+                  context.read<SignUpBloc>().add(ValidatePasswordMatchEvent());
+                  
+                  return null;
+                },
+              ),
+              if (!state.passwordsMatch && state.confirmPasswordFieldController?.text.isNotEmpty == true)
+                Padding(
+                  padding: EdgeInsets.only(top: 8.h, left: 16.h),
+                  child: Text(
+                    "Passwords do not match",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Section Widget
+  Widget _buildSignUpButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "Sign In",
+      text: "Sign Up",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       buttonStyle: CustomButtonStyles.fillDeepOrange,
       onPressed: () {
-        _signInWithEmailPassword(context);
+        if (_formKey.currentState?.validate() ?? false) {
+          _signUpWithEmailPassword(context);
+        }
       },
     );
   }
 
   /// Section Widget
-  Widget _buildGoogleSignInButton(BuildContext context) {
+  Widget _buildGoogleSignUpButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "Sign in with Google",
+      text: "Sign up with Google",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       leftIcon: Container(
         margin: EdgeInsets.only(right: 8.h),
@@ -254,17 +340,16 @@ class SignInScreen extends StatelessWidget {
       ),
       buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
       onPressed: () {
-        // Use the direct Google Sign-In method
-        _signInWithGoogle(context);
+        _signUpWithGoogle(context);
       },
     );
   }
 
   /// Section Widget
-  Widget _buildFacebookSignInButton(BuildContext context) {
+  Widget _buildFacebookSignUpButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "Sign in with Facebook",
+      text: "Sign up with Facebook",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       leftIcon: Container(
         margin: EdgeInsets.only(right: 8.h),
@@ -277,16 +362,16 @@ class SignInScreen extends StatelessWidget {
       ),
       buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
       onPressed: () {
-        _signInWithFacebook(context);
+        _signUpWithFacebook(context);
       },
     );
   }
 
   /// Section Widget
-  Widget _buildAppleSignInButton(BuildContext context) {
+  Widget _buildAppleSignUpButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "Sign in with Apple",
+      text: "Sign up with Apple",
       margin: EdgeInsets.symmetric(horizontal: 16.h),
       leftIcon: Container(
         margin: EdgeInsets.only(right: 8.h),
@@ -302,29 +387,35 @@ class SignInScreen extends StatelessWidget {
   }
 
   // Firebase Authentication Methods
-  void _signInWithEmailPassword(BuildContext context) async {
+  void _signUpWithEmailPassword(BuildContext context) async {
     try {
-      final bloc = context.read<SignInBloc>();
+      final bloc = context.read<SignUpBloc>();
       final state = bloc.state;
-      final email = state.usernameFieldController?.text ?? '';
+      final email = state.emailFieldController?.text ?? '';
       final password = state.passwordFieldController?.text ?? '';
+      final confirmPassword = state.confirmPasswordFieldController?.text ?? '';
       
       // Validate email and password
-      if (email.isEmpty || password.isEmpty) {
+      if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
         throw Exception('Email and password cannot be empty');
       }
       
-      // Sign in with email and password
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // Validate passwords match
+      if (password != confirmPassword) {
+        throw Exception('Passwords do not match');
+      }
+      
+      // Create user with email and password
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       
-      // Navigate to home screen or next screen
-      // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      // Navigate to create profile screen
+      Navigator.pushNamed(context, AppRoutes.createProfileOneScreen);
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully signed in with email')),
+        SnackBar(content: Text('Account created successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -333,7 +424,7 @@ class SignInScreen extends StatelessWidget {
     }
   }
 
-  void _signInWithGoogle(BuildContext context) async {
+  void _signUpWithGoogle(BuildContext context) async {
     try {
       // Use the iOS client ID from firebase_options.dart
       final clientId = '861015223952-bp6a6en3rtf4d2jrvk1l1jf2765q47et.apps.googleusercontent.com';
@@ -362,52 +453,50 @@ class SignInScreen extends StatelessWidget {
       // Sign in to Firebase with the Google credential
       await FirebaseAuth.instance.signInWithCredential(credential);
       
-      // Navigate to home screen or next screen
-      // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      // Navigate to create profile screen
+      Navigator.pushNamed(context, AppRoutes.createProfileOneScreen);
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully signed in with Google')),
+        SnackBar(content: Text('Successfully signed up with Google')),
       );
     } catch (e) {
-      print("Google Sign-In Error: $e");
+      print("Google Sign-Up Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
     }
   }
 
-  void _signInWithFacebook(BuildContext context) async {
+  void _signUpWithFacebook(BuildContext context) async {
     try {
-      // Import the flutter_facebook_auth package
+      // Trigger the sign-in flow
       final LoginResult result = await FacebookAuth.instance.login();
-      
-      // Check if the login was successful
+
+      // Check if login was successful
       if (result.status == LoginStatus.success) {
         // Get the access token
         final AccessToken accessToken = result.accessToken!;
         
         // Create a credential from the access token
-        final OAuthCredential credential = FacebookAuthProvider.credential(
-          accessToken.token,
-        );
+        final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.token);
         
         // Sign in to Firebase with the Facebook credential
         await FirebaseAuth.instance.signInWithCredential(credential);
         
-        // Navigate to home screen or next screen
-        // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+        // Navigate to create profile screen
+        Navigator.pushNamed(context, AppRoutes.createProfileOneScreen);
         
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Successfully signed in with Facebook')),
+          SnackBar(content: Text('Successfully signed up with Facebook')),
         );
       } else {
-        throw Exception('Facebook login failed: ${result.message}');
+        throw Exception('Facebook login failed: ${result.status}');
       }
     } catch (e) {
-      print("Facebook Sign-In Error: $e");
+      print("Facebook Sign-Up Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
     }
   }
-}
+} 

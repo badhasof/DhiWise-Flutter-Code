@@ -14,6 +14,7 @@ import '../presentation/home_screen/home_initial_page.dart';
 import '../presentation/home_screen/home_screen.dart';
 import '../presentation/profile_page/profile_page.dart';
 import '../presentation/vocabulary_page/vocabulary_page.dart';
+import '../presentation/sign_up_screen/sign_up_screen.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -35,6 +36,8 @@ class AppRoutes {
   static const String createProfileTwoScreen = '/create_profile_two_screen';
 
   static const String signInScreen = '/sign_in_screen';
+
+  static const String signUpScreen = '/sign_up_screen';
 
   static const String appNavigationScreen = '/app_navigation_screen';
 
@@ -59,6 +62,7 @@ class AppRoutes {
         createProfileOneScreen: CreateProfileOneScreen.builder,
         createProfileTwoScreen: CreateProfileTwoScreen.builder,
         signInScreen: SignInScreen.builder,
+        signUpScreen: SignUpScreen.builder,
         appNavigationScreen: AppNavigationScreen.builder,
         initialRoute: AppNavigationScreen.builder,
         homeInitialPage: HomeInitialPage.builder,
