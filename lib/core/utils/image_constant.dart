@@ -118,4 +118,6 @@ class ImageConstant {
   static String imgEllipse314x8 = '$imagePath/img_ellipse_31_4x8.png';
   
   static String imgUserDeepOrangeA200 = '$imagePath/img_user_deep_orange_a200.svg';
+
+  static String imgLinguaBeginner = '$imagePath/Lingua Beginner Quiz Frame.svg';
 }

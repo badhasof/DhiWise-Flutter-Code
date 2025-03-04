@@ -144,154 +144,12 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 child: Stack(
                                   alignment: Alignment.bottomRight,
                                   children: [
-                                    Card(
-                                      clipBehavior: Clip.antiAlias,
-                                      elevation: 0,
-                                      margin: EdgeInsets.only(left: 4.h),
-                                      color:
-                                          theme.colorScheme.onPrimaryContainer,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadiusStyle.circleBorder16,
-                                      ),
-                                      child: Container(
-                                        height: 32.h,
-                                        padding: EdgeInsets.all(6.h),
-                                        decoration: AppDecoration
-                                            .fillOnPrimaryContainer1
-                                            .copyWith(
-                                          borderRadius:
-                                              BorderRadiusStyle.circleBorder16,
-                                        ),
-                                        child: Stack(
-                                          alignment: Alignment.bottomCenter,
-                                          children: [
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath26,
-                                              height: 2.h,
-                                              width: 5.h,
-                                              alignment: Alignment.topLeft,
-                                              margin:
-                                                  EdgeInsets.only(left: 4.h),
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath26,
-                                              height: 3.h,
-                                              width: 6.h,
-                                              alignment: Alignment.topLeft,
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath30,
-                                              height: 4.h,
-                                              width: 8.h,
-                                              alignment: Alignment.topCenter,
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath26,
-                                              height: 2.h,
-                                              width: 6.h,
-                                              alignment: Alignment.topLeft,
-                                              margin: EdgeInsets.only(top: 4.h),
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath30,
-                                              height: 2.h,
-                                              width: 5.h,
-                                              alignment: Alignment.topRight,
-                                              margin: EdgeInsets.only(top: 2.h),
-                                            ),
-                                            CustomImageView(
-                                              imagePath: ImageConstant
-                                                  .imgCheckmarkDeepOrangeA200,
-                                              height: 6.h,
-                                              width: 12.h,
-                                              alignment: Alignment.centerLeft,
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath38,
-                                              height: 3.h,
-                                              width: 6.h,
-                                              alignment: Alignment.bottomRight,
-                                              margin:
-                                                  EdgeInsets.only(bottom: 2.h),
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath38,
-                                              height: 2.h,
-                                              width: 5.h,
-                                              alignment: Alignment.bottomRight,
-                                              margin:
-                                                  EdgeInsets.only(right: 4.h),
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath38,
-                                              height: 3.h,
-                                              width: 6.h,
-                                              alignment: Alignment.bottomRight,
-                                              margin:
-                                                  EdgeInsets.only(bottom: 6.h),
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath44,
-                                              height: 4.h,
-                                              width: 8.h,
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgTelevision,
-                                              height: 6.h,
-                                              width: 12.h,
-                                              alignment: Alignment.centerRight,
-                                            ),
-                                            CustomImageView(
-                                              imagePath:
-                                                  ImageConstant.imgPath44,
-                                              height: 2.h,
-                                              width: 5.h,
-                                              alignment: Alignment.bottomLeft,
-                                              margin:
-                                                  EdgeInsets.only(bottom: 2.h),
-                                            )
-                                          ],
-                                        ),
-                                      ),
+                                    CustomImageView(
+                                      imagePath: ImageConstant.imgLinguaBeginner,
+                                      height: 34.h,
+                                      width: 38.h,
                                     ),
-                                    Align(
-                                      alignment: Alignment.topCenter,
-                                      child: Container(
-                                        height: 28.h,
-                                        margin: EdgeInsets.only(right: 2.h),
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            CustomImageView(
-                                              imagePath: ImageConstant.imgEdit,
-                                              height: 28.h,
-                                              width: double.maxFinite,
-                                            ),
-                                            RotationTransition(
-                                              turns: AlwaysStoppedAnimation(
-                                                -(37 / 360),
-                                              ),
-                                              child: Text(
-                                                "Beta",
-                                                style:
-                                                    theme.textTheme.labelSmall,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    )
+                                    
                                   ],
                                 ),
                               ),
@@ -374,6 +232,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 imagePath: ImageConstant.imgTropy,
                               ),
                             ),
+                            SizedBox(width: 14.h),
                             Expanded(
                               child: Column(
                                 spacing: 4,
@@ -493,7 +352,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   Widget _buildStoriesSection(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      margin: EdgeInsets.only(left: 14.h),
+      margin: EdgeInsets.only(left: 14.h, right: 14.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

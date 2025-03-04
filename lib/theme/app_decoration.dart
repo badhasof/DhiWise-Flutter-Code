@@ -57,7 +57,11 @@ class AppDecoration {
         gradient: LinearGradient(
           begin: Alignment(0.5, 0),
           end: Alignment(0.5, 1),
-          colors: [appTheme.red300, appTheme.orange300],
+          colors: [
+            appTheme.red100, // #FFE3CC
+            appTheme.orange100, // #FFD2AD
+          ],
+          stops: [0.2778, 1.0], // 27.78% and 100%
         ),
       );
       
@@ -296,7 +300,7 @@ class AppDecoration {
   static BoxDecoration get stack21 => BoxDecoration(
         image: DecorationImage(
           image: AssetImage(
-            ImageConstant.imageNotFound,
+            ImageConstant.imgEllipse35,
           ),
           fit: BoxFit.fill,
         ),
