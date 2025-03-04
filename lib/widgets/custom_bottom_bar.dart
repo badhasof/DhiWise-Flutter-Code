@@ -21,31 +21,31 @@ class CustomBottomBarState extends State<CustomBottomBar> {
     BottomMenuModel(
       icon: ImageConstant.imgNavHomeDeepOrangeA200,
       activeIcon: ImageConstant.imgNavHomeDeepOrangeA200,
-      title: "lbl_home".tr,
+      title: "Home",
       type: BottomBarEnum.Home,
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavVocabularyGray600,
       activeIcon: ImageConstant.imgNavVocabularyGray600,
-      title: "lbl_vocabulary".tr,
+      title: "Vocabulary",
       type: BottomBarEnum.Vocabulary,
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavLearning,
       activeIcon: ImageConstant.imgNavLearning,
-      title: "lbl_learning".tr,
+      title: "Learning",
       type: BottomBarEnum.Learning,
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavProgress,
       activeIcon: ImageConstant.imgNavProgress,
-      title: "lbl_progress".tr,
+      title: "Progress",
       type: BottomBarEnum.Progress,
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavProfile,
       activeIcon: ImageConstant.imgNavProfile,
-      title: "lbl_profile".tr,
+      title: "Profile",
       type: BottomBarEnum.Profile,
     )
   ];

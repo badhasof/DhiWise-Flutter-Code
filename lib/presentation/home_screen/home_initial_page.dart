@@ -4,6 +4,7 @@ import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_icon_button.dart';
 import '../../widgets/custom_outlined_button.dart';
+import '../new_stories_screen/new_stories_screen.dart';
 import 'bloc/home_bloc.dart';
 import 'models/home_initial_model.dart';
 import 'models/home_six_item_model.dart';
@@ -435,19 +436,35 @@ class HomeInitialPageState extends State<HomeInitialPage> {
           Container(
             width: double.maxFinite,
             margin: EdgeInsets.only(right: 16.h, top: 12.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "See All".tr,
-                  style: CustomTextStyles.titleSmallOnPrimaryBold,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NewStoriesScreen.builder(context),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "See All".tr,
+                        style: CustomTextStyles.titleSmallOnPrimaryBold,
+                      ),
+                      CustomImageView(
+                        imagePath: ImageConstant.imgArrowRight,
+                        height: 16.h,
+                        width: 18.h,
+                      )
+                    ],
+                  ),
                 ),
-                CustomImageView(
-                  imagePath: ImageConstant.imgArrowRight,
-                  height: 16.h,
-                  width: 18.h,
-                )
-              ],
+              ),
             ),
           )
         ],

@@ -1,0 +1,16 @@
+part of 'new_stories_bloc.dart';
+
+/// Abstract class for all events that can be dispatched from the
+/// New Stories widget.
+///
+/// Events must be immutable and implement the [Equatable] interface.
+class NewStoriesEvent extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
+
+/// Event that is dispatched when the New Stories widget is first created.
+class NewStoriesInitialEvent extends NewStoriesEvent {
+  @override
+  List<Object?> get props => [];
+} 

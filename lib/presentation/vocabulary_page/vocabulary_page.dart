@@ -69,7 +69,7 @@ class VocabularyPage extends StatelessWidget {
                 CustomElevatedButton(
                   height: 22.h,
                   width: 122.h,
-                  text: "msg_trail_time_30_00".tr,
+                  text: "Trial time 30:00".tr,
                   leftIcon: Container(
                     margin: EdgeInsets.only(right: 4.h),
                     child: CustomImageView(
@@ -93,7 +93,7 @@ class VocabularyPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "lbl_vocabulary".tr,
+                  "Vocabulary",
                   style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
                 ),
                 SizedBox(height: 4.h)
@@ -114,11 +114,11 @@ class VocabularyPage extends StatelessWidget {
         spacing: 6,
         children: [
           Text(
-            "msg_exciting_features".tr,
+            "Exciting features coming soon",
             style: theme.textTheme.titleLarge,
           ),
           Text(
-            "msg_stay_tuned_new".tr,
+            "Stay tuned! New features are on their way to help you master the language",
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
