@@ -4,50 +4,36 @@ part of 'create_profile_two_bloc.dart';
 
 // ignore_for_file: must_be_immutable
 class CreateProfileTwoState extends Equatable {
-  CreateProfileTwoState(
-      {this.ageFieldController,
-      this.nameFieldController,
-      this.emailFieldController,
-      this.passwordFieldController,
-      this.isShowPassword = true,
-      this.createProfileTwoModelObj});
+  CreateProfileTwoState({
+    this.ageFieldController,
+    this.nameFieldController,
+    this.genderValue,
+    this.createProfileTwoModelObj,
+  });
 
   TextEditingController? ageFieldController;
-
   TextEditingController? nameFieldController;
-
-  TextEditingController? emailFieldController;
-
-  TextEditingController? passwordFieldController;
-
+  String? genderValue;
   CreateProfileTwoModel? createProfileTwoModelObj;
-
-  bool isShowPassword;
 
   @override
   List<Object?> get props => [
         ageFieldController,
         nameFieldController,
-        emailFieldController,
-        passwordFieldController,
-        isShowPassword,
-        createProfileTwoModelObj
+        genderValue,
+        createProfileTwoModelObj,
       ];
+
   CreateProfileTwoState copyWith({
     TextEditingController? ageFieldController,
     TextEditingController? nameFieldController,
-    TextEditingController? emailFieldController,
-    TextEditingController? passwordFieldController,
-    bool? isShowPassword,
+    String? genderValue,
     CreateProfileTwoModel? createProfileTwoModelObj,
   }) {
     return CreateProfileTwoState(
       ageFieldController: ageFieldController ?? this.ageFieldController,
       nameFieldController: nameFieldController ?? this.nameFieldController,
-      emailFieldController: emailFieldController ?? this.emailFieldController,
-      passwordFieldController:
-          passwordFieldController ?? this.passwordFieldController,
-      isShowPassword: isShowPassword ?? this.isShowPassword,
+      genderValue: genderValue ?? this.genderValue,
       createProfileTwoModelObj:
           createProfileTwoModelObj ?? this.createProfileTwoModelObj,
     );

@@ -11,7 +11,7 @@ class CreateProfileTwoBloc
   CreateProfileTwoBloc(CreateProfileTwoState initialState)
       : super(initialState) {
     on<CreateProfileTwoInitialEvent>(_onInitialize);
-    on<ChangePasswordVisibilityEvent>(_changePasswordVisibility);
+    on<ChangeGenderEvent>(_onChangeGender);
   }
 
   _onInitialize(
@@ -22,19 +22,17 @@ class CreateProfileTwoBloc
       state.copyWith(
         ageFieldController: TextEditingController(),
         nameFieldController: TextEditingController(),
-        emailFieldController: TextEditingController(),
-        passwordFieldController: TextEditingController(),
-        isShowPassword: true,
+        genderValue: null,
       ),
     );
   }
 
-  _changePasswordVisibility(
-    ChangePasswordVisibilityEvent event,
+  _onChangeGender(
+    ChangeGenderEvent event,
     Emitter<CreateProfileTwoState> emit,
   ) {
     emit(state.copyWith(
-      isShowPassword: event.value,
+      genderValue: event.value,
     ));
   }
 }

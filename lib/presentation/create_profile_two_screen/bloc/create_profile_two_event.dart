@@ -26,3 +26,13 @@ class ChangePasswordVisibilityEvent extends CreateProfileTwoEvent {
   @override
   List<Object?> get props => [value];
 }
+
+/// Event for changing gender selection
+class ChangeGenderEvent extends CreateProfileTwoEvent {
+  ChangeGenderEvent({required this.value});
+
+  final String value;
+
+  @override
+  List<Object?> get props => [value];
+}

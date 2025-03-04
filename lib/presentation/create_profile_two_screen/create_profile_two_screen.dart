@@ -18,9 +18,7 @@ class CreateProfileTwoScreen extends StatelessWidget {
         );
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final ValueNotifier<String> _passwordNotifier = ValueNotifier<String>('');
   final ValueNotifier<String> _nameNotifier = ValueNotifier<String>('');
-  final ValueNotifier<String> _emailNotifier = ValueNotifier<String>('');
   final ValueNotifier<String> _ageNotifier = ValueNotifier<String>('');
 
   static Widget builder(BuildContext context) {
@@ -60,9 +58,7 @@ class CreateProfileTwoScreen extends StatelessWidget {
                     SizedBox(height: 16.h),
                     _buildNameField(context),
                     SizedBox(height: 16.h),
-                    _buildEmailField(context),
-                    SizedBox(height: 16.h),
-                    _buildPasswordField(context)
+                    _buildGenderField(context),
                   ],
                 ),
               ),
@@ -305,256 +301,89 @@ class CreateProfileTwoScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildEmailField(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.h),
-      child: BlocSelector<CreateProfileTwoBloc, CreateProfileTwoState,
-          TextEditingController?>(
-        selector: (state) => state.emailFieldController,
-        builder: (context, emailFieldController) {
-          // Add listener to update the ValueNotifier
-          if (emailFieldController != null) {
-            emailFieldController.addListener(() {
-              _emailNotifier.value = emailFieldController.text;
-            });
-          }
-          
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ValueListenableBuilder<String>(
-                valueListenable: _emailNotifier,
-                builder: (context, email, child) {
-                  bool isValid = isValidEmail(email, isRequired: true);
-                  
-                  return CustomTextFormField(
-                    controller: emailFieldController,
-                    hintText: "Email Address",
-                    hintStyle: CustomTextStyles.titleMediumGray500Medium,
-                    textInputType: TextInputType.emailAddress,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16.h,
-                      vertical: 20.h,
-                    ),
-                    fillColor: theme.colorScheme.onPrimaryContainer,
-                    filled: true,
-                    borderDecoration: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.h),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffix: email.isNotEmpty && isValid ? Container(
-                      margin: EdgeInsets.only(
-                        right: 16.h,
-                        left: 8.h,
-                      ),
-                      child: Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 16.h,
-                      ),
-                    ) : null,
-                    suffixConstraints: BoxConstraints(
-                      maxHeight: 64.h,
-                    ),
-                    validator: (value) {
-                      if (value == null || (!isValidEmail(value, isRequired: true))) {
-                        return "Please enter a valid email";
-                      }
-                      return null;
-                    },
-                  );
-                },
-              ),
-              ValueListenableBuilder<String>(
-                valueListenable: _emailNotifier,
-                builder: (context, email, child) {
-                  if (email.isEmpty) {
-                    return SizedBox.shrink();
-                  }
-                  
-                  bool isValid = isValidEmail(email, isRequired: true);
-                  
-                  if (!isValid) {
-                    return Padding(
-                      padding: EdgeInsets.only(top: 8.h, left: 8.h),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.cancel,
-                            color: appTheme.deepOrangeA200,
-                            size: 16.h,
-                          ),
-                          SizedBox(width: 8.h),
-                          Expanded(
-                            child: Text(
-                              "Please enter a valid email address (e.g., example@domain.com)",
-                              style: CustomTextStyles.bodyMediumGray700.copyWith(
-                                fontSize: 12.fSize,
-                                color: appTheme.gray700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  
-                  return SizedBox.shrink();
-                },
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  /// Section Widget
-  Widget _buildPasswordField(BuildContext context) {
+  Widget _buildGenderField(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
       child: BlocBuilder<CreateProfileTwoBloc, CreateProfileTwoState>(
         builder: (context, state) {
-          // Update the ValueNotifier when the state is built
-          if (state.passwordFieldController != null) {
-            state.passwordFieldController!.addListener(() {
-              _passwordNotifier.value = state.passwordFieldController!.text;
-            });
-          }
-          
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomTextFormField(
-                controller: state.passwordFieldController,
-                hintText: "Password",
-                hintStyle: CustomTextStyles.titleMediumGray500Medium,
-                textInputAction: TextInputAction.done,
-                textInputType: TextInputType.visiblePassword,
-                suffix: InkWell(
-                  onTap: () {
-                    context.read<CreateProfileTwoBloc>().add(
-                        ChangePasswordVisibilityEvent(
-                            value: !state.isShowPassword));
-                  },
-                  child: Container(
-                    margin: EdgeInsets.symmetric(
-                      horizontal: 16.h,
-                      vertical: 20.h,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_passwordNotifier.value.isNotEmpty && isValidPassword(_passwordNotifier.value, isRequired: true))
-                          Padding(
-                            padding: EdgeInsets.only(right: 8.h),
-                            child: Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 16.h,
-                            ),
-                          ),
-                        CustomImageView(
-                          imagePath: ImageConstant.imgSettingsGray500,
-                          height: 24.h,
-                          width: 24.h,
-                          fit: BoxFit.contain,
-                        ),
-                      ],
+          return Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onPrimaryContainer,
+              borderRadius: BorderRadius.circular(8.h),
+            ),
+            child: ButtonTheme(
+              alignedDropdown: true,
+              child: DropdownButtonFormField<String>(
+                value: state.genderValue,
+                isExpanded: true,
+                icon: Icon(Icons.arrow_drop_down),
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.h),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.h,
+                    vertical: 20.h,
+                  ),
+                  hintText: "Gender",
+                  hintStyle: CustomTextStyles.titleMediumGray500Medium,
+                  filled: true,
+                  fillColor: theme.colorScheme.onPrimaryContainer,
+                ),
+                style: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                  color: Colors.black,
+                ),
+                dropdownColor: theme.colorScheme.onPrimaryContainer,
+                menuMaxHeight: 300.h,
+                borderRadius: BorderRadius.circular(8.h),
+                items: [
+                  DropdownMenuItem<String>(
+                    value: "male",
+                    child: Text(
+                      "Male",
+                      style: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                suffixConstraints: BoxConstraints(
-                  maxHeight: 64.h,
-                ),
-                obscureText: state.isShowPassword,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.h,
-                  vertical: 20.h,
-                ),
-                fillColor: theme.colorScheme.onPrimaryContainer,
-                filled: true,
-                borderDecoration: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.h),
-                  borderSide: BorderSide.none,
-                ),
+                  DropdownMenuItem<String>(
+                    value: "female",
+                    child: Text(
+                      "Female",
+                      style: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: "other",
+                    child: Text(
+                      "Other",
+                      style: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    context.read<CreateProfileTwoBloc>().add(
+                      ChangeGenderEvent(value: value),
+                    );
+                  }
+                },
                 validator: (value) {
-                  if (value == null ||
-                      (!isValidPassword(value, isRequired: true))) {
-                    return "Please enter a valid password";
+                  if (value == null || value.isEmpty) {
+                    return "Please select your gender";
                   }
                   return null;
                 },
               ),
-              ValueListenableBuilder<String>(
-                valueListenable: _passwordNotifier,
-                builder: (context, password, child) {
-                  if (password.isEmpty) {
-                    return SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(top: 8.h, left: 8.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildPasswordRequirement(
-                          "At least 8 characters",
-                          password.length >= 8,
-                        ),
-                        _buildPasswordRequirement(
-                          "At least one uppercase letter",
-                          RegExp(r'[A-Z]').hasMatch(password),
-                        ),
-                        _buildPasswordRequirement(
-                          "At least one lowercase letter",
-                          RegExp(r'[a-z]').hasMatch(password),
-                        ),
-                        _buildPasswordRequirement(
-                          "At least one number",
-                          RegExp(r'[0-9]').hasMatch(password),
-                        ),
-                        _buildPasswordRequirement(
-                          "At least one special character",
-                          RegExp(r'[\W]').hasMatch(password),
-                        ),
-                        _buildPasswordRequirement(
-                          "No whitespace",
-                          !RegExp(r'\s').hasMatch(password),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+            ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildPasswordRequirement(String requirement, bool isMet) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 4.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            isMet ? Icons.check_circle : Icons.cancel,
-            color: isMet ? Colors.green : appTheme.deepOrangeA200,
-            size: 16.h,
-          ),
-          SizedBox(width: 8.h),
-          Expanded(
-            child: Text(
-              requirement,
-              style: CustomTextStyles.bodyMediumGray700.copyWith(
-                fontSize: 12.fSize,
-                color: isMet ? Colors.green : appTheme.gray700,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -568,17 +397,22 @@ class CreateProfileTwoScreen extends StatelessWidget {
       onPressed: () {
         if (_formKey.currentState!.validate()) {
           // Get the user's name from the controller
-          final nameController = context.read<CreateProfileTwoBloc>().state.nameFieldController;
-          final userName = nameController?.text ?? '';
+          final bloc = context.read<CreateProfileTwoBloc>();
+          final state = bloc.state;
+          final userName = state.nameFieldController?.text ?? '';
+          final age = state.ageFieldController?.text ?? '';
+          final gender = state.genderValue ?? '';
           
-          // Navigate to the profile one screen with the user's name
+          // Navigate to the create profile one screen
           Navigator.pushNamed(
             context, 
             AppRoutes.createProfileOneScreen,
-            arguments: {'userName': userName}
+            arguments: {
+              'userName': userName,
+              'age': age,
+              'gender': gender,
+            }
           );
-        } else {
-          // Form validation failed, errors will be shown automatically
         }
       },
     );
