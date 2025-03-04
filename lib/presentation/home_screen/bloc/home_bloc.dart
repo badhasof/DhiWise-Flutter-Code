@@ -29,9 +29,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   List<HomeSixItemModel> fillHomeSixItemList() {
     return [
       HomeSixItemModel(
-          labelfill: "Stories",
+          labelfill: "Fantasy ",
           hisnewbook: "Learn Arabic Through Stories",
-          label: "Start",
+          label: "Read Now",
           labelfillOne: "Vocabulary",
           hisnewbookOne: "Essential Arabic Words",
           labelOne: "Practice",

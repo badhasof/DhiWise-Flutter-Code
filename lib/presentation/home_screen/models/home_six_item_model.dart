@@ -16,15 +16,15 @@ class HomeSixItemModel extends Equatable {
       this.hisnewbookTwo,
       this.labelTwo,
       this.id}) {
-    labelfill = labelfill ?? "Stories";
-    hisnewbook = hisnewbook ?? "Learn Arabic Through Stories";
-    label = label ?? "Start";
-    labelfillOne = labelfillOne ?? "Vocabulary";
-    hisnewbookOne = hisnewbookOne ?? "Essential Arabic Words";
-    labelOne = labelOne ?? "Practice";
-    labelfillTwo = labelfillTwo ?? "Grammar";
-    hisnewbookTwo = hisnewbookTwo ?? "Arabic Grammar Basics";
-    labelTwo = labelTwo ?? "Learn";
+    labelfill = labelfill ?? "lbl_fantasy".tr;
+    hisnewbook = hisnewbook ?? "msg_his_new_book_kashfal".tr;
+    label = label ?? "lbl_read_now".tr;
+    labelfillOne = labelfillOne ?? "lbl_fantasy".tr;
+    hisnewbookOne = hisnewbookOne ?? "msg_his_new_book_kashfal".tr;
+    labelOne = labelOne ?? "lbl_read_now".tr;
+    labelfillTwo = labelfillTwo ?? "lbl_fantasy".tr;
+    hisnewbookTwo = hisnewbookTwo ?? "msg_his_new_book_kashfal".tr;
+    labelTwo = labelTwo ?? "lbl_read_now".tr;
     id = id ?? "";
   }
 

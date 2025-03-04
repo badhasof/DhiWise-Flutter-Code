@@ -495,7 +495,6 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       width: double.maxFinite,
       margin: EdgeInsets.only(left: 14.h),
       child: Column(
-        spacing: 12,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
@@ -512,7 +511,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "All Stories".tr,
+                        "All Stories",
                         style: theme.textTheme.titleLarge,
                       )
                     ],
@@ -523,10 +522,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                   child: Padding(
                     padding: EdgeInsets.only(
                       left: 18.h,
-                      bottom: 6.h,
                     ),
                     child: Text(
-                      "Fantasy".tr,
+                      "Fantasy",
                       style: CustomTextStyles.titleMediumOnPrimarySemiBold_1,
                     ),
                   ),
@@ -534,37 +532,41 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                 Padding(
                   padding: EdgeInsets.only(left: 18.h),
                   child: Text(
-                    "Horror".tr,
+                    "Horror",
                     style: CustomTextStyles.titleMediumOnPrimarySemiBold_1,
                   ),
                 )
               ],
             ),
           ),
-          BlocSelector<HomeBloc, HomeState, HomeInitialModel?>(
-            selector: (state) => state.homeInitialModelObj,
-            builder: (context, homeInitialModelObj) {
-              return ListView.separated(
-                padding: EdgeInsets.zero,
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                separatorBuilder: (context, index) {
-                  return SizedBox(
-                    height: 12.h,
-                  );
-                },
-                itemCount: homeInitialModelObj?.homeSixItemList.length ?? 0,
-                itemBuilder: (context, index) {
-                  HomeSixItemModel model =
-                      homeInitialModelObj?.homeSixItemList[index] ??
-                          HomeSixItemModel();
-                  return HomeSixItemWidget(
-                    model,
-                  );
-                },
-              );
-            },
+          SizedBox(height: 12.h),
+          // Fantasy - Learn Arabic Through Stories
+          HomeSixItemWidget(
+            HomeSixItemModel(
+              labelfill: "Fantasy",
+              hisnewbook: "Learn Arabic Through Stories",
+              label: "Read Now"
+            ),
           ),
+          SizedBox(height: 12.h),
+          // Conversation - Daily Arabic Conversations
+          HomeSixItemWidget(
+            HomeSixItemModel(
+              labelfill: "Conversation",
+              hisnewbook: "Daily Arabic Conversations",
+              label: "Practice"
+            ),
+          ),
+          SizedBox(height: 12.h),
+          // Quizzes - Test Your Knowledge
+          HomeSixItemWidget(
+            HomeSixItemModel(
+              labelfill: "Quizzes",
+              hisnewbook: "Test Your Knowledge",
+              label: "Take Quiz"
+            ),
+          ),
+          SizedBox(height: 12.h),
           SizedBox(
             width: double.maxFinite,
             child: Divider(
@@ -573,7 +575,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
           ),
           Container(
             width: double.maxFinite,
-            margin: EdgeInsets.only(right: 16.h),
+            margin: EdgeInsets.only(right: 16.h, top: 12.h),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
