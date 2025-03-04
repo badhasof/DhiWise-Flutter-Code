@@ -52,7 +52,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
             Padding(
               padding: EdgeInsets.only(left: 16.h),
               child: Text(
-                "lbl_my_stories".tr,
+                "My Stories",
                 style: theme.textTheme.titleLarge,
               ),
             ),
@@ -283,7 +283,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                                 -(37 / 360),
                                               ),
                                               child: Text(
-                                                "lbl_beta".tr,
+                                                "Beta",
                                                 style:
                                                     theme.textTheme.labelSmall,
                                               ),
@@ -310,7 +310,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                             CustomElevatedButton(
                               height: 28.h,
                               width: 56.h,
-                              text: "lbl_12".tr,
+                              text: "12",
                               leftIcon: Container(
                                 margin: EdgeInsets.only(right: 4.h),
                                 child: CustomImageView(
@@ -340,14 +340,14 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                       Padding(
                         padding: EdgeInsets.only(left: 16.h),
                         child: Text(
-                          "lbl_hi_evelyn".tr,
+                          "Hi Evelyn",
                           style: theme.textTheme.titleSmall,
                         ),
                       ),
                       Padding(
                         padding: EdgeInsets.only(left: 16.h),
                         child: Text(
-                          "lbl_welcome_back".tr,
+                          "Welcome back",
                           style: theme.textTheme.titleLarge,
                         ),
                       ),
@@ -377,7 +377,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                             Expanded(
                               child: Column(
                                 spacing: 4,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start, 
                                 children: [
                                   SizedBox(
                                     width: double.maxFinite,
@@ -390,7 +390,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                         Align(
                                           alignment: Alignment.center,
                                           child: Text(
-                                            "msg_complete_3_stories".tr,
+                                            "Complete 3 stories today".tr,
                                             style: CustomTextStyles
                                                 .titleMediumGray900,
                                           ),
@@ -405,7 +405,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                     ),
                                   ),
                                   Text(
-                                    "lbl_2_3_completed".tr,
+                                    "2/3 Completed".tr,
                                     style:
                                         CustomTextStyles.titleSmallBluegray400,
                                   ),
@@ -449,7 +449,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                             Expanded(
                               child: CustomOutlinedButton(
                                 height: 48.h,
-                                text: "lbl_fiction".tr,
+                                text: "Fiction",
                                 buttonStyle: CustomButtonStyles.outlinePrimary1,
                                 buttonTextStyle:
                                     CustomTextStyles.titleMediumGray600Medium,
@@ -467,7 +467,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      "lbl_non_fiction".tr,
+                                      "Non-Fiction",
                                       style: CustomTextStyles
                                           .titleMediumDeeporangeA200Black,
                                     )
@@ -512,7 +512,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "lbl_all_stories2".tr,
+                        "All Stories".tr,
                         style: theme.textTheme.titleLarge,
                       )
                     ],
@@ -526,7 +526,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                       bottom: 6.h,
                     ),
                     child: Text(
-                      "lbl_fantasy".tr,
+                      "Fantasy".tr,
                       style: CustomTextStyles.titleMediumOnPrimarySemiBold_1,
                     ),
                   ),
@@ -534,7 +534,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                 Padding(
                   padding: EdgeInsets.only(left: 18.h),
                   child: Text(
-                    "lbl_horror".tr,
+                    "Horror".tr,
                     style: CustomTextStyles.titleMediumOnPrimarySemiBold_1,
                   ),
                 )
@@ -578,7 +578,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "lbl_see_all".tr,
+                  "See All".tr,
                   style: CustomTextStyles.titleSmallOnPrimaryBold,
                 ),
                 CustomImageView(
@@ -603,11 +603,11 @@ class HomeInitialPageState extends State<HomeInitialPage> {
         spacing: 6,
         children: [
           Text(
-            "msg_exciting_features".tr,
+            "Exciting features coming soon".tr,
             style: theme.textTheme.titleLarge,
           ),
           Text(
-            "msg_stay_tuned_new".tr,
+            "Stay tuned! New features are on their way to help you master the language",
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
