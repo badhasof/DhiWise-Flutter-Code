@@ -77,14 +77,14 @@ class AppDecoration {
         color: theme.colorScheme.onPrimaryContainer,
         boxShadow: [
           BoxShadow(
-            color: appTheme.gray700.withOpacity(0.08),
+            color: Colors.black.withAlpha(38),
             spreadRadius: 2.h,
             blurRadius: 2.h,
             offset: Offset(
               0,
-              4,
+              1.5.h,
             ),
-          )
+          ),
         ],
       );
   static BoxDecoration get outlineBlue => BoxDecoration(
@@ -295,16 +295,22 @@ class AppDecoration {
           width: 1.5.h,
         ),
       );
+  static BoxDecoration get outlineBlack9003f => BoxDecoration(
+        color: theme.colorScheme.onPrimaryContainer,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(64),
+            spreadRadius: 2.h,
+            blurRadius: 2.h,
+            offset: Offset(
+              0,
+              1.5.h,
+            ),
+          ),
+        ],
+      );
   
   // Stack decorations
-  static BoxDecoration get stack21 => BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(
-            ImageConstant.imgEllipse35,
-          ),
-          fit: BoxFit.fill,
-        ),
-      );
 }
 
 class BorderRadiusStyle {

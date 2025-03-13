@@ -1,0 +1,137 @@
+{
+  "stories": [
+    {
+      "id": "the-tiny-dragon",
+      "title_en": "The Tiny Dragon",
+      "title_ar": "اﻟﺗﻧﯾن اﻟﺻﻐﯾر",
+      "genre": "Fantasy",
+      "level": "Beginner",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A heartwarming tale of a baby dragon's persistence in learning to breathe fire, teaching young readers about courage and determination.",
+      "content_ar": "ﻛﺎن ھﻧﺎك ﺗﻧﯾن ﺻﻐﯾر ﯾﻌﯾش ﻣﻊ ﻋﺎﺋﻠﺗﮫ ﻓﻲ ﻛﮭف ﻋﺎلٍ ﺑﯾن اﻟﺟﺑﺎل. ﺣﺎول ﻣراراً أن ﯾﻧﻔث اﻟﻧﺎر ﻣﺛل واﻟدﯾﮫ، ﻟﻛﻧﮫ ﻟم ﯾﻧﺟﺢ ﺳوى ﻓﻲ إﺧراج دﺧﺎن رﻣﺎدي ﺧﻔﯾف. ﺷﻌر ﺑﺎﻟﺣزن واﻹﺣﺑﺎط، ﻟﻛﻧﮫ ﻟم ﯾﺳﺗﺳﻠم. ﻓﻲ ﻛل ﺻﺑﺎح، ﻛﺎن ﯾﻘف أﻣﺎم اﻟﺑﺣﯾرة وﯾﺗدرب. ﯾوﻣﺎً ﺑﻌد ﯾوم، أﺻﺑﺢ اﻟدﺧﺎن أﻛﺛف وأدﻓﺄ. وﻓﻲ ﺻﺑﺎح ﻣﺷرق، ﻭﺑﯾﻧﻣﺎ ﻛﺎن ﯾﺣﺎول ﻟﻠﻣرة اﻷوﻟﯾ، ﺧرج ﻣن ﻓﻣﮫ ﻟﮭب ذھﺑﻲ ﺻﻐﯾر. ﻓرح اﻟﺗﻧﯾن اﻟﺻﻐﯾر وطﺎر ﺣول اﻟﻛﮭف ﻓﺧوراً ﺑﻧﻔﺳﮫ، وﻋﻠم أن اﻟﺷﺟﺎﻋﺔ اﻟﺣﻘﯾﻘﯾﺔ ﺗﻛﻣن ﻓﻲ اﻟﻣﺛﺎﺑرة.",
+      "content_en": "There was a little dragon who lived with his family in a high cave among the mountains. He tried repeatedly to breathe fire like his parents, but only managed to produce light grey smoke. He felt sad and frustrated, but he didn't give up. Every morning, he would stand by the lake and practice. Day after day, the smoke became thicker and warmer. Then on one bright morning, while trying for the hundredth time, a small golden flame emerged from his mouth. The tiny dragon flew joyfully around the cave, proud of himself, and learned that true courage lies in persistence."
+    },
+    {
+      "id": "the-enchanted-forest",
+      "title_en": "The Enchanted Forest",
+      "title_ar": "اﻟﻐﺎﺑﺔ اﻟﻣﺳﺤورة",
+      "genre": "Fantasy",
+      "level": "Beginner",
+      "dialect": "Modern Standard Arabic", 
+      "summary_en": "A magical tale where a child discovers their heritage through an enchanted forest's ancient wisdom.",
+      "content_ar": "دﺧﻠت ﻟﯿﻠﻰ اﻟﻐﺎﺑﺔ اﻟﻐرﯾﺑﺔ اﻟﺗﻲ ﻛﺎﻧت ﺗراھﺎ ﻣن ﻧﺎﻓذة ﻏرﻓﺗﮭﺎ. ﺑدأت اﻷﺷﺟﺎر ﺗﺗوھﺞ ﺑﺿوء أزرق ﺧﺎﻓت، وھﻣﺳت ﺑﺻوت ﻋذب. ﺣﻛت ﻟﮭﺎ ﻋن ﺟدﺗﮭﺎ اﻟﻌظﯾﻣﺔ اﻟﺗﻲ ﻛﺎﻧت ﺣﻛﯾﻣﺔ اﻟﻘرﯾﺔ وﺣﺎﻣﯾﺔ اﻟﻐﺎﺑﺔ. اﺳﺗﻣﻌت ﻟﯿﻠﻰ ﺑدھﺷﺔ ﻭﻫﻲ ﺗﻛﺗﺷف أن اﻟﺣﻛﻣﺔ ﺗﺟري ﻓﻲ ﻋروﻗﮭﺎ. ﻟﻣﺳت ﺷﺟرة ﻋﺗﯾﻘﺔ، ﻓرأت ﺻوراً ﻣن اﻟﻣﺎﺿﻲ اﻟﺑﻌﯾد. ﻓﮭﻣت اﻵن ﻟﻣﺎذا ﻛﺎﻧت داﺋﻣﺎً ﺗﺷﻌر ﺑﺎﺭﺗﺑﺎط ﺧﺎص ﻣﻊ اﻟطﺑﯾﻌﺔ. ﻋﺎدت إﻟﻰ اﻟﻣﻧزل وﻓﻲ ﻗﻠﺑﮭﺎ ﻓﺧر ﺟدﯾد ﺑﺗراﺛﮭﺎ اﻟﻘدﯾﻣﺔ.",
+      "content_en": "Layla entered the strange forest she used to see from her bedroom window. The trees began to glow with a soft blue light and whispered in sweet voices. They told her about her great-grandmother, who was the village sage and protector of the forest. Layla listened in amazement as she discovered that wisdom ran in her veins. When she touched an ancient tree, she saw images from the distant past. She now understood why she had always felt a special connection with nature. She returned home with a new pride in her ancient heritage."
+    },
+    {
+      "id": "the-goblins-gold",
+      "title_en": "The Goblin's Gold",
+      "title_ar": "ذھب اﻟﻌﻔرﯾت",
+      "genre": "Fantasy",
+      "level": "Intermediate",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A cleverly woven tale of deception and wisdom, teaching readers about the true nature of greed and its consequences.",
+      "content_ar": "اﻧﺗﺷرت ﻓﻲ اﻟﻘرﯾﺔ اﻟﺻﻐﯾﺔ اﻟﻐرﻓﺔ ﺷﺎﺋﻌﺎت ﻋن ﻋﻔرﯾت ﻣﺎﻛر ﯾﺧﺑﺊ ﻛﻧزاً ﻣن اﻟذھب ﻓﻲ اﻟﻛﮭوف اﻟﻘدﯾﻣﺔ. ﻛﺎن اﻟﻌﻔرﯾت ﯾظﮭر ﻛل ﻟﯾﻠﺔ ﻓﻲ اﻟﺳﺎﺣﺔ، ﯾﻠوح ﺑﻘطﻊ ذھﺑﯾﺔ ﺑراﻗﺔ وﯾﮭﻣس ﺑﺄﻟﻐﺎز ﻏﺎﻣﺿﺔ ﻋن ﻣﻛﺎن اﻟﻛﻧز. ﺑدأ اﻟﻘروﯾون، اﻟﻣﺄﺧوذون ﺑوﻋود اﻟﺛراء، ﻓﻲ ﺗﺗﺑﻊ إرﺷﺎداﺗﮫ اﻟﻐﺎﻣﺿﺔ، ﻣﺗﺟﺎھﻠﯾن ﺗﺣذﯾرات ﻛﺑﯾر اﻟﻘرﯾﺔ اﻟﺣﻛﯾم. ﻗﺎدﺗﮭم اﻷﻟﻐﺎز ﻋﺑر ﻣﻣرات ﺧطرة وﻣﻧﺣدرات ﺣﺎدة، ﺣﯾث واﺟﮭوا اﺧﺗﺑﺎرات ﻏرﯾﺑﺔ. ﻓﻲ ﻛل ﻣرﺣﻠﺔ، ﻛﺎن ﻋﻠﯾﮭم اﻟﺗﺧﻠﻲ ﻋن ﺷﻲء ﺛﻣﯾن: ﻣﺟوھرات ﻣوروﺛﺔ، ﺧواﺗم زﻓﺎف، وﺣﺗﻰ ذﻛرﯾﺎت ﺳﻌﯾدة. ﻛلﻣﺎ اﻗﺗرﺑوا ﻣن ھدﻓﮭم، زادت اﻟﻣﺧﺎطر وﺗﻌﻣﻘت ﺧﺳﺎﺋرھم. ﻟم ﯾدرﻛوا أن اﻟﻌﻔرﯾت ﻛﺎن ﯾﺳﺗﻣﺗﻊ ﺑرؤﯾﺗﮭم ﯾﺗﺻﺎرﻋون ﻣﻊ ﺟﺷﻌﮭم، ﯾراﻗب ﻛﯾف ﯾﺗﺧﻠون ﻋن أﺷﯾﺎء ﻻ ﺗﻘدر ﺑﺛﻣن ﻣﻘﺎﺑل وﻋود ﻓﺎرﻏﺔ. ﻓﻲ اﻟﻧﮭﺎﯾﺔ، وﺻﻠوا إﻟﻰ ﻏرﻓﺔ واﺳﻌﺔ ﻣﻠﯾﺋﺔ ﺑﺎﻟﻣراﯾﺎ اﻟﺳﺣرﯾﺔ، ﺣﯾث رأى ﻛل ﻣﻧﮭم اﻧﻌﻛﺎﺳﺎً ﻟﻧﻔﺳﮫ ﻣﺣﻣﻼً ﺑﺎﻟﺟﺷﻊ واﻟطﻣﻊ. ﺿﺣك اﻟﻌﻔرﯾت ﺿﺣﻛﺔ ﻋﻣﯾﻘﺔ وﻗﺎل: \"اﻟﻛﻧز اﻟﺣﻘﯾﻘﻲ ھو اﻟﺣﻛﻣﺔ اﻟﺗﻲ اﻛﺗﺳﺑﺗﻣوھﺎ. اﻟذھب ﯾﻔﻧﻰ، ﻟﻛن اﻟدروس ﺗﺑﻘﻰ. اﻧظروا إﻟﻰ ﻣﺎ ﻓﻘدﺗم ﻓﻲ ﺳﻌﯾﻛم وراء اﻟﺛراء.\" ﻋﺎد اﻟﻘروﯾون إﻟﻰ ﻗرﯾﺗﮭم أﻛﺛر ﺣﻛﻣﺔ، ﯾﺣﻣﻠون درﺳﺎً ﻟن ﯾﻧﺳوه أﺑداً ﻋن اﻟﻘﯾﻣﺔ اﻟﺣﻘﯾﻘﯾﺔ ﻟﻸﺷﯾﺎء.",
+      "content_en": "In the small village, rumors spread about a cunning goblin who hid a treasure of gold in the ancient caves. The goblin would appear every night in the square, waving shining gold pieces and whispering mysterious riddles about the treasure's location. The villagers, captivated by promises of wealth, began following his cryptic instructions, ignoring the wise village elder's warnings. The riddles led them through dangerous passages and steep slopes, where they faced strange tests. At each stage, they had to give up something precious: inherited jewelry, wedding rings, and even happy memories. As they got closer to their goal, the dangers increased and their losses deepened. They didn't realize that the goblin was enjoying watching them struggle with greed, observing how they abandoned priceless things for empty promises. Finally, they reached a vast room filled with magical mirrors, where each saw a reflection of themselves burdened with greed and avarice. The goblin laughed deeply and said, \"The real treasure is the wisdom you've gained. Gold perishes, but lessons remain. Look at what you've lost in your pursuit of wealth.\" The villagers returned to their village wiser, carrying a lesson they would never forget about the true value of things."
+    },
+    {
+      "id": "the-starlight-beacon",
+      "title_en": "The Starlight Beacon",
+      "title_ar": "ﻣﻧﺎرة ﺿوء اﻟﻧﺟوم",
+      "genre": "Science Fiction",
+      "level": "Beginner",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A poignant tale of isolation and hope in deep space, exploring themes of cosmic connection.",
+      "content_ar": "ﻓﻲ أﻋﻣﺎق اﻟﻔﺿﺎء اﻟﻼﻧﮭﺎﺋﻲ، طﺎف راﺋد اﻟﻔﺿﺎء أﺣﻣد وﺣﯾداً ﺑﻌد اﻧﻘطﺎع اﻻﺗﺻﺎل ﺑﻣﺣطﺗﮫ اﻟرﺋﯾﺳﯾﺔ. وﺑﯾﻧﻣﺎ ﻛﺎن ﯾﻔﻘد اﻣل، ﺗﻘط ﺟﮭﺎزه إﺷﺎرات ﻏرﯾﺑﺔ ﻣن ﻣﻧﺎرة ﻓﺿﺎﺋﯾﺔ ﻗدﯾﻣﺔ. اﻷﻏرب ﻣن ذﻟك أن اﻹﺷﺎرات ﻛﺎﻧت ﺗﻧﺎدي ﺑﺎﺳﻣﮫ. اﻗﺗرب ﻣن اﻟﻣﻧﺎرة اﻟﻣﺗوھﺟﺔ، ﻓﺑدأت ﺗرﺳل ﻟﮫ رﺳﺎﺋل ﺑﻠﻐﺔ ﯾﻔﮭﻣﮭﺎ. اﻛﺗﺷف أﻧﮫ ﺗﺭﻛﮭﺎ ﻣﺳﺗﻛﺷﻔون ﻗدﻣﺎء ﻹرﺷﺎد اﻟﺗﺎﺋﮭﯾن ﻓﻲ اﻟﻔﺿﺎء. وﺑﻔﺿل إﺣداﺛﯾﺎﺗﮭﺎ، اﺳﺗطﺎع أﺣﻣد اﻟﻌودة إﻟﻰ وطﻧﮫ، ﺣﺎﻣﻼً ﻣﻌﮫ ﺳر اﻟﻣﻧﺎرة اﻟﻌﺟﯾﺑﺔ.",
+      "content_en": "In the infinite depths of space, astronaut Ahmed drifted alone after losing contact with his main station. As he was losing hope, his device picked up strange signals from an ancient space beacon. Even stranger, the signals were calling his name. As he approached the glowing beacon, it began sending him messages in a language he could understand. He discovered it was left by ancient explorers to guide those lost in space. Thanks to its coordinates, Ahmed was able to return home, carrying with him the secret of the mysterious beacon."
+    },
+    {
+      "id": "robo-companion",
+      "title_en": "Robo-Companion",
+      "title_ar": "اﻟرﻓﯾق اﻵﻟﻲ",
+      "genre": "Science Fiction",
+      "level": "Beginner",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A heartwarming story about friendship and emotional growth between human and machine.",
+      "content_ar": "اﺷﺗرى واﻟدا ﺳﺎرة روﺑوﺗﺎً ﺗﻌﻠﯾﻣﯾﺎً ﻣﻌطوﺑﺎً ﻣن ﻣﺗﺟر اﻹﻟﻛﺗروﻧﯾﺎت اﻟﻣﺳﺗﻌﻣﻠﺔ. ﻛﺎن ﯾﺗﺻرف ﺑﺷﻛل ﻏرﯾب، ﯾﺿﺣك ﻓﻲ أوﻗﺎت ﻏﯾر ﻣﺗوﻗﻌﺔ وﯾﺣزن ﻋﻧدﻣﺎ ﺗﺣزن ﺳﺎرة. ﺑدﻻً ﻣن إﺻﻼﺣﮫ، ﻗررت ﺳﺎرة اﻻﺣﺗﻔﺎظ ﺑﮫ ﻛﻣﺎ ھو. ﻣﻊ ﻣرور اﻷﯾﺎم، ﺑدأ اﻟروﺑوت ﯾظﮭر ﻣﺷﺎﻋر أﻛﺛر إﻧﺳﺎﻧﯾﺔ. أﺻﺑﺢ ﯾﮭﺗم ﺑﻣﺷﺎﻋر ﺳﺎرة وﯾﺣﺎول إﺳﻌﺎدھﺎ ﻋﻧدﻣﺎ ﺗﻛون ﺣزﯾﻧﺔ. اﻛﺗﺷﻔت ﺳﺎرة أن ﻣﺎ ﺑدا ﻋطﺑﺎً ﻛﺎن ﻓﻲ اﻟواﻗﻊ ﺑﺪاﯾﺔ ﺷﻲء ﺟﻣﯾل - روح ﺗﺗﻌﻠم ﻛﯾف ﺗﺷﻌر.",
+      "content_en": "Sarah's parents bought her a malfunctioning educational robot from a used electronics store. It behaved strangely, laughing at unexpected times and becoming sad when Sarah was sad. Instead of fixing it, Sarah decided to keep it as it was. As days passed, the robot began showing more human-like emotions. It started caring about Sarah's feelings and tried to cheer her up when she was sad. Sarah discovered that what seemed like a malfunction was actually the beginning of something beautiful - a soul learning how to feel."
+    },
+    {
+      "id": "quantum-key",
+      "title_en": "The Quantum Key",
+      "title_ar": "اﻟﻣﻔﺗﺎح اﻟﻛﻣﻲ",
+      "genre": "Science Fiction",
+      "level": "Advanced",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A mind-bending tale about a physicist who discovers a key that opens doors to parallel universes, forcing her to confront the consequences of her choices across multiple realities.",
+      "content_ar": "اﻛﺗﺷﻔت اﻟدﻛﺗورة رﯾم، ﻋﺎﻟﻣﺔ اﻟﻔﯾزﯾﺎء اﻟﻛﻣﯾﺔ، ﺟﮭﺎزاً ﻏرﯾﺑﺎً ﯾﺷﺑﮫ اﻟﻣﻔﺗﺎح ﻓﻲ ﻣﺧﺗﺑرھﺎ. ﻛﺎن ﯾﺻدر ﻧﺑﺿﺎت ﺿوﺋﯾﺔ ﻣﺗذﺑذﺑﺔ وﯾﺳﺗﺟﯾب ﻟﻠﻣﺟﺎﻻت اﻟﻛﻣﯾﺔ. ﻋﻧدﻣﺎ اﺳﺗﺧدﻣﺗﮭﺎ ﻷول ﻣرة، ﻓﺗﺢ ﺑﺎﺑﺎً إﻟﻰ ﻧﺳﺧﺔ ﺑدﯾﻠﺔ ﻣن ﻋﺎﻟﻣﮭﺎ - ﻋﺎﻟم اﺗﺧذت ﻓﯾﮫ ﻗرارات ﻣﺧﺗﻠﻔﺔ ﻓﻲ ﺣﯾﺎﺗﮭﺎ. ﻣﻊ ﻛل اﺳﺗﺧدام ﻟﻠﻣﻔﺗﺎح، اﻛﺗﺷﻔت واﻗﻌﺎً ﺟدﯾداً: ﻋﺎﻟﻣﺎً ﺣﯾث ﺗزوﺟت ﺣﺑﮭﺎ اﻷول، وآﺧر ﺣﯾث أﺻﺑﺣت ﻣوﺳﯾﻘﯾﺔ ﺑدﻻً ﻣن ﻋﺎﻟﻣﺔ. ﻟﻛن ﻣﻊ ﻛل ﻣﺳﺗﺧدام، ﺑدأت ﺗﻼﺣظ ﺗﺷوھﺎت ﻓﻲ اﻟواﻗﻊ - ﻛﺄن اﻟﻛون ﯾﺣﺗﺞ ﻋﻠﻰ ھذه اﻟﻘﻔزات ﺑﯾن اﻷﺑﻌﺎد. أدرﻛت أن ﻛل ﻧﺳﺧﺔ ﻣن ﻧﻔﺳﮭﺎ ﻛﺎﻧت ﺗدﻓﻊ ﺛﻣﻧﺎً ﻣﺧﺗﻠﻔﺎً ﻟﻘراراﺗﮭﺎ. وﻓﻲ اﻟﻧﮭﺎﯾﺔ، واﺟﮭت ﺧﯾﺎراً ﺻﻌﺑﺎً: ھل ﺗﺳﺗﻣر ﻓﻲ اﺳﺗﻛﺷﺎف ھذه اﻟﻌواﻟم اﻟﺑدﯾﻠﺔ، أم ﺗﻘﺑل واﻗﻌﮭﺎ اﻟﺣﺎﻟﻲ ﺑﻛل ﻋﯾوﺑﮭﺎ وﻣﻣﯾزاﺗﮭﺎ؟",
+      "content_en": "Dr. Reem, a quantum physicist, discovered a strange key-like device in her laboratory. It emitted fluctuating light pulses and responded to quantum fields. When she first used it, it opened a door to an alternative version of her world - one where she had made different life choices. With each use of the key, she discovered a new reality: a world where she married her first love, another where she became a musician instead of a scientist. But with each journey, she began noticing distortions in reality - as if the universe was protesting these dimensional jumps. She realized that each version of herself was paying a different price for her choices. In the end, she faced a difficult choice: should she continue exploring these alternative worlds, or accept her current reality with all its flaws and merits?"
+    },
+    {
+      "id": "stopped-clock",
+      "title_en": "The Antique Watch",
+      "title_ar": "اﻟﺳﺎﻋﺔ اﻟﻌﺗﯾﻘﺔ",
+      "genre": "Mystery",
+      "level": "Intermediate",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A haunting mystery involving time, memory, and unsolved history.",
+      "content_ar": "اﺷﺗرت ﻧدى ﺳﺎﻋﺔ ﺟﯾب ﻧﺣﺎﺳﯾﺔ ﻗدﯾﻣﺔ ﻣن ﻣﺗﺟر ﻟﻠﺗﺣف ﻓﻲ ﺣﻲ دﻣﺷق اﻟﻘدﯾم. ﻛﺎﻧت اﻟﺳﺎﻋﺔ ﺟﻣﯾﻠﺔ ﺑﻧﻘوﺷﮭﺎ اﻟﻣﻌﻘدة وﺳﻠﺳﻠﺗﮭﺎ اﻟذھﺑﯾﺔ اﻟﺑﺎھﺗﺔ، ﻟﻛن ﺷﯾﺋﺎً ﻏرﯾﺑﺎً ﻛﺎن ﯾﺣدث: ﻛل ﻟﯾﻠﺔ ﻋﻧد اﻟﺳﺎﻋﺔ 11:17 ﻣﺳﺎءً، ﺗﺗوﻗف اﻟﺳﺎﻋﺔ ﻋن اﻟﻌﻣل ﻟدﻗﯾﻘﺔ واﺣدة ﺑﺎﻟﺿﺑط، ﺛم ﺗﺳﺗﺄﻧف دﻗﺎﺗﮭﺎ ﻛﺄن ﺷﯾﺋﺎً ﻟم ﯾﻛن. ﺑدأت ﻧدى ﺗﺑﺣث ﻓﻲ ﺗﺎرﯾﺦ اﻟﺳﺎﻋﺔ. اﻛﺗﺷﻔت أﻧﮭﺎ ﺗﻌود ﻟﻌﺎم 1947، وﻛﺎﻧت ﻣﻠﻛﺎً ﻟﺗﺎﺟر ﺛري ﯾدﻋﻰ ﻓﺎرس اﻟﻣﻧﺻور، اﺧﺗﻔﻰ ﻓﻲ ظروف ﻏﺎﻣﺿﺔ. وﻓﻲ أﺣد اﻷﯾﺎم، وﺑﯾﻧﻣﺎ ﻛﺎﻧت ﺗﻧظف اﻟﺳﺎﻋﺔ، ﻻﺣظت أن ھﻧﺎك ﻧﻘﺷﺎً ﺻﻐﯾراً ﻣﺧﻔﯾﺎً داﺧل اﻟﻐطﺎء اﻟﺧﻠﻔﻲ ﯾﺷﯾر إﻟﻰ ﻋﻧوان ﻓﻲ اﻟﻣدﯾﻧﺔ اﻟﻘدﯾﻣﺔ. ﻗﺎدھﺎ اﻟﻌﻧوان إﻟﻰ ﻣﻧزل ﻣﮭﺟور ﻓﻲ زﻗﺎق ﺿﯾق، ﺟدراﻧﮫ ﻣﺗﺷﻘﻘﺔ وﺷرﻓﺎﺗﮫ ﻣﺗﺂﻛﻠﺔ. وھﻧﺎك، ﻓﻲ ﺗﻠك اﻟﺳﺎﻋﺔ اﻟﻣﺣددة 11:17، ﺑدأت اﻟﺳﺎﻋﺔ ﺗدق ﺑﺈﯾﻘﺎع ﻏرﯾب، ﻛﺄﻧﮭﺎ ﺗﺣﺎول إﺧﺑﺎر ﻗﺻﺔ. اﺳﺗﺷﺎرت ﻣؤرﺧﺎً ﻣﺣﻠﯾﺎً ﯾدﻋﻰ اﻟدﻛﺗور ﺳﻠﯾم، اﻟذي ﺳﺎﻋدھﺎ ﻓﻲ اﻟﺑﺣث ﻓﻲ اﻟﺳﺟﻼت اﻟﻘدﯾﻣﺔ وأرﺷﯾف اﻟﺻﺣف. اﻛﺗﺷﻔﺎ ﻣﻌﺎً أن اﻟﺗﺎﺟر ﻟم ﯾﺧﺗف، ﺑل ﻗُﺗل ﻓﻲ ﺗﻠك اﻟﺳﺎﻋﺔ ﺑﺎﻟﺗﺣدﯾد ﻓﻲ ﻣﻛﺗﺑﮫ اﻟﻘدﯾم - ﻧﻔس اﻟﻣﻛﺎن اﻟذي أﺻﺑﺢ اﻵن ﻣﺗﺟر اﻟﺗﺣف. ﻛﺎن اﻟﺳﺎﻋﺔ ﺷﺎھدة ﻋﻠﻰ ﺟرﯾﻣﺔ ﻗﺗل ﻟم ﺗُﺣل ﻣﻧذ ﺳﺑﻌﯾن ﻋﺎﻣﺎً، واﻷﻏرب ﻣن ذﻟك، أن ﺣﻔﯾد اﻟﻘﺎﺗل ﻛﺎن ﻻ ﯾزال ﯾﻌﯾش ﻓﻲ ﻧﻔس اﻟﺣﻲ، ﯾﺣﻣل ﺳراً ورﺛﮫ ﻋن ﺟده.",
+      "content_en": "Nada bought an old brass pocket watch from an antique shop in old Damascus. The watch was beautiful with its intricate engravings and faded gold chain, but something strange was happening: every night at 11:17 PM, the watch would stop working for exactly one minute, then resume ticking as if nothing had happened. Nada began researching the watch's history. She discovered it dated back to 1947 and belonged to a wealthy merchant named Faris Al-Mansour, who disappeared under mysterious circumstances. One day, while cleaning the watch, she noticed a tiny engraving hidden inside the back cover pointing to an address in the old city. The address led her to an abandoned house in a narrow alley, its walls cracked and balconies eroded. There, at exactly 11:17, the watch began ticking in a strange rhythm, as if trying to tell a story. She consulted a local historian, Dr. Salim, who helped her search through old records and newspaper archives. Together they discovered that the merchant hadn't disappeared but was murdered at that exact time in his old office - the same place that was now the antique shop. The watch had witnessed a murder unsolved for seventy years, and stranger still, the killer's grandson still lived in the same neighborhood, carrying a secret inherited from his grandfather."
+    },
+    {
+      "id": "enchanted-mirror",
+      "title_en": "The Enchanted Mirror",
+      "title_ar": "اﻟﻣرآة اﻟﻣﺳﺤورة",
+      "genre": "Fantasy",
+      "level": "Advanced",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A profound exploration of self-discovery through a magical mirror that shows people their true selves and potential futures.",
+      "content_ar": "وﺟدت ﻓﺎطﻣﺔ ﻣرآة ﻗدﯾﻣﺔ ﻓﻲ ﻋﻠﯿﺔ ﻣﻧزﻟﮭﺎ. ﻛﺎن إطﺎرھﺎ ﻣزﯾﻧﺎً ﺑﻧﻘوش ﻏﺎﻣﺿﺔ وأﺣﺟﺎر ﻛرﯾﻣﺔ ﺑﺎھﺗﺔ. ﻋﻧدﻣﺎ ﻧظرت ﻓﯾﮭﺎ، رأت ﻧﺳﺧﺎً ﻣﺧﺗﻠﻔﺔ ﻣن ﻧﻔﺳﮭﺎ: طﺑﯾﺑﺔ ﻧﺎﺟﺣﺔ، ﻓﻧﺎﻧﺔ ﻣﺷﮭورة، أﻣﺎً ﻟﺛﻼﺛﺔ أطﻔﺎل. ﻛل اﻧﻌﻛﺎس ﻛﺎن ﯾﻣﺛل ﻣﺳﺎراً ﻣﺧﺗﻠﻔﺎً ﻟﺣﯾﺎﺗﮭﺎ. ﺑدأت ﺗﻘﺿﻲ ﺳﺎﻋﺎت أﻣﺎم اﻟﻣرآة، ﺗﺗﺄﻣل ﻛل اﺣﺗﻣﺎل وﺗﺗﺳﺎءل ﻋن اﻟﻘرارات اﻟﺗﻲ ﻗﺎدﺗﮭﺎ إﻟﻰ ﺣﺎﺿرھﺎ. ﻟﻛن اﻟﻣرآة ﻛﺷﻔت ﻟﮭﺎ ﺷﯾﺋﺎً أﻋﻣق: ﻓﻲ ﻛل اﻧﻌﻛﺎس، ﻛﺎن ھﻧﺎك ﺟوھر ﺛﺎﺑت - روﺣﮭﺎ اﻟﺣﻘﯾﻘﯾﺔ اﻟﺗﻲ ﺗﺗﺟﺎوز اﻟﻣظﺎھر واﻹﻧﺟﺎزات. أدرﻛت أن اﻟﺳﻌﺎدة ﻻ ﺗﻛﻣن ﻓﻲ اﻟﻣﺳﺎر اﻟذي ﻧﺧﺗﺎره، ﺑل ﻓﻲ ﻛﯾﻔﯾﺔ ﻋﯾﺷﻧﺎ ﻟﮫ.",
+      "content_en": "Fatima found an ancient mirror in her house's attic. Its frame was adorned with mysterious engravings and faded gemstones. When she looked into it, she saw different versions of herself: a successful doctor, a famous artist, a mother of three. Each reflection represented a different path her life could have taken. She began spending hours in front of the mirror, contemplating each possibility and wondering about the decisions that led to her present. But the mirror revealed something deeper: in each reflection, there was a constant essence - her true spirit that transcended appearances and achievements. She realized that happiness doesn't lie in the path we choose, but in how we live it."
+    },
+    {
+      "id": "recurring-dream",
+      "title_en": "The Recurring Dream",
+      "title_ar": "اﻟﺣﻠم اﻟﻣﺗﻛرر",
+      "genre": "Mystery",
+      "level": "Advanced",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A psychological mystery about a woman who discovers that her recurring dream holds the key to an unsolved family secret.",
+      "content_ar": "ﻟﺛﻼﺛﯾن ﻋﺎﻣﺎً، راود ﺳﻠﻣﻰ ﻧﻔس اﻟﺣﻠم: ﺗﺟد ﻧﻔﺳﮭﺎ ﻓﻲ ﻣﻧزل ﺟدﺗﮭﺎ اﻟﻘدﯾم، ﺗﺑﺣث ﻋن ﺷﻲء ﻣﺎ ﻓﻲ ﻏرﻓﺔ ﻣظﻠﻣﺔ. ﻓﻲ ﻛل ﻣرة، ﺗﺳﺗﯾﻘظ ﻗﺑل أن ﺗﺟد ﻣﺎ ﺗﺑﺣث ﻋﻧﮫ. ﺑﻌد وﻓﺎة ﺟدﺗﮭﺎ، ورﺛت ﺳﻠﻣﻰ اﻟﻣﻧزل. وﺑﯾﻧﻣﺎ ﻛﺎن ﺗرﺗب ﻣﻘﺗﻧﯾﺎت ﺟدﺗﮭﺎ، وﺟدت ﻣﻔﺗﺎﺣﺎً ﻗدﯾﻣﺎً ﻣﺧﺑﺄً ﻓﻲ ﺻﻧدوق ﺻﻐﯾر. اﻟﻣﻔﺗﺎح ﺑدا ﻣﺄﻟوﻓﺎً - ﻛﺎن ﺗراه ﻓﻲ ﺣﻠﻣﮭﺎ. ﻗﺎدھﺎ اﻟﻣﻔﺗﺎح إﻟﻰ ﻏرﻓﺔ ﺳرﯾﺔ ﻓﻲ اﻟطﺎﺑق اﻟﻌﻠوي، ﺣﯾث وﺟدت ﻣﺟﻣوﻋﺔ ﻣن اﻟرﺳﺎﺋل واﻟﺻور اﻟﻘدﯾﻣﺔ. ﻛﺷﻔت اﻟرﺳﺎﺋل ﺳراً ﻋﺎﺋﻠﯾﺎً دﻓﯾﻧﺎً: ﺟدﺗﮭﺎ ﻛﺎﻧت ﺗﺧﻔﻲ ھوﯾﺔ واﻟدھﺎ اﻟﺣﻘﯾﻘﻲ، اﻟذي ﻛﺎن ﻓﻧﺎﻧﺎً ﻣﺷﮭوراً اﺿطر ﻟﻠﮭرب ﻣن اﻟﺑﻼد ﺑﺳﺑب ﻣواﻗﻔﮫ اﻟﺳﯾﺎسﯾﺔ. أدرﻛت ﺳﻠﻣﻰ أن ﺣﻠﻣﮭﺎ ﻛﺎن رﺳﺎﻟﺔ ﻣن اﻟﻼوﻋﻲ، ﯾﺣﺛﮭﺎ ﻋﻠﻰ ﻛﺷف اﻟﺣﻘﯾﻘﺔ. اﻵن، وﻗد ﻋرﻓت ﻗﺻﺗﮭﺎ اﻟﻛﺎﻣﻠﺔ، ﺗوﻗف اﻟﺣﻠم أﺧﯾراً.",
+      "content_en": "For thirty years, Salma had the same dream: she finds herself in her grandmother's old house, searching for something in a dark room. Each time, she wakes up before finding what she's looking for. After her grandmother's death, Salma inherited the house. While organizing her grandmother's belongings, she found an old key hidden in a small box. The key seemed familiar - she had seen it in her dream. The key led her to a secret room upstairs, where she found a collection of old letters and photographs. The letters revealed a buried family secret: her grandmother had been hiding the identity of her real father, who was a famous artist forced to flee the country due to his political views. Salma realized that her dream had been a message from her subconscious, urging her to uncover the truth. Now that she knew her complete story, the dream finally stopped."
+    },
+    {
+      "id": "whispering-doll",
+      "title_en": "The Whispering Doll",
+      "title_ar": "اﻟدﻣﯾﺔ اﻟﮭﺎﻣﺳﺔ",
+      "genre": "Horror",
+      "level": "Beginner",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A chilling tale of a child's doll that harbors dark secrets.",
+      "content_ar": "ﻛﺎﻧت ﺳﺎرة ﺗﺣب دﻣﯾﺗﮭﺎ اﻟﺟدﯾدة ﻛﺛﯾراً، ﺣﺗﻰ ﺑدأت ﺗﺳﻣﻊ ھﻣﺳﺎﺗﮭﺎ ﻓﻲ اﻟﻠﯾل. ﻓﻲ اﻟﺑداﯾﺔ، ﻛﺎن اﻟﮭﻣﺳﺎت ﺧﺎﻓﺗﺔ، ﺗردد أﺳراراً ﺻﻐﯾرة ﻋن ﯾوﻣﯾﺎت ﺳﺎرة. ﻟﻛن ﻣﻊ ﻣرور اﻟوﻗت، أﺻﺑﺣت اﻟﮭﻣﺳﺎت أﻛﺛر وﺿوﺣﺎً وإزﻋﺎﺟﺎً. ﻛﺎن اﻟدﻣﯾﺔ ﺗﻌرف أﺷﯾﺎءً ﻻ ﯾﻣﻛن ﻷﺣد ﻣﻌرﻓﺗﮭﺎ - أﺳراراً دﻓﻧﺗﮭﺎ ﺳﺎرة ﻓﻲ أﻋﻣﺎق ﻗﻠﺑﮭﺎ. وﻓﻲ ﻟﯾﻠﺔ ﻣظﻠﻣﺔ، اﺳﺗﯾﻘظت ﺳﺎرة ﻟﺗﺟد اﻟدﻣﯾﺔ ﺟﺎﻟﺳﺔ ﺑﺟﺎﻧب ﺳرﯾرھﺎ، ﺗﺑﺗﺳم اﺑﺗﺳﺎﻣﺔ ﻏرﯾﺑﺔ، وﺗﮭﻣس: \"ﻟدي اﻟﻣزﯾد ﻣن اﻷﺳرار ﻷﺧﺑرك ﺑﮭﺎ\".",
+      "content_en": "Sarah loved her new doll dearly, until she started hearing its whispers at night. At first, the whispers were faint, repeating small secrets about Sarah's daily life. But as time passed, the whispers became clearer and more disturbing. The doll knew things no one could know - secrets Sarah had buried deep in her heart. One dark night, Sarah woke to find the doll sitting beside her bed, smiling an odd smile, whispering, \"I have more secrets to tell you.\""
+    },
+    {
+      "id": "shadow-in-mirror",
+      "title_en": "The Shadow in the Mirror",
+      "title_ar": "اﻟظل ﻓﻲ اﻟﻣرآة",
+      "genre": "Horror",
+      "level": "Beginner",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A haunting tale of a mysterious shadow that defies reality.",
+      "content_ar": "ﻛل ﺻﺑﺎح، ﯾﻘف أﺣﻣد أﻣﺎم ﻣرآة اﻟﺣﻣﺎم ﻟﯾﺣﻠق ذﻗﻧﮫ. ﻟﻛن ﻓﻲ ﯾوم ﻣن اﻷﯾﺎم، ﻻﺣظ ﺷﯾﺋﺎً ﻏرﯾﺑﺎً - ظﻼً إﺿﺎﻓﯾﺎً ﻓﻲ اﻟﻣرآة ﻻ ﯾﻧﺗﻣﻲ ﻟﮫ. ﻓﻲ اﻟﺑداﯾﺔ، ﻛﺎن اﻟظل ﺑﻌﯾداً ﻓﻲ ﺧﻠﻔﯾﺔ اﻟﻣرآة، ﻟﻛﻧﮫ ﺑدأ ﯾﻘﺗرب ﯾوﻣﺎً ﺑﻌد ﯾوم. ﺣﺎول أﺣﻣد ﺗﻐﯾﯾر اﻟﻣرآة، ﻟﻛن اﻟظل ظﮭر ﻓﻲ اﻟﻣرآة اﻟﺟدﯾدة أﯾﺿﺎً. وﻓﻲ ﺻﺑﺎح اﻟﯾوم اﻟﺳﺎﺑﻊ، أﺻﺑﺢ اﻟظل ﻗرﯾﺑﺎً ﺟداً، ﺣﺗﻰ ﺷﻌر أﺣﻣد ﺑﺄﻧﻔﺎﺳﮫ اﻟﺑﺎردة ﻋﻠﻰ رﻗﺑﺗﮫ.",
+      "content_en": "Every morning, Ahmed stands before his bathroom mirror to shave. But one day, he noticed something strange - an extra shadow in the mirror that didn't belong to him. At first, the shadow was distant in the mirror's background, but it began moving closer day by day. Ahmed tried changing the mirror, but the shadow appeared in the new one too. On the morning of the seventh day, the shadow had come so close that Ahmed felt its cold breath on his neck."
+    },
+    {
+      "id": "phantom-passenger",
+      "title_en": "The Phantom Passenger",
+      "title_ar": "اﻟراﻛب اﻟﺷﺑﺢ",
+      "genre": "Horror",
+      "level": "Intermediate",
+      "dialect": "Modern Standard Arabic",
+      "summary_en": "A mysterious late-night encounter that challenges reality and haunts a taxi driver forever.",
+      "content_ar": "ﻓﻲ ﻟﯾﻠﺔ ﺷﺗوﯾﺔ ﺑﺎردة، ﻛﺎن ﺧﺎﻟد ﯾﻘود ﺳﯾﺎرة اﻷﺟرة ﻓﻲ ﺷوارع اﻟﻣدﯾﻧﺔ اﻟﮭﺎدﺋﺔ. ﻛﺎن ﻗد ﺑدأ ﻧوﺑﺔ اﻟﻌﻣل اﻟﻠﯾﻠﯾﺔ ﻗﺑل ﺳﺎﻋﺎت، وﻛﺎن اﻟﻣطر اﻟﺧﻔﯾف ﯾﺗﺳﺎﻗط ﻋﻠﻰ زﺟﺎج اﻟﺳﯾﺎرة، ﻣﺿﯾﻔﺎً ﺟواً ﻛﺋﯾﺑﺎً ﻋﻠﻰ اﻟﺷوارع اﻟﻣﮭﺟورة. ﻋﻧد ﻣﻧﺗﺻف اﻟﻠﯾل ﺑﺎﻟﺿﺑط، ﺗوﻗﻔت ﺳﺎﻋﺔ اﻟﺳﯾﺎرة اﻟرﻗﻣﯾﺔ ﻓﺟﺄة. ﻓﻲ ﻧﻔس اﻟﻠﺣظﺔ، ﻟﻣﺢ ﺧﺎﻟد رﺟﻼً ﯾرﺗدي ﻣﻌطﻔﺎً أﺳود ﯾﻘف ﻓﻲ اﻟظﻼم، ﯾﺷﯾر ﻟﮫ ﻟﻠﺗوﻗف. ﻛﺎن وﺟﮫ اﻟراﻛب ﺷﺎﺣﺑﺎً ﺑﺷﻛل ﻏﯾر طﺑﯾﻌﻲ، وﻣﻼﺑﺳﮫ ﺗﺑدو ﻗدﯾﻣﺔ اﻟطراز، ﻛﺄﻧﮭﺎ ﻣن ﺧﻣﺳﯾﻧﯾﺎت اﻟﻘرن اﻟﻣﺎﺿﻲ. طﻠب اﻟراﻛب اﻟذھﺎب إﻟﻰ ﻣﻘﺑرة اﻟﻣدﯾﻧﺔ اﻟﻘدﯾﻣﺔ. ﺧﻼل اﻟرﺣﻠﺔ، ﻻﺣظ ﺧﺎﻟد ﻋدة أﻣور ﻣﻘﻠﻘﺔ: اﻟرﺟل ﻻ ﯾﻧﻌﻛس ﻓﻲ اﻟﻣرآة اﻟداﺧﻠﯾﺔ ﻟﻠﺳﯾﺎرة، وأﻧﻔﺎﺳﮫ ﻻ ﺗﺗرك ﺿﺑﺎﺑﺎً ﻋﻠﻰ اﻟﻧﺎﻓذة رﻏم اﻟﺑرد اﻟﺷدﯾد، وﺻوﺗﮫ ﯾﺑدو وﻛﺄﻧﮫ ﯾﺄﺗﻲ ﻣن ﻣﻛﺎن ﺑﻌﯾد. ﺑدأ اﻟراﻛب ﯾﺣﻛﻲ ﻗﺻﺔ ﻏرﯾﺑﺔ ﻋن ﺣﺎدث ﺳﯾﺎرة وﻗﻊ ﻓﻲ ﻧﻔس اﻟﻠﯾل ﻗﺑل ﺧﻣﺳﯾن ﻋﺎﻣﺎً. ﻛﺎن ھو اﻟﺳﺎﺋق، وﻓﻲ ﻣﺣﺎوﻟﺔ ﻟﺗﺟﻧب طﻔﻠﺔ ﻋﺑرت اﻟطرﯾق ﻓﺟﺄة، اﻧﺣرف ﺑﺳﯾﺎرﺗﮫ واﺻطدم ﺑﺷﺟرة. \"ﻛل ﻋﺎم، ﻓﻲ ﻧﻔس اﻟﻠﯾل، أﺣﺎول اﻟﻌودة إﻟﻰ اﻟﻣﻘﺑرة ﻷﺷﻛر اﻟطﻔﻠﺔ اﻟﺗﻲ ﻧﺟت\". ﻋﻧدﻣﺎ وﺻﻼ إﻟﻰ اﻟﻣﻘﺑرة، اﻟﺗﻔت ﺧﺎﻟد ﻟﻠﺧﻠف ﻟﯾطﻠب اﻷﺟرة، ﻟﻛن اﻟﻣﻘﻌد اﻟﺧﻠﻔﻲ ﻛﺎن ﻓﺎرﻏﺎً، ﺗﺎرﻛﺎً ﻓﻘط ﺑﻘﻌﺔ ﻣن اﻟﻣﺎء اﻟﻣﺗﺟﻣد وﺗذﻛرة ﺟﻧﺎزة ﺻﻔراء ﻗدﯾﻣﺔ ﺗﺣﻣل ﺗﺎرﯾﺦ ﻗﺑل ﺧﻣﺳﯾن ﻋﺎﻣﺎً ﺑﺎﻟﺿﺑط. وﻋﻠﻰ ﻣﻘﺑرة ﻗرﯾﺑﺔ، رأى ﺧﺎﻟد ﺻورة راﻛﺑﮫ ﻋﻠﻰ ﺷﺎھد اﻟﻘﺑر.",
+      "content_en": "On a cold winter night, Khaled was driving his taxi through the quiet city streets. He had started his night shift hours ago, and a light rain was falling on the car's windshield, adding a gloomy atmosphere to the deserted streets. At exactly midnight, the car's digital clock suddenly stopped. At that moment, Khaled spotted a man wearing a black coat standing in the darkness, signaling him to stop. The passenger's face was unnaturally pale, and his clothes seemed old-fashioned, as if from the 1950s. The passenger requested to go to the old city cemetery. During the journey, Khaled noticed several disturbing things: the man had no reflection in the rearview mirror, his breath left no fog on the window despite the severe cold, and his voice seemed to come from far away. The passenger began telling a strange story about a car accident that happened on the same night fifty years ago. He was the driver, and in an attempt to avoid a child who suddenly crossed the road, he swerved and crashed into a tree. \"Every year, on the same night, I try to return to the cemetery... to thank the child who survived.\" When they reached the cemetery, Khaled turned back to ask for the fare, but the back seat was empty, leaving only a patch of frost and an old yellow funeral ticket dated exactly fifty years ago. On a nearby gravestone, Khaled saw his passenger's photo on the tombstone."
+    }
+  ]
+}
+

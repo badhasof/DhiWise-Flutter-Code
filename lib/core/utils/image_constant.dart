@@ -69,8 +69,6 @@ class ImageConstant {
 
   static String imgEllipse34 = '$imagePath/img_ellipse_34.png';
 
-  static String imgEllipse35 = '$imagePath/img_ellipse_35.svg';
-
   static String imgEllipse36 = '$imagePath/img_ellipse_36.png';
   
   // Adding missing image constants

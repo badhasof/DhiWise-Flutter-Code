@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/app_export.dart';
 import '../../widgets/custom_bottom_bar.dart';
 import '../profile_page/profile_page.dart';
@@ -28,17 +29,23 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Set status bar to be transparent with dark icons
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+    ));
+    
     return Scaffold(
       backgroundColor: appTheme.gray50,
-      body: SafeArea(
-        child: Navigator(
-          key: navigatorKey,
-          initialRoute: AppRoutes.homeInitialPage,
-          onGenerateRoute: (routeSetting) => PageRouteBuilder(
-            pageBuilder: (ctx, ani, ani1) =>
-                getCurrentPage(context, routeSetting.name!),
-            transitionDuration: Duration(seconds: 0),
-          ),
+      extendBodyBehindAppBar: true,
+      body: Navigator(
+        key: navigatorKey,
+        initialRoute: AppRoutes.homeInitialPage,
+        onGenerateRoute: (routeSetting) => PageRouteBuilder(
+          pageBuilder: (ctx, ani, ani1) =>
+              getCurrentPage(context, routeSetting.name!),
+          transitionDuration: Duration(seconds: 0),
         ),
       ),
       bottomNavigationBar: SizedBox(

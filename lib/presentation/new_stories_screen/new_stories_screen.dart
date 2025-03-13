@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/app_export.dart';
+import '../../domain/story/story_model.dart';
+import '../../services/story_service.dart';
 import '../home_screen/widgets/home_six_item_widget.dart';
 import '../home_screen/models/home_six_item_model.dart';
 import '../stories_overview_screen/stories_overview_screen.dart';
+import '../story_screen/story_screen.dart';
 import 'bloc/new_stories_bloc.dart';
 import 'models/new_stories_model.dart';
 
-class NewStoriesScreen extends StatelessWidget {
+class NewStoriesScreen extends StatefulWidget {
   const NewStoriesScreen({Key? key}) : super(key: key);
 
   static Widget builder(BuildContext context) {
@@ -19,20 +22,47 @@ class NewStoriesScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToStoryOverview(BuildContext context) {
-    final storyData = StoryData(
-      title: "Schiphol Airport: A Gateway of Wonders",
-      arabicTitle: "مطار سخيبول: بوابة العجائب",
-      description: "Amsterdam's Schiphol Airport is renowned as one of Europe's busiest and most efficient hubs, seamlessly connecting millions of travelers to destinations across the globe each year. Its state-of-the-art facilities, innovative design, and commitment to exceptional service make it a standout in the world of modern aviation.",
-      imagePath: ImageConstant.imgImage10, // Using an existing image as placeholder
-      level: "Beginner",
-      duration: "25 min",
-    );
-    
+  @override
+  State<NewStoriesScreen> createState() => _NewStoriesScreenState();
+}
+
+class _NewStoriesScreenState extends State<NewStoriesScreen> {
+  // Story service instance
+  final StoryService _storyService = StoryService();
+  
+  // List to store stories
+  List<Story> _stories = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadStories();
+  }
+  
+  // Load stories from the service
+  Future<void> _loadStories() async {
+    final stories = await _storyService.getStories();
+    setState(() {
+      _stories = stories;
+    });
+  }
+  
+  // Navigate to story overview screen
+  void _navigateToStoryOverview(Story story) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StoriesOverviewScreen(storyData: storyData),
+        builder: (context) => StoriesOverviewScreen(storyData: story.toStoryData()),
+      ),
+    );
+  }
+  
+  // Navigate to story screen
+  void _navigateToStoryScreen(Story story) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StoryScreen(story: story),
       ),
     );
   }
@@ -126,53 +156,30 @@ class NewStoriesScreen extends StatelessWidget {
   }
 
   Widget _buildStoryList() {
-    return Builder(
-      builder: (context) => Column(
-        children: [
-          InkWell(
-            onTap: () => _navigateToStoryOverview(context),
-            child: HomeSixItemWidget(
+    if (_stories.isEmpty) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    
+    return Column(
+      children: _stories.map((story) {
+        return Column(
+          children: [
+            HomeSixItemWidget(
               HomeSixItemModel(
-                labelfill: "Fantasy",
-                hisnewbook: "Schiphol Airport: A Gateway of Wonders",
-                label: "Read now",
+                labelfill: story.genre,
+                hisnewbook: story.titleEn,
+                label: "Read Now",
               ),
+              story: story,
+              onTap: () => _navigateToStoryOverview(story),
+              onButtonTap: () => _navigateToStoryScreen(story),
             ),
-          ),
-          SizedBox(height: 12.h),
-          HomeSixItemWidget(
-            HomeSixItemModel(
-              labelfill: "Horror",
-              hisnewbook: "Go to school",
-              label: "Read now",
-            ),
-          ),
-          SizedBox(height: 12.h),
-          HomeSixItemWidget(
-            HomeSixItemModel(
-              labelfill: "Adventure",
-              hisnewbook: 'His new book "Kashfal Mufradat"',
-              label: "Read now",
-            ),
-          ),
-          SizedBox(height: 12.h),
-          HomeSixItemWidget(
-            HomeSixItemModel(
-              labelfill: "Fantasy",
-              hisnewbook: 'His new book "Kashfal Mufradat"',
-              label: "Read now",
-            ),
-          ),
-          SizedBox(height: 12.h),
-          HomeSixItemWidget(
-            HomeSixItemModel(
-              labelfill: "Fantasy",
-              hisnewbook: 'His new book "Kashfal Mufradat"',
-              label: "Read now",
-            ),
-          ),
-        ],
-      ),
+            SizedBox(height: 12.h),
+          ],
+        );
+      }).toList(),
     );
   }
 }

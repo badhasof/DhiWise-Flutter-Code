@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../domain/story/story_model.dart';
+import '../../services/story_service.dart';
+import '../story_screen/story_screen.dart';
 import '../../widgets/custom_icon_button.dart';
 
 class StoryData {
@@ -36,11 +39,32 @@ class StoriesOverviewScreen extends StatefulWidget {
 
 class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
   bool isFavorite = false;
+  // Story service instance
+  final StoryService _storyService = StoryService();
+  // Story object
+  Story? _story;
 
   @override
   void initState() {
     super.initState();
     isFavorite = widget.storyData.isFavorite;
+    _loadStory();
+  }
+  
+  // Load the story from the service
+  Future<void> _loadStory() async {
+    // Try to find a story with a matching title
+    final stories = await _storyService.getStories();
+    final matchingStory = stories.where((s) => 
+      s.titleEn.toLowerCase() == widget.storyData.title.toLowerCase() ||
+      s.titleAr.toLowerCase() == widget.storyData.arabicTitle.toLowerCase()
+    ).toList();
+    
+    if (matchingStory.isNotEmpty) {
+      setState(() {
+        _story = matchingStory.first;
+      });
+    }
   }
 
   @override
@@ -247,7 +271,23 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
       height: 56.h,
       child: ElevatedButton(
         onPressed: () {
-          // Handle read now action
+          // Navigate to the story screen
+          if (_story != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StoryScreen(story: _story!),
+              ),
+            );
+          } else {
+            // Show a snackbar if the story is not found
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Story content not available yet'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: appTheme.deepOrangeA200,
