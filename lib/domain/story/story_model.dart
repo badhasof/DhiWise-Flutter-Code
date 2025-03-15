@@ -7,6 +7,7 @@ class Story extends Equatable {
   final String titleEn;
   final String titleAr;
   final String genre;
+  final String subGenre;
   final String level;
   final String dialect;
   final String summaryEn;
@@ -21,6 +22,7 @@ class Story extends Equatable {
     required this.titleEn,
     required this.titleAr,
     required this.genre,
+    this.subGenre = '',
     required this.level,
     required this.dialect,
     required this.summaryEn,
@@ -36,6 +38,7 @@ class Story extends Equatable {
       titleEn: json['title_en'] as String,
       titleAr: json['title_ar'] as String,
       genre: json['genre'] as String,
+      subGenre: json['sub_genre'] as String? ?? '',
       level: json['level'] as String,
       dialect: json['dialect'] as String,
       summaryEn: json['summary_en'] as String,
@@ -76,6 +79,7 @@ class Story extends Equatable {
         titleEn,
         titleAr,
         genre,
+        subGenre,
         level,
         dialect,
         summaryEn,

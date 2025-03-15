@@ -39,6 +39,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   
   // List to store stories
   List<Story> _stories = [];
+  List<Story> _displayedStories = []; // Stories filtered by fiction/non-fiction
   bool _isLoading = true;
   bool _isFictionSelected = false; // Non-fiction selected by default
   
@@ -50,9 +51,31 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   
   // Load stories from the service
   Future<void> _loadStories() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     final stories = await _storyService.getStories();
+    final filteredStories = await _storyService.getStoriesByCategory(_isFictionSelected);
+    
     setState(() {
       _stories = stories;
+      _displayedStories = filteredStories;
+      _isLoading = false;
+    });
+  }
+  
+  // Update displayed stories based on fiction/non-fiction selection
+  Future<void> _updateDisplayedStories() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    final filteredStories = await _storyService.getStoriesByCategory(_isFictionSelected);
+    
+    setState(() {
+      _displayedStories = filteredStories;
+      _isLoading = false;
     });
   }
   
@@ -356,6 +379,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                       _isFictionSelected = true;
                                       print("Fiction selected: $_isFictionSelected");
                                     });
+                                    _updateDisplayedStories();
                                   },
                                   child: Container(
                                     width: double.maxFinite,
@@ -407,6 +431,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                       _isFictionSelected = false;
                                       print("Non-Fiction selected: ${!_isFictionSelected}");
                                     });
+                                    _updateDisplayedStories();
                                   },
                                   child: Container(
                                     width: double.maxFinite,
@@ -469,7 +494,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   /// Section Widget
   Widget _buildStoriesSection(BuildContext context) {
     // Get the first 3 stories or fewer if there are less than 3
-    final displayStories = _stories.take(3).toList();
+    final displayStories = _isLoading ? [] : _displayedStories.take(3).toList();
     
     return Container(
       width: double.maxFinite,
@@ -520,8 +545,11 @@ class HomeInitialPageState extends State<HomeInitialPage> {
             ),
           ),
           SizedBox(height: 12.h),
+          // Show loading indicator when loading
+          if (_isLoading)
+            Center(child: CircularProgressIndicator())
           // Display stories from JSON
-          if (displayStories.isNotEmpty)
+          else if (displayStories.isNotEmpty)
             ...displayStories.map((story) {
               return Column(
                 children: [
@@ -539,34 +567,16 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                 ],
               );
             }).toList()
+          // Fallback to empty state if no stories match the filter
           else
-            // Fallback to hardcoded stories if JSON loading fails
-            Column(
-              children: [
-                HomeSixItemWidget(
-                  HomeSixItemModel(
-                    labelfill: "Fantasy",
-                    hisnewbook: "Learn Arabic Through Stories",
-                    label: "Read Now"
-                  ),
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.h),
+                child: Text(
+                  "No stories found for this category",
+                  style: theme.textTheme.titleMedium,
                 ),
-                SizedBox(height: 12.h),
-                HomeSixItemWidget(
-                  HomeSixItemModel(
-                    labelfill: "Conversation",
-                    hisnewbook: "Daily Arabic Conversations",
-                    label: "Practice"
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                HomeSixItemWidget(
-                  HomeSixItemModel(
-                    labelfill: "Quizzes",
-                    hisnewbook: "Test Your Knowledge",
-                    label: "Take Quiz"
-                  ),
-                ),
-              ],
+              ),
             ),
           SizedBox(height: 12.h),
           SizedBox(

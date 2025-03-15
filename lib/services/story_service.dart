@@ -52,10 +52,60 @@ class StoryService {
     }
   }
   
-  // Get stories by genre
+  // Clear cache to force reload stories (useful for testing)
+  void clearCache() {
+    _stories = null;
+  }
+  
+  // Get stories by main category (Fiction/Non-Fiction)
+  Future<List<Story>> getStoriesByCategory(bool isFiction) async {
+    final stories = await getStories();
+    
+    // Classify genres into Fiction and Non-Fiction categories
+    final fictionGenres = ['Fantasy', 'Science Fiction', 'Horror', 'Mystery'];
+    
+    return stories.where((story) {
+      final isStoryFiction = fictionGenres.contains(story.genre);
+      return isStoryFiction == isFiction;
+    }).toList();
+  }
+  
+  // Get stories filtered by fiction/non-fiction and optionally by specific genre or sub-genre
+  Future<List<Story>> getFilteredStories({
+    required bool isFiction, 
+    String? genre, 
+    String? subGenre
+  }) async {
+    final stories = await getStoriesByCategory(isFiction);
+    
+    // If no specific genre or sub-genre is requested, return all stories in the category
+    if (genre == null && subGenre == null) {
+      return stories;
+    }
+    
+    // Filter by genre if specified
+    if (genre != null) {
+      stories.retainWhere((story) => story.genre == genre);
+    }
+    
+    // Further filter by sub-genre if specified
+    if (subGenre != null && subGenre.isNotEmpty) {
+      stories.retainWhere((story) => story.subGenre == subGenre);
+    }
+    
+    return stories;
+  }
+  
+  // Get stories by specific genre
   Future<List<Story>> getStoriesByGenre(String genre) async {
     final stories = await getStories();
     return stories.where((story) => story.genre == genre).toList();
+  }
+  
+  // Get stories by sub-genre
+  Future<List<Story>> getStoriesBySubGenre(String subGenre) async {
+    final stories = await getStories();
+    return stories.where((story) => story.subGenre == subGenre).toList();
   }
   
   // Get stories by level
