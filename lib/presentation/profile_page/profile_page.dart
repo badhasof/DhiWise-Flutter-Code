@@ -31,64 +31,61 @@ class ProfilePage extends StatelessWidget {
         child: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
-            child: SizedBox(
-              height: 688.h,
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  _buildTrailTimeColumn(context),
-                  _buildProfileTitleColumn(context),
-                  SizedBox(height: 16.h),
-                  Container(
-                    height: 108.h,
-                    width: 110.h,
-                    decoration: AppDecoration.outlineDeeporangeA100.copyWith(
-                      borderRadius: BorderRadiusStyle.circleBorder54,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "lbl_jp".tr,
-                          style: theme.textTheme.displayMedium,
-                        )
-                      ],
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTrialTimeColumn(context),
+                _buildProfileTitleColumn(context),
+                SizedBox(height: 16.h),
+                Container(
+                  height: 108.h,
+                  width: 110.h,
+                  decoration: AppDecoration.outlineDeeporangeA100.copyWith(
+                    borderRadius: BorderRadiusStyle.circleBorder54,
                   ),
-                  SizedBox(height: 10.h),
-                  Row(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          "lbl_change_avatar".tr,
-                          style: CustomTextStyles.titleMediumDeeporangeA200,
-                        ),
-                      ),
-                      CustomImageView(
-                        imagePath: ImageConstant.imgUserDeepOrangeA200,
-                        height: 16.h,
-                        width: 16.h,
+                      Text(
+                        "JP",
+                        style: theme.textTheme.displayMedium,
                       )
                     ],
                   ),
-                  SizedBox(height: 22.h),
-                  _buildNameFieldColumn(context),
-                  SizedBox(height: 14.h),
-                  _buildUsernameFieldColumn(context),
-                  SizedBox(height: 16.h),
-                  _buildPasswordField(context),
-                  SizedBox(height: 14.h),
-                  _buildEmailFieldColumn(context),
-                  SizedBox(height: 24.h),
-                  _buildDeleteAccountButton(context)
-                ],
-              ),
+                ),
+                SizedBox(height: 10.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Change avatar",
+                        style: CustomTextStyles.titleMediumDeeporangeA200,
+                      ),
+                    ),
+                    CustomImageView(
+                      imagePath: ImageConstant.imgUserDeepOrangeA200,
+                      height: 16.h,
+                      width: 16.h,
+                    )
+                  ],
+                ),
+                SizedBox(height: 22.h),
+                _buildNameFieldColumn(context),
+                SizedBox(height: 14.h),
+                _buildUsernameFieldColumn(context),
+                SizedBox(height: 16.h),
+                _buildPasswordField(context),
+                SizedBox(height: 14.h),
+                _buildEmailFieldColumn(context),
+                SizedBox(height: 24.h),
+                _buildDeleteAccountButton(context),
+                SizedBox(height: 24.h), // Add extra space at the bottom to prevent overflow
+              ],
             ),
           ),
         ),
@@ -97,11 +94,11 @@ class ProfilePage extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildTrailButton(BuildContext context) {
+  Widget _buildTrialButton(BuildContext context) {
     return CustomElevatedButton(
       height: 22.h,
       width: 122.h,
-      text: "msg_trail_time_12_00".tr,
+      text: "Trial time 12:00",
       leftIcon: Container(
         margin: EdgeInsets.only(right: 4.h),
         child: CustomImageView(
@@ -117,12 +114,12 @@ class ProfilePage extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildTrailTimeColumn(BuildContext context) {
+  Widget _buildTrialTimeColumn(BuildContext context) {
     return Container(
       width: double.maxFinite,
       decoration: AppDecoration.fillGray,
       child: Column(
-        children: [_buildTrailButton(context)],
+        children: [_buildTrialButton(context)],
       ),
     );
   }
@@ -136,7 +133,7 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            "lbl_profile".tr,
+            "Profile",
             style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
           ),
           SizedBox(height: 6.h)
@@ -151,11 +148,11 @@ class ProfilePage extends StatelessWidget {
       selector: (state) => state.nameFieldController,
       builder: (context, nameFieldController) {
         return CustomFloatingTextField(
-          width: 86.h,
+          width: double.infinity,
           controller: nameFieldController,
-          labelText: "lbl_name".tr,
+          labelText: "Name",
           labelStyle: CustomTextStyles.titleMediumOnPrimary,
-          hintText: "lbl_name".tr,
+          hintText: "Name",
           contentPadding: EdgeInsets.all(12.h),
           borderDecoration: FloatingTextFormFieldStyleHelper.custom,
           filled: false,
@@ -169,18 +166,14 @@ class ProfilePage extends StatelessWidget {
     return Container(
       width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 14.h),
-      padding: EdgeInsets.only(
-        left: 14.h,
-        top: 6.h,
-        bottom: 6.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 6.h),
       decoration: AppDecoration.outlinePrimary14.copyWith(
         borderRadius: BorderRadiusStyle.roundedBorder12,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_buildNameField(context), SizedBox(height: 22.h)],
+        children: [_buildNameField(context)],
       ),
     );
   }
@@ -191,11 +184,11 @@ class ProfilePage extends StatelessWidget {
       selector: (state) => state.usernameFieldController,
       builder: (context, usernameFieldController) {
         return CustomFloatingTextField(
-          width: 108.h,
+          width: double.infinity,
           controller: usernameFieldController,
-          labelText: "lbl_user_name".tr,
+          labelText: "Username",
           labelStyle: CustomTextStyles.titleMediumOnPrimary,
-          hintText: "lbl_user_name".tr,
+          hintText: "Username",
           contentPadding: EdgeInsets.all(12.h),
           borderDecoration: FloatingTextFormFieldStyleHelper.custom,
           filled: false,
@@ -209,41 +202,49 @@ class ProfilePage extends StatelessWidget {
     return Container(
       width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 14.h),
-      padding: EdgeInsets.only(
-        left: 14.h,
-        top: 6.h,
-        bottom: 6.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 6.h),
       decoration: AppDecoration.outlinePrimary14.copyWith(
         borderRadius: BorderRadiusStyle.roundedBorder12,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_buildUsernameField(context), SizedBox(height: 22.h)],
+        children: [_buildUsernameField(context)],
       ),
     );
   }
 
   /// Section Widget
   Widget _buildPasswordField(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 14.h),
-      child: BlocSelector<ProfileBloc, ProfileState, TextEditingController?>(
-        selector: (state) => state.passwordFieldController,
-        builder: (context, passwordFieldController) {
-          return CustomTextFormField(
-            controller: passwordFieldController,
-            hintText: "lbl_password".tr,
-            hintStyle: CustomTextStyles.titleMediumGray500Medium,
-            textInputType: TextInputType.visiblePassword,
-            obscureText: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 16.h,
-              vertical: 20.h,
-            ),
-          );
-        },
+    return Container(
+      width: double.maxFinite,
+      margin: EdgeInsets.symmetric(horizontal: 14.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 6.h),
+      decoration: AppDecoration.outlinePrimary14.copyWith(
+        borderRadius: BorderRadiusStyle.roundedBorder12,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BlocSelector<ProfileBloc, ProfileState, TextEditingController?>(
+            selector: (state) => state.passwordFieldController,
+            builder: (context, passwordFieldController) {
+              return CustomFloatingTextField(
+                width: double.infinity,
+                controller: passwordFieldController,
+                labelText: "Password",
+                labelStyle: CustomTextStyles.titleMediumOnPrimary,
+                hintText: "Password",
+                textInputType: TextInputType.visiblePassword,
+                obscureText: true,
+                contentPadding: EdgeInsets.all(12.h),
+                borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+                filled: false,
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -254,11 +255,11 @@ class ProfilePage extends StatelessWidget {
       selector: (state) => state.emailFieldController,
       builder: (context, emailFieldController) {
         return CustomFloatingTextField(
-          width: 192.h,
+          width: double.infinity,
           controller: emailFieldController,
-          labelText: "lbl_email".tr,
+          labelText: "Email",
           labelStyle: CustomTextStyles.titleMediumOnPrimary,
-          hintText: "lbl_email".tr,
+          hintText: "Email",
           textInputAction: TextInputAction.done,
           textInputType: TextInputType.emailAddress,
           contentPadding: EdgeInsets.all(12.h),
@@ -274,18 +275,14 @@ class ProfilePage extends StatelessWidget {
     return Container(
       width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 14.h),
-      padding: EdgeInsets.only(
-        left: 14.h,
-        top: 6.h,
-        bottom: 6.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 6.h),
       decoration: AppDecoration.outlinePrimary14.copyWith(
         borderRadius: BorderRadiusStyle.roundedBorder12,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_buildEmailField(context), SizedBox(height: 24.h)],
+        children: [_buildEmailField(context)],
       ),
     );
   }
@@ -294,7 +291,7 @@ class ProfilePage extends StatelessWidget {
   Widget _buildDeleteAccountButton(BuildContext context) {
     return CustomElevatedButton(
       height: 48.h,
-      text: "lbl_delete_account".tr,
+      text: "DELETE ACCOUNT",
       margin: EdgeInsets.symmetric(horizontal: 14.h),
       buttonTextStyle: CustomTextStyles.titleMediumRedA200,
     );

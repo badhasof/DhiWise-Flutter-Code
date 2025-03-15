@@ -15,6 +15,8 @@ import '../presentation/home_screen/home_screen.dart';
 import '../presentation/profile_page/profile_page.dart';
 import '../presentation/vocabulary_page/vocabulary_page.dart';
 import '../presentation/sign_up_screen/sign_up_screen.dart';
+import '../presentation/learning_page/learning_page.dart';
+import '../presentation/progress_page/progress_page.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -47,6 +49,10 @@ class AppRoutes {
   
   static const String vocabularyPage = '/vocabulary_page';
   
+  static const String learningPage = '/learning_page';
+  
+  static const String progressPage = '/progress_page';
+  
   static const String profilePage = '/profile_page';
   
   static const String homeScreen = '/home_screen';
@@ -67,6 +73,8 @@ class AppRoutes {
         initialRoute: AppNavigationScreen.builder,
         homeInitialPage: HomeInitialPage.builder,
         vocabularyPage: VocabularyPage.builder,
+        learningPage: LearningPage.builder,
+        progressPage: ProgressPage.builder,
         profilePage: ProfilePage.builder,
         homeScreen: HomeScreen.builder
       };
