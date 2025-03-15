@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
 
@@ -28,9 +29,23 @@ class _StoryScreenState extends State<StoryScreen> {
   String? _highlightedEnglishWord;
 
   @override
+  void initState() {
+    super.initState();
+    // Hide the bottom navigation bar when this screen is shown
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+  }
+
+  @override
+  void dispose() {
+    // Restore the bottom navigation bar when this screen is closed
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFFF9F4),
       body: SafeArea(
         child: Column(
           children: [
@@ -61,7 +76,7 @@ class _StoryScreenState extends State<StoryScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFFF9F4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -298,7 +313,7 @@ class _StoryScreenState extends State<StoryScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFFF9F4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -347,13 +362,13 @@ class _StoryScreenState extends State<StoryScreen> {
                 width: 56.h,
                 height: 56.h,
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Colors.blue, // Reverted back to original blue color
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   icon: Icon(
                     _isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
+                    color: Colors.white, // Reverted back to original white color
                     size: 32.h,
                   ),
                   onPressed: () {

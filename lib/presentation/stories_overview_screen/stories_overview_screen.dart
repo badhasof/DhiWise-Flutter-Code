@@ -273,8 +273,7 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
         onPressed: () {
           // Navigate to the story screen
           if (_story != null) {
-            Navigator.push(
-              context,
+            Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(
                 builder: (context) => StoryScreen(story: _story!),
               ),

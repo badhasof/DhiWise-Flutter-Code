@@ -59,8 +59,7 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
   
   // Navigate to story screen
   void _navigateToStoryScreen(Story story) {
-    Navigator.push(
-      context,
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (context) => StoryScreen(story: story),
       ),
