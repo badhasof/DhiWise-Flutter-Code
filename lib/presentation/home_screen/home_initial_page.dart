@@ -42,6 +42,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   List<Story> _displayedStories = []; // Stories filtered by fiction/non-fiction
   bool _isLoading = true;
   bool _isFictionSelected = false; // Non-fiction selected by default
+  String _selectedSubGenre = "All Stories"; // Track selected sub-genre
   
   @override
   void initState() {
@@ -65,13 +66,30 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     });
   }
   
-  // Update displayed stories based on fiction/non-fiction selection
+  // Update displayed stories based on fiction/non-fiction and sub-genre selection
   Future<void> _updateDisplayedStories() async {
     setState(() {
       _isLoading = true;
     });
     
-    final filteredStories = await _storyService.getStoriesByCategory(_isFictionSelected);
+    List<Story> filteredStories;
+    
+    if (_selectedSubGenre == "All Stories") {
+      // Just filter by fiction/non-fiction
+      filteredStories = await _storyService.getStoriesByCategory(_isFictionSelected);
+    } else {
+      // Filter by both fiction/non-fiction and genre
+      filteredStories = await _storyService.getFilteredStories(
+        isFiction: _isFictionSelected,
+        genre: _selectedSubGenre,
+      );
+    }
+    
+    // Debug print to verify the stories are filtered correctly
+    print('Fiction selected: $_isFictionSelected');
+    print('Sub-genre selected: $_selectedSubGenre');
+    print('Number of stories: ${filteredStories.length}');
+    print('Genres: ${filteredStories.map((s) => s.genre).toSet().toList()}');
     
     setState(() {
       _displayedStories = filteredStories;
@@ -496,52 +514,58 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     // Get the first 3 stories or fewer if there are less than 3
     final displayStories = _isLoading ? [] : _displayedStories.take(3).toList();
     
+    // All available genres (to be shown in the horizontal scroll)
+    final availableGenres = ["All Stories", "Fantasy", "Horror", "Mystery", "Science Fiction"];
+    
     return Container(
       width: double.maxFinite,
       margin: EdgeInsets.only(left: 14.h, right: 14.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
+          // Horizontal scrollable row for genres
+          Container(
+            height: 40.h,
             width: double.maxFinite,
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 4.h,
-                    bottom: 2.h,
-                  ),
-                  decoration: AppDecoration.outlineDeeporangeA2001,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "All Stories",
-                        style: theme.textTheme.titleLarge,
-                      )
-                    ],
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 18.h,
-                    ),
-                    child: Text(
-                      "Fantasy",
-                      style: CustomTextStyles.titleMediumOnPrimarySemiBold_1,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 18.h),
-                  child: Text(
-                    "Horror",
-                    style: CustomTextStyles.titleMediumOnPrimarySemiBold_1,
-                  ),
-                )
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  // Generate genre tabs dynamically
+                  ...availableGenres.map((genre) {
+                    final isSelected = genre == _selectedSubGenre;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedSubGenre = genre;
+                        });
+                        _updateDisplayedStories(); // Update stories when sub-genre is selected
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(right: 18.h),
+                        padding: EdgeInsets.only(
+                          top: 4.h,
+                          bottom: 2.h,
+                        ),
+                        decoration: isSelected 
+                          ? AppDecoration.outlineDeeporangeA2001  // Selected style with orange underline
+                          : null,  // No decoration when not selected
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              genre,
+                              style: isSelected
+                                ? theme.textTheme.titleLarge
+                                : CustomTextStyles.titleMediumOnPrimarySemiBold_1,
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
             ),
           ),
           SizedBox(height: 12.h),
