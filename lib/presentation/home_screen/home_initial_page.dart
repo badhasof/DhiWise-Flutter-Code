@@ -598,7 +598,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                 padding: EdgeInsets.symmetric(vertical: 20.h),
                 child: Text(
                   "No stories found for this category",
-                  style: theme.textTheme.titleMedium,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
