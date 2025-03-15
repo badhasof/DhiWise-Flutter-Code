@@ -24,9 +24,9 @@ class _StoryScreenState extends State<StoryScreen> {
   // Is playing
   bool _isPlaying = false;
   // Highlighted word in Arabic
-  String? _highlightedArabicWord;
+  String? _highlightedArabicWord = '';
   // Highlighted word in English
-  String? _highlightedEnglishWord;
+  String? _highlightedEnglishWord = '';
 
   @override
   void initState() {
@@ -274,9 +274,11 @@ class _StoryScreenState extends State<StoryScreen> {
                 fontFamily: isArabic ? 'Arabic' : null,
               ),
               children: words.map((word) {
-                final isHighlighted = isArabic 
-                    ? word.contains(_highlightedArabicWord ?? '')
-                    : word.contains(_highlightedEnglishWord ?? '');
+                final highlightedWord = isArabic ? _highlightedArabicWord : _highlightedEnglishWord;
+                // Only highlight if the highlighted word is not empty and is contained in the current word
+                final isHighlighted = highlightedWord != null && 
+                                     highlightedWord.isNotEmpty && 
+                                     word.contains(highlightedWord);
                 
                 return TextSpan(
                   text: '$word ',
