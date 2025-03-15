@@ -39,6 +39,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   
   // List to store stories
   List<Story> _stories = [];
+  bool _isLoading = true;
+  bool _isFictionSelected = false; // Non-fiction selected by default
   
   @override
   void initState() {
@@ -344,35 +346,108 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                         Container(
                           decoration: AppDecoration.fillOnPrimaryContainer1,
                           width: double.maxFinite,
-                          margin: EdgeInsets.only(top: 8.h), // Added margin to position tabs at the bottom of background
+                          margin: EdgeInsets.only(top: 8.h),
                           child: Row(
                             children: [
                               Expanded(
-                                child: CustomOutlinedButton(
-                                  height: 48.h,
-                                  text: "Fiction",
-                                  buttonStyle: CustomButtonStyles.outlinePrimary1,
-                                  buttonTextStyle:
-                                      CustomTextStyles.titleMediumGray600Medium,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _isFictionSelected = true;
+                                      print("Fiction selected: $_isFictionSelected");
+                                    });
+                                  },
+                                  child: Container(
+                                    width: double.maxFinite,
+                                    padding: EdgeInsets.only(
+                                      top: 12.h,
+                                      bottom: 10.h,
+                                    ),
+                                    decoration: _isFictionSelected
+                                        ? AppDecoration.outlineDeeporangeA200
+                                        : BoxDecoration(
+                                            color: appTheme.gray50,
+                                            border: Border(
+                                              top: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                              bottom: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                              left: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                              right: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                            ),
+                                          ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Fiction",
+                                          style: _isFictionSelected
+                                              ? CustomTextStyles.titleMediumDeeporangeA200Black
+                                              : CustomTextStyles.titleMediumGray600Medium,
+                                        )
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                               Expanded(
-                                child: Container(
-                                  width: double.maxFinite,
-                                  padding: EdgeInsets.only(
-                                    top: 12.h,
-                                    bottom: 10.h,
-                                  ),
-                                  decoration: AppDecoration.outlineDeeporangeA200,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "Non-Fiction",
-                                        style: CustomTextStyles
-                                            .titleMediumDeeporangeA200Black,
-                                      )
-                                    ],
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _isFictionSelected = false;
+                                      print("Non-Fiction selected: ${!_isFictionSelected}");
+                                    });
+                                  },
+                                  child: Container(
+                                    width: double.maxFinite,
+                                    padding: EdgeInsets.only(
+                                      top: 12.h,
+                                      bottom: 10.h,
+                                    ),
+                                    decoration: !_isFictionSelected
+                                        ? AppDecoration.outlineDeeporangeA200
+                                        : BoxDecoration(
+                                            color: appTheme.gray50,
+                                            border: Border(
+                                              top: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                              bottom: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                              left: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                              right: BorderSide(
+                                                color: theme.colorScheme.primary,
+                                                width: 1,
+                                              ),
+                                            ),
+                                          ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Non-Fiction",
+                                          style: !_isFictionSelected
+                                              ? CustomTextStyles.titleMediumDeeporangeA200Black
+                                              : CustomTextStyles.titleMediumGray600Medium,
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                               )
