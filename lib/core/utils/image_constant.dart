@@ -118,4 +118,17 @@ class ImageConstant {
   static String imgUserDeepOrangeA200 = '$imagePath/img_user_deep_orange_a200.svg';
 
   static String imgLinguaBeginner = '$imagePath/Lingua Beginner Quiz Frame.svg';
+  
+  // Progress page icons
+  static String imgArrowLeft = '$imagePath/arrow_left.svg';
+  
+  static String imgFireIcon = '$imagePath/fire_icon.svg';
+  
+  static String imgDartIcon = '$imagePath/dart_icon.svg';
+  
+  static String imgTrophyIcon = '$imagePath/trophy_icon.svg';
+  
+  static String imgArrowRightOrange = '$imagePath/arrow_right.svg';
+  
+  static String imgAwardIcon = '$imagePath/award_icon.svg';
 }
