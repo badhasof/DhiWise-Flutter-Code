@@ -273,29 +273,11 @@ class ProgressPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Container(
-                      width: 64.h,
-                      height: 64.h,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: CustomImageView(
-                          imagePath: ImageConstant.imgFire,
-                          height: 44.h,
-                          width: 44.h,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
+                    CustomImageView(
+                      imagePath: ImageConstant.imgFireIcon,
+                      height: 100.h,
+                      width: 100.h,
+                      fit: BoxFit.contain,
                     ),
                   ],
                 ),
