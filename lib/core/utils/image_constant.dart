@@ -131,4 +131,17 @@ class ImageConstant {
   static String imgArrowRightOrange = '$imagePath/arrow_right.svg';
   
   static String imgAwardIcon = '$imagePath/award_icon.svg';
+
+  // Settings screen icons
+  static String imgSettingsIcon = '$imagePath/settings_icons/settings_icon.svg';
+  static String imgUserIcon = '$imagePath/settings_icons/user_icon.svg';
+  static String imgNotificationIcon = '$imagePath/settings_icons/notification_icon.svg';
+  static String imgTeacherIcon = '$imagePath/settings_icons/teacher_icon.svg';
+  static String imgLinkIcon = '$imagePath/settings_icons/link_icon.svg';
+  static String imgLockIcon = '$imagePath/settings_icons/lock_icon.svg';
+  static String imgArrowRightIcon = '$imagePath/settings_icons/arrow_right.svg';
+  static String imgHelpIcon = '$imagePath/settings_icons/help_icon.svg';
+  static String imgFeedbackIcon = '$imagePath/settings_icons/feedback_icon.svg';
+  static String imgChooseAPlanIcon = '$imagePath/settings_icons/choose_a_plan_icon.svg';
+  static String imgSignOutIcon = '$imagePath/settings_icons/signout_icon.svg';
 }

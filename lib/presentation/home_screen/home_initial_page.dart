@@ -14,6 +14,7 @@ import 'models/home_six_item_model.dart';
 import 'widgets/home_six_item_widget.dart';
 import '../story_screen/story_screen.dart';
 import '../progress_page/progress_page.dart';
+import '../settings_screen/settings_screen.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -239,14 +240,24 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                   ),
                                 ),
                               ),
-                              CustomImageView(
-                                imagePath:
-                                    ImageConstant.imgSettingsDeepOrangeA200,
-                                height: 18.h,
-                                width: 72.h,
-                                margin: EdgeInsets.only(
-                                  left: 6.h,
-                                  bottom: 6.h,
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SettingsScreen.builder(context),
+                                    ),
+                                  );
+                                },
+                                child: CustomImageView(
+                                  imagePath:
+                                      ImageConstant.imgSettingsDeepOrangeA200,
+                                  height: 18.h,
+                                  width: 72.h,
+                                  margin: EdgeInsets.only(
+                                    left: 6.h,
+                                    bottom: 6.h,
+                                  ),
                                 ),
                               ),
                               Spacer(),
@@ -267,13 +278,23 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 buttonTextStyle:
                                     CustomTextStyles.titleSmallDeeporangeA200Bold,
                               ),
-                              CustomImageView(
-                                imagePath: ImageConstant.imgSearch,
-                                height: 20.h,
-                                width: 22.h,
-                                margin: EdgeInsets.only(
-                                  left: 8.h,
-                                  bottom: 6.h,
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SettingsScreen.builder(context),
+                                    ),
+                                  );
+                                },
+                                child: CustomImageView(
+                                  imagePath: ImageConstant.imgSearch,
+                                  height: 20.h,
+                                  width: 22.h,
+                                  margin: EdgeInsets.only(
+                                    left: 8.h,
+                                    bottom: 6.h,
+                                  ),
                                 ),
                               )
                             ],
