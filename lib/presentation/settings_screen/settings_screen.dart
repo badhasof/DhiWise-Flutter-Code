@@ -201,7 +201,9 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 icon: ImageConstant.imgNotificationIcon,
                 title: "Notifications",
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.notificationSettingsScreen);
+                },
               ),
               _buildSettingItem(
                 context,

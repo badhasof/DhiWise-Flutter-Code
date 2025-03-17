@@ -130,13 +130,30 @@ class ProfilePage extends StatelessWidget {
       width: double.maxFinite,
       padding: EdgeInsets.symmetric(vertical: 4.h),
       decoration: AppDecoration.outlinePrimary12,
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "Profile",
-            style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
+          Expanded(
+            child: Center(
+              child: Text(
+                "Profile",
+                style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
+              ),
+            ),
           ),
-          SizedBox(height: 6.h)
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.settingsScreen);
+            },
+            child: Padding(
+              padding: EdgeInsets.only(right: 16.h),
+              child: Icon(
+                Icons.settings,
+                color: appTheme.deepOrangeA200,
+                size: 24.h,
+              ),
+            ),
+          ),
         ],
       ),
     );

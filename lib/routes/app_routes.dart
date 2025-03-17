@@ -17,6 +17,12 @@ import '../presentation/vocabulary_page/vocabulary_page.dart';
 import '../presentation/sign_up_screen/sign_up_screen.dart';
 import '../presentation/learning_page/learning_page.dart';
 import '../presentation/progress_page/progress_page.dart';
+import '../presentation/settings_screen/settings_screen.dart';
+import '../presentation/notification_settings_screen/notification_settings_screen.dart';
+import '../presentation/reminders_settings_screen/reminders_settings_screen.dart';
+import '../presentation/friends_settings_screen/friends_settings_screen.dart';
+import '../presentation/leaderboards_settings_screen/leaderboards_settings_screen.dart';
+import '../presentation/announcements_settings_screen/announcements_settings_screen.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -56,6 +62,18 @@ class AppRoutes {
   static const String profilePage = '/profile_page';
   
   static const String homeScreen = '/home_screen';
+  
+  static const String settingsScreen = '/settings_screen';
+  
+  static const String notificationSettingsScreen = '/notification_settings_screen';
+  
+  static const String remindersSettingsScreen = '/reminders_settings_screen';
+  
+  static const String friendsSettingsScreen = '/friends_settings_screen';
+  
+  static const String leaderboardsSettingsScreen = '/leaderboards_settings_screen';
+  
+  static const String announcementsSettingsScreen = '/announcements_settings_screen';
 
   static Map<String, WidgetBuilder> get routes => {
         onboardimgScreen: OnboardimgScreen.builder,
@@ -76,6 +94,12 @@ class AppRoutes {
         learningPage: LearningPage.builder,
         progressPage: ProgressPage.builder,
         profilePage: ProfilePage.builder,
-        homeScreen: HomeScreen.builder
+        homeScreen: HomeScreen.builder,
+        settingsScreen: SettingsScreen.builder,
+        notificationSettingsScreen: NotificationSettingsScreen.builder,
+        remindersSettingsScreen: RemindersSettingsScreen.builder,
+        friendsSettingsScreen: FriendsSettingsScreen.builder,
+        leaderboardsSettingsScreen: LeaderboardsSettingsScreen.builder,
+        announcementsSettingsScreen: AnnouncementsSettingsScreen.builder
       };
 }
