@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../routes/app_routes.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../theme/custom_button_style.dart';
+import '../reminders_settings_screen/reminders_settings_screen.dart';
+import '../friends_settings_screen/friends_settings_screen.dart';
+import '../leaderboards_settings_screen/leaderboards_settings_screen.dart';
+import '../announcements_settings_screen/announcements_settings_screen.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
   const NotificationSettingsScreen({Key? key}) : super(key: key);
@@ -140,21 +145,36 @@ class NotificationSettingsScreen extends StatelessWidget {
             title: "Reminders",
             isFirst: true,
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.remindersSettingsScreen);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RemindersSettingsScreen(),
+                ),
+              );
             },
           ),
           _buildNotificationItem(
             context,
             title: "Friends",
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.friendsSettingsScreen);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FriendsSettingsScreen(),
+                ),
+              );
             },
           ),
           _buildNotificationItem(
             context,
             title: "Leaderboards",
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.leaderboardsSettingsScreen);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LeaderboardsSettingsScreen(),
+                ),
+              );
             },
           ),
           _buildNotificationItem(
@@ -162,7 +182,12 @@ class NotificationSettingsScreen extends StatelessWidget {
             title: "Announcements",
             isLast: true,
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.announcementsSettingsScreen);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AnnouncementsSettingsScreen(),
+                ),
+              );
             },
           ),
         ],

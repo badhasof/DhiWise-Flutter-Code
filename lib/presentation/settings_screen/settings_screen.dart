@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../theme/custom_button_style.dart';
+import '../notification_settings_screen/notification_settings_screen.dart';
 import 'bloc/settings_bloc.dart';
 import 'models/settings_model.dart';
 
@@ -202,7 +203,12 @@ class SettingsScreen extends StatelessWidget {
                 icon: ImageConstant.imgNotificationIcon,
                 title: "Notifications",
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.notificationSettingsScreen);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationSettingsScreen(),
+                    ),
+                  );
                 },
               ),
               _buildSettingItem(
