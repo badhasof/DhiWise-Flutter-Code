@@ -13,6 +13,7 @@ import 'models/home_initial_model.dart';
 import 'models/home_six_item_model.dart';
 import 'widgets/home_six_item_widget.dart';
 import '../story_screen/story_screen.dart';
+import '../progress_page/progress_page.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -294,93 +295,103 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                           ),
                         ),
                         SizedBox(height: 18.h),
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 16.h),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.h,
-                            vertical: 14.h,
-                          ),
-                          decoration: AppDecoration.outlineBlack.copyWith(
-                            borderRadius: BorderRadiusStyle.roundedBorder12,
-                          ),
-                          width: double.maxFinite,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CustomIconButton(
-                                height: 52.h,
-                                width: 52.h,
-                                padding: EdgeInsets.all(4.h),
-                                decoration: IconButtonStyleHelper.fillDeepOrange,
-                                child: CustomImageView(
-                                  imagePath: ImageConstant.imgTropy,
-                                ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProgressPage.builder(context),
                               ),
-                              SizedBox(width: 14.h),
-                              Expanded(
-                                child: Column(
-                                  spacing: 4,
-                                  crossAxisAlignment: CrossAxisAlignment.start, 
-                                  children: [
-                                    SizedBox(
-                                      width: double.maxFinite,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              "Complete 3 stories today".tr,
-                                              style: CustomTextStyles
-                                                  .titleMediumGray900,
-                                            ),
-                                          ),
-                                          CustomImageView(
-                                            imagePath:
-                                                ImageConstant.imgArrowRight,
-                                            height: 16.h,
-                                            width: 18.h,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    Text(
-                                      "2/3 Completed".tr,
-                                      style:
-                                          CustomTextStyles.titleSmallBluegray400,
-                                    ),
-                                    Container(
-                                      width: double.maxFinite,
-                                      decoration:
-                                          AppDecoration.fillGray30001.copyWith(
-                                        borderRadius:
-                                            BorderRadiusStyle.roundedBorder4,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            height: 10.h,
-                                            width: 124.h,
-                                            decoration: BoxDecoration(
-                                              color: appTheme.lightGreenA700,
-                                              borderRadius: BorderRadius.circular(
-                                                5.h,
+                            );
+                          },
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 16.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.h,
+                              vertical: 14.h,
+                            ),
+                            decoration: AppDecoration.outlineBlack.copyWith(
+                              borderRadius: BorderRadiusStyle.roundedBorder12,
+                            ),
+                            width: double.maxFinite,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CustomIconButton(
+                                  height: 52.h,
+                                  width: 52.h,
+                                  padding: EdgeInsets.all(4.h),
+                                  decoration: IconButtonStyleHelper.fillDeepOrange,
+                                  child: CustomImageView(
+                                    imagePath: ImageConstant.imgTropy,
+                                  ),
+                                ),
+                                SizedBox(width: 14.h),
+                                Expanded(
+                                  child: Column(
+                                    spacing: 4,
+                                    crossAxisAlignment: CrossAxisAlignment.start, 
+                                    children: [
+                                      Container(
+                                        width: double.maxFinite,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Align(
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                "Complete 3 stories today".tr,
+                                                style: CustomTextStyles
+                                                    .titleMediumGray900,
                                               ),
                                             ),
-                                          )
-                                        ],
+                                            CustomImageView(
+                                              imagePath:
+                                                  ImageConstant.imgArrowRight,
+                                              height: 16.h,
+                                              width: 18.h,
+                                            )
+                                          ],
+                                        ),
                                       ),
-                                    )
-                                  ],
-                                ),
-                              )
-                            ],
+                                      Text(
+                                        "2/3 Completed".tr,
+                                        style:
+                                            CustomTextStyles.titleSmallBluegray400,
+                                      ),
+                                      Container(
+                                        width: double.maxFinite,
+                                        decoration:
+                                            AppDecoration.fillGray30001.copyWith(
+                                          borderRadius:
+                                              BorderRadiusStyle.roundedBorder4,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              height: 10.h,
+                                              width: 124.h,
+                                              decoration: BoxDecoration(
+                                                color: appTheme.lightGreenA700,
+                                                borderRadius: BorderRadius.circular(
+                                                  5.h,
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                         SizedBox(height: 20.h),
