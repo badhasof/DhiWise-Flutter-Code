@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
 import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
 
@@ -17,29 +19,278 @@ class StoryScreen extends StatefulWidget {
 }
 
 class _StoryScreenState extends State<StoryScreen> {
+  // Audio player
+  late AudioPlayer _audioPlayer;
+  // Audio duration
+  Duration _duration = Duration.zero;
+  // Current position
+  Duration _position = Duration.zero;
   // Current playback position
   double _currentPosition = 0.0;
   // Playback speed
   double _playbackSpeed = 1.0;
   // Is playing
   bool _isPlaying = false;
+  // Is audio loaded
+  bool _isAudioLoaded = false;
+  // Current language being played
+  String _currentLanguage = 'ar'; // Default to Arabic
   // Highlighted word in Arabic
   String? _highlightedArabicWord = '';
   // Highlighted word in English
   String? _highlightedEnglishWord = '';
+  // Text adherence mode enabled
+  bool _textAdherenceEnabled = false;
+  // Timer for text highlighting in adherence mode
+  Timer? _highlightTimer;
+  // Word lists for current content
+  late List<String> _arabicWords;
+  late List<String> _englishWords;
+  // Current word index for highlighting
+  int _currentWordIndex = 0;
+  // Estimated time per word (calculated based on audio duration)
+  double _msPerWord = 0.0;
 
   @override
   void initState() {
     super.initState();
+    // Initialize word lists
+    _arabicWords = _getWords(widget.story.contentAr);
+    _englishWords = _getWords(widget.story.contentEn);
+    // Initialize audio player
+    _initAudioPlayer();
     // Hide the bottom navigation bar when this screen is shown
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 
+  List<String> _getWords(String content) {
+    // Split content into words and remove empty strings
+    return content
+        .replaceAll('\n', ' ')
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+  }
+
+  void _initAudioPlayer() {
+    _audioPlayer = AudioPlayer();
+    
+    // Set up audio player listeners
+    _audioPlayer.onDurationChanged.listen((Duration duration) {
+      setState(() {
+        _duration = duration;
+        // Calculate ms per word for text adherence
+        if (_currentLanguage == 'ar') {
+          _msPerWord = duration.inMilliseconds / _arabicWords.length;
+        } else {
+          _msPerWord = duration.inMilliseconds / _englishWords.length;
+        }
+      });
+    });
+    
+    _audioPlayer.onPositionChanged.listen((Duration position) {
+      setState(() {
+        _position = position;
+        if (_duration.inMilliseconds > 0) {
+          _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
+          
+          // Update highlighted word if text adherence is enabled
+          if (_textAdherenceEnabled && _isPlaying) {
+            _updateHighlightedWord(position);
+          }
+        }
+      });
+    });
+    
+    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+        if (state == PlayerState.completed) {
+          _currentPosition = 0.0;
+          _position = Duration.zero;
+          _currentWordIndex = 0;
+          _resetHighlightedWords();
+        }
+        
+        // Handle text adherence timer
+        if (_textAdherenceEnabled) {
+          if (state == PlayerState.playing) {
+            _startTextAdherence();
+          } else {
+            _stopTextAdherence();
+          }
+        }
+      });
+    });
+    
+    // Check if audio is available for the current story
+    _loadAudio();
+  }
+  
+  void _loadAudio() async {
+    // Check if Arabic audio exists
+    if (widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
+      try {
+        // Set the source to the Arabic audio file
+        await _audioPlayer.setSource(AssetSource(widget.story.audioAr!));
+        setState(() {
+          _isAudioLoaded = true;
+          _currentLanguage = 'ar';
+        });
+      } catch (e) {
+        print('Error loading Arabic audio: $e');
+      }
+    }
+  }
+
+  // Update highlighted word based on current position
+  void _updateHighlightedWord(Duration position) {
+    if (_msPerWord <= 0) return;
+    
+    int wordIndex = (position.inMilliseconds / _msPerWord).floor();
+    List<String> currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
+    
+    if (wordIndex < currentWords.length && wordIndex != _currentWordIndex) {
+      setState(() {
+        _currentWordIndex = wordIndex;
+        if (_currentLanguage == 'ar') {
+          _highlightedArabicWord = currentWords[wordIndex];
+          _highlightedEnglishWord = '';
+        } else {
+          _highlightedEnglishWord = currentWords[wordIndex];
+          _highlightedArabicWord = '';
+        }
+      });
+    }
+  }
+  
+  // Reset highlighted words
+  void _resetHighlightedWords() {
+    setState(() {
+      _highlightedArabicWord = '';
+      _highlightedEnglishWord = '';
+    });
+  }
+  
+  // Start text adherence highlighting
+  void _startTextAdherence() {
+    _stopTextAdherence(); // Stop any existing timer
+    
+    // Update the highlighted word immediately
+    _updateHighlightedWord(_position);
+  }
+  
+  // Stop text adherence highlighting
+  void _stopTextAdherence() {
+    if (_highlightTimer != null) {
+      _highlightTimer!.cancel();
+      _highlightTimer = null;
+    }
+  }
+  
+  // Toggle text adherence mode
+  void _toggleTextAdherence() {
+    setState(() {
+      _textAdherenceEnabled = !_textAdherenceEnabled;
+      
+      if (_textAdherenceEnabled && _isPlaying) {
+        _startTextAdherence();
+      } else {
+        _stopTextAdherence();
+        _resetHighlightedWords();
+      }
+    });
+  }
+
+  // Toggle between playing and pausing audio
+  void _togglePlayback() async {
+    if (!_isAudioLoaded) {
+      return;
+    }
+    
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+    } else {
+      await _audioPlayer.resume();
+    }
+  }
+  
+  // Toggle between Arabic and English audio
+  void _toggleLanguage() async {
+    if (_currentLanguage == 'ar' && widget.story.audioEn != null && widget.story.audioEn!.isNotEmpty) {
+      await _audioPlayer.stop();
+      await _audioPlayer.setSource(AssetSource(widget.story.audioEn!));
+      setState(() {
+        _currentLanguage = 'en';
+        _position = Duration.zero;
+        _currentPosition = 0.0;
+        _currentWordIndex = 0;
+        _resetHighlightedWords();
+      });
+    } else if (_currentLanguage == 'en' && widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
+      await _audioPlayer.stop();
+      await _audioPlayer.setSource(AssetSource(widget.story.audioAr!));
+      setState(() {
+        _currentLanguage = 'ar';
+        _position = Duration.zero;
+        _currentPosition = 0.0;
+        _currentWordIndex = 0;
+        _resetHighlightedWords();
+      });
+    }
+  }
+  
+  // Set playback position
+  void _seekTo(double value) async {
+    if (!_isAudioLoaded) {
+      return;
+    }
+    
+    final position = Duration(milliseconds: (value * _duration.inMilliseconds).round());
+    await _audioPlayer.seek(position);
+    
+    // Update highlighted word if text adherence is enabled
+    if (_textAdherenceEnabled) {
+      _updateHighlightedWord(position);
+    }
+  }
+  
+  // Set playback speed
+  void _setPlaybackSpeed(double speed) async {
+    if (!_isAudioLoaded) {
+      return;
+    }
+    
+    await _audioPlayer.setPlaybackRate(speed);
+    setState(() {
+      _playbackSpeed = speed;
+      
+      // Recalculate ms per word with new playback speed
+      if (_currentLanguage == 'ar') {
+        _msPerWord = (_duration.inMilliseconds / _arabicWords.length) / speed;
+      } else {
+        _msPerWord = (_duration.inMilliseconds / _englishWords.length) / speed;
+      }
+    });
+  }
+
   @override
   void dispose() {
+    // Stop text adherence timer
+    _stopTextAdherence();
+    // Release the audio player resources
+    _audioPlayer.dispose();
     // Restore the bottom navigation bar when this screen is closed
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
     super.dispose();
+  }
+
+  // Format duration to mm:ss
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$minutes:$seconds';
   }
 
   @override
@@ -326,6 +577,26 @@ class _StoryScreenState extends State<StoryScreen> {
       ),
       child: Column(
         children: [
+          // Text adherence switch
+          if (_isAudioLoaded)
+            Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Text Adherence",
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  SizedBox(width: 8.h),
+                  Switch(
+                    value: _textAdherenceEnabled,
+                    onChanged: (value) => _toggleTextAdherence(),
+                    activeColor: Colors.blue,
+                  ),
+                ],
+              ),
+            ),
           // Slider
           SliderTheme(
             data: SliderThemeData(
@@ -345,6 +616,7 @@ class _StoryScreenState extends State<StoryScreen> {
                 setState(() {
                   _currentPosition = value;
                 });
+                _seekTo(value);
               },
             ),
           ),
@@ -354,30 +626,37 @@ class _StoryScreenState extends State<StoryScreen> {
             children: [
               // Current time
               Text(
-                "3:00",
+                _formatDuration(_position),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.grey.shade600,
                 ),
               ),
+              // Language toggle button (only show if both audios are available)
+              if (widget.story.audioAr != null && widget.story.audioEn != null)
+                TextButton(
+                  onPressed: _toggleLanguage,
+                  child: Text(
+                    _currentLanguage == 'ar' ? 'Arabic' : 'English',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
               // Play button
               Container(
                 width: 56.h,
                 height: 56.h,
                 decoration: BoxDecoration(
-                  color: Colors.blue, // Reverted back to original blue color
+                  color: widget.story.audioAr != null ? Colors.blue : Colors.grey, // Grey if no audio
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   icon: Icon(
                     _isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white, // Reverted back to original white color
+                    color: Colors.white,
                     size: 32.h,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _isPlaying = !_isPlaying;
-                    });
-                  },
+                  onPressed: widget.story.audioAr != null ? _togglePlayback : null,
                 ),
               ),
               // Playback speed
@@ -396,9 +675,7 @@ class _StoryScreenState extends State<StoryScreen> {
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
-                    setState(() {
-                      _playbackSpeed = value;
-                    });
+                    _setPlaybackSpeed(value);
                   }
                 },
               ),

@@ -14,6 +14,10 @@ class Story extends Equatable {
   final String contentAr;
   final String contentEn;
   
+  // Audio file paths
+  final String? audioAr;
+  final String? audioEn;
+  
   // Default image path for stories - can be customized later
   final String imagePath;
 
@@ -28,6 +32,8 @@ class Story extends Equatable {
     required this.summaryEn,
     required this.contentAr,
     required this.contentEn,
+    this.audioAr,
+    this.audioEn,
     this.imagePath = 'assets/images/img_image_10.png', // Default image
   });
 
@@ -44,6 +50,8 @@ class Story extends Equatable {
       summaryEn: json['summary_en'] as String,
       contentAr: json['content_ar'] as String,
       contentEn: json['content_en'] as String,
+      audioAr: json['audio_ar'] as String?,
+      audioEn: json['audio_en'] as String?,
     );
   }
 
@@ -85,6 +93,8 @@ class Story extends Equatable {
         summaryEn,
         contentAr,
         contentEn,
+        audioAr,
+        audioEn,
         imagePath,
       ];
 } 

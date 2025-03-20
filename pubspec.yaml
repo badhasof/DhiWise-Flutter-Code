@@ -22,6 +22,7 @@ dependencies:
   # Firebase dependencies
   firebase_auth: ^5.5.1
   dotted_border: ^2.1.0
+  audioplayers: ^5.0.0
 dev_dependencies: 
   flutter_test: 
     sdk: flutter
@@ -31,6 +32,7 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/settings_icons/
+    - assets/data/audio/
   fonts: 
     - family: Lato
       fonts: 

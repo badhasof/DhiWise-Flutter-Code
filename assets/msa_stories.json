@@ -9,7 +9,8 @@
       "dialect": "Modern Standard Arabic",
       "summary_en": "A heartwarming tale of a baby dragon's persistence in learning to breathe fire, teaching young readers about courage and determination.",
       "content_ar": "ﻛﺎن ھﻧﺎك ﺗﻧﯾن ﺻﻐﯾر ﯾﻌﯾش ﻣﻊ ﻋﺎﺋﻠﺗﮫ ﻓﻲ ﻛﮭف ﻋﺎلٍ ﺑﯾن اﻟﺟﺑﺎل. ﺣﺎول ﻣراراً أن ﯾﻧﻔث اﻟﻧﺎر ﻣﺛل واﻟدﯾﮫ، ﻟﻛﻧﮫ ﻟم ﯾﻧﺟﺢ ﺳوى ﻓﻲ إﺧراج دﺧﺎن رﻣﺎدي ﺧﻔﯾف. ﺷﻌر ﺑﺎﻟﺣزن واﻹﺣﺑﺎط، ﻟﻛﻧﮫ ﻟم ﯾﺳﺗﺳﻠم. ﻓﻲ ﻛل ﺻﺑﺎح، ﻛﺎن ﯾﻘف أﻣﺎم اﻟﺑﺣﯾرة وﯾﺗدرب. ﯾوﻣﺎً ﺑﻌد ﯾوم، أﺻﺑﺢ اﻟدﺧﺎن أﻛﺛف وأدﻓﺄ. وﻓﻲ ﺻﺑﺎح ﻣﺷرق، ﻭﺑﯾﻧﻣﺎ ﻛﺎن ﯾﺣﺎول ﻟﻠﻣرة اﻷوﻟﯾ، ﺧرج ﻣن ﻓﻣﮫ ﻟﮭب ذھﺑﻲ ﺻﻐﯾر. ﻓرح اﻟﺗﻧﯾن اﻟﺻﻐﯾر وطﺎر ﺣول اﻟﻛﮭف ﻓﺧوراً ﺑﻧﻔﺳﮫ، وﻋﻠم أن اﻟﺷﺟﺎﻋﺔ اﻟﺣﻘﯾﻘﯾﺔ ﺗﻛﻣن ﻓﻲ اﻟﻣﺛﺎﺑرة.",
-      "content_en": "There was a little dragon who lived with his family in a high cave among the mountains. He tried repeatedly to breathe fire like his parents, but only managed to produce light grey smoke. He felt sad and frustrated, but he didn't give up. Every morning, he would stand by the lake and practice. Day after day, the smoke became thicker and warmer. Then on one bright morning, while trying for the hundredth time, a small golden flame emerged from his mouth. The tiny dragon flew joyfully around the cave, proud of himself, and learned that true courage lies in persistence."
+      "content_en": "There was a little dragon who lived with his family in a high cave among the mountains. He tried repeatedly to breathe fire like his parents, but only managed to produce light grey smoke. He felt sad and frustrated, but he didn't give up. Every morning, he would stand by the lake and practice. Day after day, the smoke became thicker and warmer. Then on one bright morning, while trying for the hundredth time, a small golden flame emerged from his mouth. The tiny dragon flew joyfully around the cave, proud of himself, and learned that true courage lies in persistence.",
+      "audio_ar": "data/audio/the-tiny-dragon_ar.mp3"
     },
     {
       "id": "the-enchanted-forest",
@@ -17,10 +18,11 @@
       "title_ar": "اﻟﻐﺎﺑﺔ اﻟﻣﺳﺤورة",
       "genre": "Fantasy",
       "level": "Beginner",
-      "dialect": "Modern Standard Arabic", 
+      "dialect": "Modern Standard Arabic",
       "summary_en": "A magical tale where a child discovers their heritage through an enchanted forest's ancient wisdom.",
       "content_ar": "دﺧﻠت ﻟﯿﻠﻰ اﻟﻐﺎﺑﺔ اﻟﻐرﯾﺑﺔ اﻟﺗﻲ ﻛﺎﻧت ﺗراھﺎ ﻣن ﻧﺎﻓذة ﻏرﻓﺗﮭﺎ. ﺑدأت اﻷﺷﺟﺎر ﺗﺗوھﺞ ﺑﺿوء أزرق ﺧﺎﻓت، وھﻣﺳت ﺑﺻوت ﻋذب. ﺣﻛت ﻟﮭﺎ ﻋن ﺟدﺗﮭﺎ اﻟﻌظﯾﻣﺔ اﻟﺗﻲ ﻛﺎﻧت ﺣﻛﯾﻣﺔ اﻟﻘرﯾﺔ وﺣﺎﻣﯾﺔ اﻟﻐﺎﺑﺔ. اﺳﺗﻣﻌت ﻟﯿﻠﻰ ﺑدھﺷﺔ ﻭﻫﻲ ﺗﻛﺗﺷف أن اﻟﺣﻛﻣﺔ ﺗﺟري ﻓﻲ ﻋروﻗﮭﺎ. ﻟﻣﺳت ﺷﺟرة ﻋﺗﯾﻘﺔ، ﻓرأت ﺻوراً ﻣن اﻟﻣﺎﺿﻲ اﻟﺑﻌﯾد. ﻓﮭﻣت اﻵن ﻟﻣﺎذا ﻛﺎﻧت داﺋﻣﺎً ﺗﺷﻌر ﺑﺎﺭﺗﺑﺎط ﺧﺎص ﻣﻊ اﻟطﺑﯾﻌﺔ. ﻋﺎدت إﻟﻰ اﻟﻣﻧزل وﻓﻲ ﻗﻠﺑﮭﺎ ﻓﺧر ﺟدﯾد ﺑﺗراﺛﮭﺎ اﻟﻘدﯾﻣﺔ.",
-      "content_en": "Layla entered the strange forest she used to see from her bedroom window. The trees began to glow with a soft blue light and whispered in sweet voices. They told her about her great-grandmother, who was the village sage and protector of the forest. Layla listened in amazement as she discovered that wisdom ran in her veins. When she touched an ancient tree, she saw images from the distant past. She now understood why she had always felt a special connection with nature. She returned home with a new pride in her ancient heritage."
+      "content_en": "Layla entered the strange forest she used to see from her bedroom window. The trees began to glow with a soft blue light and whispered in sweet voices. They told her about her great-grandmother, who was the village sage and protector of the forest. Layla listened in amazement as she discovered that wisdom ran in her veins. When she touched an ancient tree, she saw images from the distant past. She now understood why she had always felt a special connection with nature. She returned home with a new pride in her ancient heritage.",
+      "audio_ar": "data/audio/the-enchanted-forest_ar.mp3"
     },
     {
       "id": "the-goblins-gold",
