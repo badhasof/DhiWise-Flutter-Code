@@ -18,6 +18,10 @@ class Story extends Equatable {
   final String? audioAr;
   final String? audioEn;
   
+  // Male and female voice audio files
+  final String? audioArMale;
+  final String? audioArFemale;
+  
   // Default image path for stories - can be customized later
   final String imagePath;
 
@@ -34,6 +38,8 @@ class Story extends Equatable {
     required this.contentEn,
     this.audioAr,
     this.audioEn,
+    this.audioArMale,
+    this.audioArFemale,
     this.imagePath = 'assets/images/img_image_10.png', // Default image
   });
 
@@ -52,6 +58,8 @@ class Story extends Equatable {
       contentEn: json['content_en'] as String,
       audioAr: json['audio_ar'] as String?,
       audioEn: json['audio_en'] as String?,
+      audioArMale: json['audio_ar_male'] as String?,
+      audioArFemale: json['audio_ar_female'] as String?,
     );
   }
 
@@ -95,6 +103,8 @@ class Story extends Equatable {
         contentEn,
         audioAr,
         audioEn,
+        audioArMale,
+        audioArFemale,
         imagePath,
       ];
 } 

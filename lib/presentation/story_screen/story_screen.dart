@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
+import '../../widgets/audio_control_overlay.dart';
 
 class StoryScreen extends StatefulWidget {
   final Story story;
@@ -18,7 +19,7 @@ class StoryScreen extends StatefulWidget {
   State<StoryScreen> createState() => _StoryScreenState();
 }
 
-class _StoryScreenState extends State<StoryScreen> {
+class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin {
   // Audio player
   late AudioPlayer _audioPlayer;
   // Audio duration
@@ -35,6 +36,10 @@ class _StoryScreenState extends State<StoryScreen> {
   bool _isAudioLoaded = false;
   // Current language being played
   String _currentLanguage = 'ar'; // Default to Arabic
+  // Male voice is selected (default is true for backward compatibility)
+  bool _isMaleVoice = true;
+  // Audio settings overlay visible
+  bool _showAudioSettings = false;
   // Highlighted word in Arabic
   String? _highlightedArabicWord = '';
   // Highlighted word in English
@@ -50,6 +55,8 @@ class _StoryScreenState extends State<StoryScreen> {
   int _currentWordIndex = 0;
   // Estimated time per word (calculated based on audio duration)
   double _msPerWord = 0.0;
+  // Animation controller for smooth transitions
+  late AnimationController _animationController;
 
   @override
   void initState() {
@@ -57,8 +64,16 @@ class _StoryScreenState extends State<StoryScreen> {
     // Initialize word lists
     _arabicWords = _getWords(widget.story.contentAr);
     _englishWords = _getWords(widget.story.contentEn);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    
     // Initialize audio player
-    _initAudioPlayer();
+    _initializeAudioPlayer();
+    
+    // Load audio data
+    _loadAudio();
     // Hide the bottom navigation bar when this screen is shown
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
@@ -72,7 +87,7 @@ class _StoryScreenState extends State<StoryScreen> {
         .toList();
   }
 
-  void _initAudioPlayer() {
+  void _initializeAudioPlayer() {
     _audioPlayer = AudioPlayer();
     
     // Set up audio player listeners
@@ -122,24 +137,43 @@ class _StoryScreenState extends State<StoryScreen> {
         }
       });
     });
-    
-    // Check if audio is available for the current story
-    _loadAudio();
   }
   
-  void _loadAudio() async {
+  Future<void> _loadAudio() async {
     // Check if Arabic audio exists
-    if (widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
+    if (_currentLanguage == 'ar') {
+      String? audioPath = _isMaleVoice ? widget.story.audioArMale : widget.story.audioArFemale;
+      
+      // Fallback to regular audio_ar if gendered paths don't exist
+      if (audioPath == null || audioPath.isEmpty) {
+        audioPath = widget.story.audioAr;
+      }
+      
+      if (audioPath != null && audioPath.isNotEmpty) {
+        try {
+          await _audioPlayer.setSource(AssetSource(audioPath));
+          await _audioPlayer.setPlaybackRate(_playbackSpeed);
+          setState(() {
+            _isAudioLoaded = true;
+          });
+        } catch (e) {
+          print('Error loading Arabic audio: $e');
+        }
+      }
+    } else if (_currentLanguage == 'en' && widget.story.audioEn != null && widget.story.audioEn!.isNotEmpty) {
       try {
-        // Set the source to the Arabic audio file
-        await _audioPlayer.setSource(AssetSource(widget.story.audioAr!));
+        await _audioPlayer.setSource(AssetSource(widget.story.audioEn!));
+        await _audioPlayer.setPlaybackRate(_playbackSpeed);
         setState(() {
           _isAudioLoaded = true;
-          _currentLanguage = 'ar';
         });
       } catch (e) {
-        print('Error loading Arabic audio: $e');
+        print('Error loading English audio: $e');
       }
+    } else {
+      setState(() {
+        _isAudioLoaded = false;
+      });
     }
   }
 
@@ -274,6 +308,51 @@ class _StoryScreenState extends State<StoryScreen> {
     });
   }
 
+  // Toggle between male and female voices
+  void _toggleVoice(bool isMale) async {
+    if (_isMaleVoice == isMale) return;
+    
+    bool wasPlaying = _isPlaying;
+    
+    // Stop any currently playing audio
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+    }
+    
+    setState(() {
+      _isMaleVoice = isMale;
+      _isAudioLoaded = false;
+    });
+    
+    // Reload the audio with the new voice
+    await _loadAudio();
+    
+    // Resume playback if it was playing before
+    if (wasPlaying && _isAudioLoaded) {
+      await _audioPlayer.resume();
+    }
+  }
+  
+  // Change playback speed
+  void _changePlaybackSpeed(double speed) async {
+    if (_playbackSpeed == speed) return;
+    
+    setState(() {
+      _playbackSpeed = speed;
+    });
+    
+    if (_isAudioLoaded) {
+      await _audioPlayer.setPlaybackRate(_playbackSpeed);
+    }
+  }
+  
+  // Toggle audio settings overlay
+  void _toggleAudioSettings() {
+    setState(() {
+      _showAudioSettings = !_showAudioSettings;
+    });
+  }
+
   @override
   void dispose() {
     // Stop text adherence timer
@@ -285,7 +364,7 @@ class _StoryScreenState extends State<StoryScreen> {
     super.dispose();
   }
 
-  // Format duration to mm:ss
+  // Format duration as MM:SS
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -297,28 +376,210 @@ class _StoryScreenState extends State<StoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFFF9F4),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.all(16.h),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTitleAndLevel(),
+                          SizedBox(height: 24.h),
+                          _buildStoryContent(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Audio player container
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF9F4),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                    border: Border(
+                      top: BorderSide(
+                        color: const Color(0xFFEFECEB),
+                        width: 1,
+                      ),
+                    ),
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildTitleAndLevel(),
-                      SizedBox(height: 24.h),
-                      _buildStoryContent(),
+                      // Progress bar and time
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Custom progress bar
+                          Container(
+                            height: 8,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFECEB),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final width = constraints.maxWidth;
+                                final progressWidth = width * _currentPosition.clamp(0.0, 1.0);
+                                
+                                return Stack(
+                                  children: [
+                                    // Progress fill
+                                    Container(
+                                      width: progressWidth,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1CAFFB),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    // Thumb/handle
+                                    Positioned(
+                                      left: progressWidth - 8,
+                                      top: -6,
+                                      child: GestureDetector(
+                                        onHorizontalDragUpdate: (details) {
+                                          final RenderBox box = context.findRenderObject() as RenderBox;
+                                          final Offset localPosition = box.globalToLocal(details.globalPosition);
+                                          final double newPosition = (localPosition.dx / width).clamp(0.0, 1.0);
+                                          _seekTo(newPosition);
+                                        },
+                                        child: Container(
+                                          width: 16,
+                                          height: 16,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(0xFF1CAFFB),
+                                              width: 1,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Time display
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _formatDuration(_position),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF80706B),
+                                ),
+                              ),
+                              Text(
+                                _formatDuration(_duration),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF80706B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Controls row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Empty space or hidden time (as per design)
+                          const SizedBox(width: 80, height: 32),
+                          
+                          // Play/Pause button
+                          GestureDetector(
+                            onTap: _togglePlayback,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1CAFFB),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                _isPlaying ? Icons.pause : Icons.play_arrow,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                          
+                          // Speed control
+                          GestureDetector(
+                            onTap: _toggleAudioSettings,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              height: 32,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    "${_playbackSpeed}x",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF80706B),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Color(0xFFAB9C97),
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
-            _buildPlaybackControls(),
-          ],
-        ),
+          ),
+          
+          // Audio settings overlay
+          if (_showAudioSettings)
+            AudioControlOverlay(
+              isMaleVoice: _isMaleVoice,
+              playbackSpeed: _playbackSpeed,
+              onVoiceChange: _toggleVoice,
+              onSpeedChange: _changePlaybackSpeed,
+              onClose: _toggleAudioSettings,
+            ),
+        ],
       ),
     );
   }
@@ -560,129 +821,5 @@ class _StoryScreenState extends State<StoryScreen> {
         ),
       );
     }).toList();
-  }
-
-  Widget _buildPlaybackControls() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Color(0xFFFFF9F4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Text adherence switch
-          if (_isAudioLoaded)
-            Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Text Adherence",
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  SizedBox(width: 8.h),
-                  Switch(
-                    value: _textAdherenceEnabled,
-                    onChanged: (value) => _toggleTextAdherence(),
-                    activeColor: Colors.blue,
-                  ),
-                ],
-              ),
-            ),
-          // Slider
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 4.h,
-              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8.h),
-              overlayShape: RoundSliderOverlayShape(overlayRadius: 16.h),
-              activeTrackColor: Colors.blue,
-              inactiveTrackColor: Colors.grey.shade300,
-              thumbColor: Colors.blue,
-              overlayColor: Colors.blue.withOpacity(0.2),
-            ),
-            child: Slider(
-              value: _currentPosition,
-              min: 0.0,
-              max: 1.0,
-              onChanged: (value) {
-                setState(() {
-                  _currentPosition = value;
-                });
-                _seekTo(value);
-              },
-            ),
-          ),
-          // Time and controls
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Current time
-              Text(
-                _formatDuration(_position),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              // Language toggle button (only show if both audios are available)
-              if (widget.story.audioAr != null && widget.story.audioEn != null)
-                TextButton(
-                  onPressed: _toggleLanguage,
-                  child: Text(
-                    _currentLanguage == 'ar' ? 'Arabic' : 'English',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.blue,
-                    ),
-                  ),
-                ),
-              // Play button
-              Container(
-                width: 56.h,
-                height: 56.h,
-                decoration: BoxDecoration(
-                  color: widget.story.audioAr != null ? Colors.blue : Colors.grey, // Grey if no audio
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    _isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
-                    size: 32.h,
-                  ),
-                  onPressed: widget.story.audioAr != null ? _togglePlayback : null,
-                ),
-              ),
-              // Playback speed
-              DropdownButton<double>(
-                value: _playbackSpeed,
-                icon: Icon(Icons.arrow_drop_down),
-                underline: SizedBox(),
-                items: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
-                  return DropdownMenuItem<double>(
-                    value: speed,
-                    child: Text(
-                      "${speed}x",
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    _setPlaybackSpeed(value);
-                  }
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 } 
