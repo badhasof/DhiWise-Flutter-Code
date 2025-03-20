@@ -114,27 +114,41 @@ class _AudioControlOverlayState extends State<AudioControlOverlay> with SingleTi
                   children: [
                     // Header with close button
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: _closeOverlay,
-                            iconSize: 24,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          const Text(
-                            "Select voice",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          // Left-aligned close button (X)
+                          GestureDetector(
+                            onTap: _closeOverlay,
+                            child: const Icon(
+                              Icons.close,
+                              size: 24,
+                              color: Color(0xFF9E9E9E),
                             ),
                           ),
-                          const SizedBox(width: 24), // For alignment
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                "Audio Settings",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF26211D),
+                                  fontFamily: "Lato",
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Empty space to balance the layout
+                          SizedBox(width: 24),
                         ],
                       ),
+                    ),
+                    // Divider line
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFEFECEB),
                     ),
                     
                     // Voice selection section
