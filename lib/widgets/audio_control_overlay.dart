@@ -152,104 +152,99 @@ class _AudioControlOverlayState extends State<AudioControlOverlay> with SingleTi
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                          Column(
                             children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    widget.onVoiceChange(true);
-                                    setState(() {
-                                      _isMaleSelected = true;
-                                    });
-                                  },
+                              GestureDetector(
+                                onTap: () {
+                                  widget.onVoiceChange(true);
+                                  setState(() {
+                                    _isMaleSelected = true;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.only(bottom: 2),
+                                  decoration: BoxDecoration(
+                                    color: _isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                   child: Container(
-                                    padding: const EdgeInsets.only(bottom: 2),
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                     decoration: BoxDecoration(
-                                      color: _isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
+                                      color: Colors.white,
                                       borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: _isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
+                                        width: 1,
+                                      ),
                                     ),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: _isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
-                                          width: 1,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset(
+                                          'assets/icons/male_icon.svg',
+                                          height: 16,
+                                          width: 16,
                                         ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/icons/male_icon.svg',
-                                            height: 16,
-                                            width: 16,
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Male',
+                                          style: TextStyle(
+                                            fontFamily: 'Lato',
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            height: 1.4,
+                                            color: _isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFF37251F),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Male',
-                                            style: TextStyle(
-                                              fontFamily: 'Lato',
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
-                                              height: 1.4,
-                                              color: _isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFF37251F),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    widget.onVoiceChange(false);
-                                    setState(() {
-                                      _isMaleSelected = false;
-                                    });
-                                  },
+                              const SizedBox(height: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  widget.onVoiceChange(false);
+                                  setState(() {
+                                    _isMaleSelected = false;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.only(bottom: 2),
+                                  decoration: BoxDecoration(
+                                    color: !_isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                   child: Container(
-                                    padding: const EdgeInsets.only(bottom: 2),
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                     decoration: BoxDecoration(
-                                      color: !_isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
+                                      color: Colors.white,
                                       borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: !_isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
+                                        width: 1,
+                                      ),
                                     ),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: !_isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFFEFECEB),
-                                          width: 1,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset(
+                                          'assets/icons/female_icon.svg',
+                                          height: 16,
+                                          width: 16,
                                         ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/icons/female_icon.svg',
-                                            height: 16,
-                                            width: 16,
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Female',
+                                          style: TextStyle(
+                                            fontFamily: 'Lato',
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            height: 1.4,
+                                            color: !_isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFF37251F),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Female',
-                                            style: TextStyle(
-                                              fontFamily: 'Lato',
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
-                                              height: 1.4,
-                                              color: !_isMaleSelected ? const Color(0xFFFF6F3E) : const Color(0xFF37251F),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
