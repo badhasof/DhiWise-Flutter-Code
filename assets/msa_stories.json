@@ -11,8 +11,8 @@
       "summary_en": "A heartwarming tale of a baby dragon's persistence in learning to breathe fire, teaching young readers about courage and determination.",
       "content_ar": "كان ھناك تنین صغیر یعیش مع عائلتھ في كھف عالٍ بین الجبال. حاول مراراً أن ینفث النار مثل والدیھ، لكنھ لم ینجح سوى في إخراج\n. دخان رمادي خفیف. شعر بالحزن والإحباط، لكنھ لم یستسلم\n\nیوما بعد یوم، أصبح الدخان أكثف وأدفأ. وفي صباح مشرق، وبینما كان یحاول للمرة في كل صباح، كان یقف أمام البحیرة ویتدرب. ً\nالمئة، خرج من فمھ لھب ذھبي صغیر. فرح التنین الصغیر وطار حول الكھف فخوراً بنفسھ، وعلم أن الشجاعة الحقیقیة تكمن في\n\n.المثابرة",
       "content_en": "There was a little dragon who lived with his family in a high cave among the mountains. He tried repeatedly to breathe fire like his parents, but only managed to produce light grey smoke. He felt sad and frustrated, but he didn't give up.\n\nEvery morning, he would stand by the lake and practice. Day after day, the smoke became thicker and warmer. Then on one bright morning, while trying for the hundredth time, a small golden flame emerged from his mouth. The tiny dragon flew joyfully around the cave, proud of himself, and learned that true courage lies in persistence.",
-      "audio_ar_male": "assets/data/audio/the-tiny-dragon_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/the-tiny-dragon_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-tiny-dragon_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-tiny-dragon_ar_female.mp3"
     },
     {
       "id": "the-enchanted-forest",
@@ -25,8 +25,8 @@
       "summary_en": "A magical tale where a child discovers their heritage through an enchanted forest's ancient wisdom.",
       "content_ar": "دخلت لیلى الغابة الغریبة التي كانت تراھا من نافذة غرفتھا. بدأت الأشجار تتوھج بضوء أزرق خافت، وھمست بصوت عذب. حكت لھا\n. عن جدتھا العظیمة التي كانت حكیمة القریة وحامیة الغابة\n\nاستمعت لیلى بدھشة وھي تكتشف أن الحكمة تجري في عروقھا. لمست شجرة عتیقة، فرأت صوراً من الماضي البعید. فھمت الآن\n. دائما تشعر بارتباط خاص مع الطبیعة. عادت إلى المنزل وفي قلبھا فخر جدید بتراثھا القدیم لماذا كانت ً",
       "content_en": "Layla entered the strange forest she used to see from her bedroom window. The trees began to glow with a soft blue light and whispered in sweet voices. They told her about her great-grandmother, who was the village sage and protector of the forest.\n\nLayla listened in amazement as she discovered that wisdom ran in her veins. When she touched an ancient tree, she saw images from the distant past. She now understood why she had always felt a special connection with nature. She returned home with a new pride in her ancient heritage.",
-      "audio_ar_male": "assets/data/audio/the-enchanted-forest_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/the-enchanted-forest_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-enchanted-forest_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-enchanted-forest_ar_female.mp3"
     },
     {
       "id": "the-goblins-gold",
@@ -39,8 +39,8 @@
       "summary_en": "A cleverly woven tale of deception and wisdom, teaching readers about the true nature of greed and its consequences.",
       "content_ar": "انتشرت في القریة الصغیرة شائعات عن عفریت ماكر یخبئ كنزاً من الذھب في الكھوف القدیمة. كان العفریت یظھر كل لیلة في\nالساحة، یلوح بقطع ذھبیة براقة ویھمس بألغاز غامضة عن مكان الكنز. بدأ القرویون، المأخوذون بوعود الثراء، في تتبع إرشاداتھ\n\n. الغامضة، متجاھلین تحذیرات كبیر القریة الحكیم\n\nقادتھم الألغاز عبر ممرات خطرة ومنحدرات حادة، حیث واجھوا اختبارات غریبة. في كل مرحلة، كان علیھم التخلي عن شيء ثمین:\nمجوھرات موروثة، خواتم زفاف، وحتى ذكریات سعیدة. كلما اقتربوا من ھدفھم، زادت المخاطر وتعمقت خسائرھم. لم یدركوا أن\n\n. العفریت كان یستمتع برؤیتھم یتصارعون مع جشعھم، یراقب كیف یتخلون عن أشیاء لا تقدر بثمن مقابل وعود فارغة\n\nانعكاسا لنفسھ محملاً بالجشع والطمع. ضحك العفریت في النھایة، وصلوا إلى غرفة واسعة ملیئة بالمرایا السحریة، حیث رأى كل منھم ً\nضحكة عمیقة وقال: \"الكنز الحقیقي ھو الحكمة التي اكتسبتموھا. الذھب یفنى، لكن الدروس تبقى. انظروا إلى ما فقدتم في سعیكم وراء",
       "content_en": "In the small village, rumors spread about a cunning goblin who hid a treasure of gold in the ancient caves. The goblin would appear every night in the square, waving shining gold pieces and whispering mysterious riddles about the treasure's location. The villagers, captivated by promises of wealth, began following his cryptic instructions, ignoring the wise village elder's warnings.\n\nThe riddles led them through dangerous passages and steep slopes, where they faced strange tests. At each stage, they had to give up something precious: inherited jewelry, wedding rings, and even happy memories. As they got closer to their goal, the dangers increased and their losses deepened. They didn't realize that the goblin was enjoying watching them struggle with greed, observing how they abandoned priceless things for empty promises.\n\nFinally, they reached a vast room filled with magical mirrors, where each saw a reflection of themselves burdened with greed and avarice. The goblin laughed deeply and said, \"The real treasure is the wisdom you've gained. Gold perishes, but lessons remain. Look at what you've lost in your pursuit of wealth.\" The villagers returned to their village wiser, carrying a lesson they would never forget about the true value of things.",
-      "audio_ar_male": "assets/data/audio/the-goblins-gold_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/the-goblins-gold_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-goblins-gold_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-goblins-gold_ar_female.mp3"
     },
     {
       "id": "the-spellbook",
@@ -89,8 +89,8 @@
       "summary_en": "A poignant tale of isolation and hope in deep space, exploring themes of cosmic connection.",
       "content_ar": "في أعماق الفضاء اللانھائي، طاف رائد الفضاء أحمد وحیداً بعد انقطاع الاتصال بمحطتھ الرئیسیة. وبینما كان یفقد الأمل، التقط جھازه\n. إشارات غریبة من منارة فضائیة قدیمة. الأغرب من ذلك أن الإشارات كانت تنادي باسمھ\n\nاقترب من المنارة المتوھجة، فبدأت ترسل لھ رسائل بلغة یفھمھا. اكتشف أنھا تركھا مستكشفون قدماء لإرشاد التائھین في الفضاء.\n. وبفضل إحداثیاتھا، استطاع أحمد العودة إلى وطنھ، حاملاً معھ سر المنارة العجیبة",
       "content_en": "In the infinite depths of space, astronaut Ahmed drifted alone after losing contact with his main station. As he was losing hope, his device picked up strange signals from an ancient space beacon. Even stranger, the signals were calling his name.\n\nAs he approached the glowing beacon, it began sending him messages in a language he could understand. He discovered it was left by ancient explorers to guide those lost in space. Thanks to its coordinates, Ahmed was able to return home, carrying with him the secret of the mysterious beacon.",
-      "audio_ar_male": "assets/data/audio/the-starlight-beacon_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/the-starlight-beacon_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-starlight-beacon_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-starlight-beacon_ar_female.mp3"
     },
     {
       "id": "robo-companion",
@@ -103,8 +103,8 @@
       "summary_en": "A heartwarming story about friendship and emotional growth between human and machine.",
       "content_ar": "معطوبا من متجر الإلكترونیات المستعملة. كان یتصرف بشكل غریب، یضحك في أوقات غیر متوقعة تعلیمیا ً روبوتا ً اشترى والدا سارة ً\n. ویحزن عندما تحزن سارة. بدلاً من إصلاحھ، قررت سارة الاحتفاظ بھ كما ھو\n\nمع مرور الأیام، بدأ الروبوت یظھر مشاعر أكثر إنسانیة. أصبح یھتم بمشاعر سارة ویحاول إسعادھا عندما تكون حزینة. اكتشفت سارة\n. عطبا كان في الواقع بدایة شيء جمیل - روح تتعلم كیف تشعر أن ما بدا ً",
       "content_en": "Sarah's parents bought her a malfunctioning educational robot from a used electronics store. It behaved strangely, laughing at unexpected times and becoming sad when Sarah was sad. Instead of fixing it, Sarah decided to keep it as it was.\n\nAs days passed, the robot began showing more human-like emotions. It started caring about Sarah's feelings and tried to cheer her up when she was sad. Sarah discovered that what seemed like a malfunction was actually the beginning of something beautiful - a soul learning how to feel.",
-      "audio_ar_male": "assets/data/audio/robo-companion_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/robo-companion_ar_female.mp3"
+      "audio_ar_male": "data/audio/robo-companion_ar_male.mp3",
+      "audio_ar_female": "data/audio/robo-companion_ar_female.mp3"
     },
     {
       "id": "the-gravity-anomaly",
@@ -141,8 +141,8 @@
       "summary_en": "A complex exploration of parallel universes, free will, and the consequences of infinite possibilities.",
       "content_ar": "غریبا یشع بطاقة غامضة. لم تكن تتوقع أن ھذا المفتاح سیفتح معدنیا ً مفتاحا ً في مختبر سري للفیزیاء الكمیة، اكتشفت العالمة ریم ً\nأبوابا لا إلى غرف، بل إلى عوالم موازیة. في كل مرة استخدمت فیھا المفتاح، كانت تجد نسخة مختلفة من حیاتھا - عوالم حیث اتخذت ً\n\n. قرارات مختلفة، عاشت حیوات أخرى\n\nثمنا مقابل نمطا مقلقاً: كل عالم كان یدفع ً في عالم، كانت فنانة مشھورة. في آخر، كانت سیاسیة بارزة. لكن مع كل رحلة، بدأت تلاحظ ً\n. سعادتھ. في العالم حیث كانت فنانة ناجحة، فقدت عائلتھا. وحیث كانت سیاسیة قویة، خسرت إنسانیتھا\n\nحاولت ریم استخدام معرفتھا العلمیة لفھم المفتاح، لكنھا اكتشفت أنھ یتحدى كل قوانین الفیزیاء المعروفة. كل رحلة كانت تترك آثاراً\nعلى نسیج الواقع، مخلفة تشققات صغیرة بین العوالم. وفي إحدى رحلاتھا، التقت بنسخة أخرى من نفسھا كانت تحاول إغلاق كل\n\n. البوابات قبل أن تنھار العوالم في بعضھا\n\nأدركت ریم أن علیھا اتخاذ قرار: إما أن تواصل استكشاف الاحتمالات اللانھائیة لحیاتھا، أو أن تقبل عالمھا كما ھو وتغلق البوابات\n. للأبد. في النھایة، فھمت أن قیمة الحیاة لا تكمن في معرفة ما كان یمكن أن یكون، بل في العیش بعمق في الواقع الذي اختارتھ",
       "content_en": "In a secret quantum physics laboratory, scientist Reem discovered a strange metallic key emanating mysterious energy. She didn't expect this key would open doors not to rooms, but to parallel universes. Each time she used the key, she found a different version of her life - worlds where she made different choices, lived other lives.\n\nIn one world, she was a famous artist. In another, she was a prominent politician. But with each journey, she began noticing a disturbing pattern: each world paid a price for its happiness. In the world where she was a successful artist, she lost her family. Where she was a powerful politician, she lost her humanity.\n\nReem tried to use her scientific knowledge to understand the key, but discovered it defied all known laws of physics. Each journey left marks on the fabric of reality, creating small cracks between worlds. During one of her trips, she met another version of herself who was trying to close all the portals before the worlds collapsed into each other.\n\nReem realized she had to make a decision: either continue exploring the infinite possibilities of her life, or accept her world as it was and close the portals forever. In the end, she understood that life's value lies not in knowing what could have been, but in living deeply in the reality she chose.",
-      "audio_ar_male": "assets/data/audio/quantum-key_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/quantum-key_ar_female.mp3"
+      "audio_ar_male": "data/audio/quantum-key_ar_male.mp3",
+      "audio_ar_female": "data/audio/quantum-key_ar_female.mp3"
     },
     {
       "id": "the-final-spark",
@@ -311,8 +311,8 @@
       "summary_en": "A chilling tale of a child's doll that harbors dark secrets.",
       "content_ar": "كانت سارة تحب دمیتھا الجدیدة كثیراً، حتى بدأت تسمع ھمساتھا في اللیل. في البدایة، كانت الھمسات خافتة، تردد أسراراً صغیرة عن\nوضوحا وإزعاجاً. كانت الدمیة تعرف أشیاءً لا یمكن لأحد معرفتھا - أسراراً یومیات سارة. لكن مع مرور الوقت، أصبحت الھمسات أكثر ً\n\nدفنتھا سارة في أعماق قلبھا. وفي لیلة مظلمة، استیقظت سارة لتجد الدمیة جالسة بجانب سریرھا، تبتسم ابتسامة غریبة، وتھمس:\n.\" \"لدي المزید من الأسرار لأخبرك بھا",
       "content_en": "Sarah loved her new doll dearly, until she started hearing its whispers at night. At first, the whispers were faint, repeating small secrets about Sarah's daily life. But as time passed, the whispers became clearer and more disturbing. The doll knew things no one could know—secrets Sarah had buried deep in her heart. One dark night, Sarah woke to find the doll sitting beside her bed, smiling an odd smile, whispering, \"I have more secrets to tell you.\"",
-      "audio_ar_male": "assets/data/audio/whispering-doll_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/whispering-doll_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-whispering-doll_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-whispering-doll_ar_female.mp3"
     },
     {
       "id": "the-shadow-in-the-mirror",
@@ -325,8 +325,8 @@
       "summary_en": "A haunting tale of a mysterious shadow that defies reality.",
       "content_ar": "إضافیا في المرآة لا ینتمي لھ. في غریبا - ظلاً ً شیئا ً كل صباح، یقف أحمد أمام مرآة الحمام لیحلق ذقنھ. لكن في یوم من الأیام، لاحظ ً\nیوما بعد یوم. حاول أحمد تغییر المرآة، لكن الظل ظھر في المرآة الجدیدة البدایة، كان الظل بعیداً في خلفیة المرآة، لكنھ بدأ یقترب ً\n\n. قریبا جداً، حتى شعر أحمد بأنفاسھ الباردة على رقبتھ أیضاً. وفي صباح الیوم السابع، أصبح الظل ً",
       "content_en": "Every morning, Ahmed stands before his bathroom mirror to shave. But one day, he noticed something strange—an extra shadow in the mirror that didn't belong to him. At first, the shadow was distant in the mirror's background, but it began moving closer day by day. Ahmed tried changing the mirror, but the shadow appeared in the new one too. On the morning of the seventh day, the shadow had come so close that Ahmed felt its cold breath on his neck.",
-      "audio_ar_male": "assets/data/audio/shadow-in-mirror_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/shadow-in-mirror_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-shadow-in-the-mirror_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-shadow-in-the-mirror_ar_female.mp3"
     },
     {
       "id": "the-phantom-passenger",
@@ -339,8 +339,8 @@
       "summary_en": "A mysterious late-night encounter that challenges reality and haunts a taxi driver forever.",
       "content_ar": "في لیلة شتویة باردة، كان خالد یقود سیارة الأجرة في شوارع المدینة الھادئة. كان قد بدأ نوبة العمل اللیلیة قبل ساعات، وكان المطر\n. كئیبا على الشوارع المھجورة مضیفا جواً ً الخفیف یتساقط على زجاج السیارة، ً",
       "content_en": "On a cold winter night, Khaled was driving his taxi through the quiet city streets. He had started his night shift hours ago, and a light rain was falling on the car's windshield, adding a gloomy atmosphere to the deserted roads.\n\nAt exactly midnight, the car's digital clock suddenly stopped. At that moment, Khaled spotted a man wearing a black coat standing in the darkness, signaling him to stop. The passenger's face was unnaturally pale, and his clothes seemed old-fashioned, as if from the 1950s.\n\nThe passenger requested a ride to the old city cemetery. During the journey, Khaled noticed several disturbing things: the man's reflection did not appear in the rearview mirror, his breath left no fog on the window despite the cold, and his voice seemed to come from far away.\n\nThe passenger told a strange story about a car accident that happened on this exact night fifty years ago. He was the driver, and in an attempt to avoid a child, he swerved off the road and crashed. \"Every year, on the same night, I try to return to the cemetery... to thank the child who survived.\" When they reached the cemetery, Khaled turned to ask for the fare—but the back seat was empty, leaving only a patch of frost and an old funeral ticket dated fifty years ago.",
-      "audio_ar_male": "assets/data/audio/phantom-passenger_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/phantom-passenger_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-phantom-passenger_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-phantom-passenger_ar_female.mp3"
     },
     {
       "id": "the-grinning-portrait",
@@ -461,8 +461,8 @@
       "summary_en": "A psychological puzzle where dreams become a portal to uncover hidden truths.",
       "content_ar": "دائما نحوه، لكن لمدة أسبوع، كان أحمد یرى الحلم ذاتھ، وفي كل مرة یجد نفسھ أمام باب مغلق غامض في بیت حجري قدیم. كان یركض ً\n\n. كان یستیقظ قبل أن یفتح الباب.\n\nفي البدایة، حاول أحمد أن یقنع نفسھ أنھ مجرد حلم فقط. لكنھ شعر بالدھشة وھو یدرس شجرتھ العائلیة، عندما وجد معلومات حول منزل\nأبدا أحد. عن قدیما لأحد أجداده. لم یكن أحد قد تحدث عنھ. كان المنزل موجوداً، لكنھ لم یعش فیھ تماما وصف المنزل الذي في حلمھ ً حجري ً\n\n. تماما أن الحلم مرتبط بأسرار عائلیة قدیمة واضحا ً قبل أن یقرر زیارتھ، كان ً",
       "content_en": "For one week, Ahmed had been seeing the same dream. Each time, he found himself in front of a mysterious closed door in an old stone house. He was always running towards it, but would wake up just before opening the door.\n\nAt first, Ahmed tried to convince himself it was just a dream. But he was surprised while studying his family tree when he found information about an old stone house that belonged to one of his ancestors—it exactly matched the description of the house in his dream. No one had ever mentioned it to him. The house existed but no one had ever lived in it. Before he decided to visit it, he was certain the dream was connected to old family secrets.",
-      "audio_ar_male": "assets/data/audio/recurring-dream_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/recurring-dream_ar_female.mp3"
+      "audio_ar_male": "data/audio/recurring-dream_ar_male.mp3",
+      "audio_ar_female": "data/audio/recurring-dream_ar_female.mp3"
     },
     {
       "id": "the-enchanted-mirror",
@@ -475,8 +475,8 @@
       "summary_en": "A vintage mirror that reveals not reflections, but glimpses of a family's hidden history.",
       "content_ar": "من بین كل المقتنیات القدیمة التي ورثتھا عن والدتھا، احتفظت نور بمرآة فضیة غریبة من محل تحف قدیمة في السوق البلدي. كل\nوجوھا و بتسریحات وملابس قدیمین، سمعت ً أناسا ً صورا ً أسبوع، عندما تقف نور أمام المرآة في منتصف لیلة، كانت المرآة تظھر: ً\n. خافتة من المرآة أصوات موسیقى بعیدة، وأغاني قدیمة. بحثت نور عن انعكاسھا، لكنھا لم تكن تظھر\n\nقصاصا من صحف قدیمة تظھر أن المرآة عندما كانت في ملكھا بدأت تبحث عن ھویة ھؤلاء الناس. وبعد الكثیر من البحث، اكتشفت نور ً\nعائلة أرستقراطیة مشھورة لعائلة جدتھا قبل ستین عاماً، وأن الناس كانوا یعتقدون أن أولئك الذین یظھرون، أشخاص كانوا\n\n. في ظروف مختلفة. بینما جمعت نور حلقات مفقودة، فھمت نور أن لدى عائلتھا أسراراً خبأتھا بسبب جرائم قدیمة، لكن كیف حدثت لھم\n\n. عرفت نور أن أرواح من كانوا یظھرون، وأدركت نور أن الحقیقة الخجولة تحتاج لوسیط، یكون حلقة الوصل بین فترتین متواجدة في الوقت نفسھ",
       "content_en": "Among all the old possessions she inherited from her mother, Noor kept a strange silver mirror from an old antique shop in the city market. Every week, when Noor stood in front of the mirror at midnight, the mirror would show: images of people with old hairstyles and clothes, and she heard faint sounds of distant music and old songs coming from the mirror. Noor searched for her reflection, but it didn't appear.\n\nShe began researching who these people were. After much investigation, Noor discovered newspaper clippings showing that when the mirror was in her possession, it had belonged to a famous aristocratic family related to her grandmother sixty years ago. People believed that those who appeared were people who had been in different circumstances.\n\nAs Noor pieced together missing links, she understood that her family had secrets hidden because of old crimes. But how did they happen?\n\nNoor learned that the spirits of those who appeared were seeking justice. And Noor realized that the shy truth needed a medium—a link between two periods existing simultaneously.",
-      "audio_ar_male": "assets/data/audio/enchanted-mirror_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/enchanted-mirror_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-enchanted-mirror_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-enchanted-mirror_ar_female.mp3"
     },
     {
       "id": "the-stopped-clock",
@@ -489,8 +489,8 @@
       "summary_en": "A timeless reflection on the moments that shape our lives.",
       "content_ar": "توقفت الساعة الكبیرة في منزل جدي عند الساعة الثالثة والنصف بالضبط. توقفت الساعة عندما كان أبي یجري اتصالات مھمة في\n. الجانب الآخر من العالم\n\nفي الیوم التالي، عند الساعة الثالثة والنصف بالضبط، كان جدي قد استسلم لمرض قلبھ. اعتقد بلا شك أنھ سیشعر بذلك.\nأخبرتني أمي أنھ في یوم وفاة جدي، توقفت عشرون ساعة عن العمل في جمیع أنحاء البیت. الكثیر من الأشیاء تغیرت مع مرور السنین\n\n. تستحضر الذكریات وتأخذنا في رحلة معاً. تغیر كل شيء حتى والداي، لكن الساعة الكبیرة لا تزال متوقفة عند الساعة الثالثة والنصف",
       "content_en": "The large clock in my grandfather's house stopped at precisely 3:30. It stopped when my father was making important calls on the other side of the world.\n\nThe next day, at exactly 3:30, my grandfather had succumbed to heart disease. He undoubtedly believed he would feel it coming.\n\nMy mother told me that on the day of my grandfather's death, twenty clocks throughout the house stopped working. Many things changed over the years; everything changed, even my parents, but the big clock still remains stopped at 3:30, evoking memories and taking us on a journey together.",
-      "audio_ar_male": "assets/data/audio/stopped-clock_ar_male.mp3",
-      "audio_ar_female": "assets/data/audio/stopped-clock_ar_female.mp3"
+      "audio_ar_male": "data/audio/the-stopped-clock_ar_male.mp3",
+      "audio_ar_female": "data/audio/the-stopped-clock_ar_female.mp3"
     }
   ]
 }
