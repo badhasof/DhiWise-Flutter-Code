@@ -96,57 +96,57 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     // Setup audio player listeners
     _audioPlayer.onDurationChanged.listen((Duration duration) {
       if (mounted) {
-        setState(() {
-          _duration = duration;
-          // Calculate ms per word for text adherence
-          if (_currentLanguage == 'ar') {
-            _msPerWord = duration.inMilliseconds / _arabicWords.length;
-          } else {
-            _msPerWord = duration.inMilliseconds / _englishWords.length;
-          }
-        });
+      setState(() {
+        _duration = duration;
+        // Calculate ms per word for text adherence
+        if (_currentLanguage == 'ar') {
+          _msPerWord = duration.inMilliseconds / _arabicWords.length;
+        } else {
+          _msPerWord = duration.inMilliseconds / _englishWords.length;
+        }
+      });
       }
     });
     
     _audioPlayer.onPositionChanged.listen((Duration position) {
       if (mounted) { // Add safety check
-        setState(() {
-          _position = position;
-          if (_duration.inMilliseconds > 0) {
-            _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
-            
-            // Update highlighted word if text adherence is enabled
-            if (_textAdherenceEnabled && _isPlaying) {
-              _updateHighlightedWord(position);
-            }
+      setState(() {
+        _position = position;
+        if (_duration.inMilliseconds > 0) {
+          _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
+          
+          // Update highlighted word if text adherence is enabled
+          if (_textAdherenceEnabled && _isPlaying) {
+            _updateHighlightedWord(position);
           }
-        });
+        }
+      });
       }
     });
-
+    
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
       if (mounted) { // Add safety check
-        setState(() {
-          _isPlaying = state == PlayerState.playing;
-          if (state == PlayerState.completed) {
-            _currentPosition = 0.0;
-            _position = Duration.zero;
-            _currentWordIndex = 0;
-            _resetHighlightedWords();
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+        if (state == PlayerState.completed) {
+          _currentPosition = 0.0;
+          _position = Duration.zero;
+          _currentWordIndex = 0;
+          _resetHighlightedWords();
             
             // Show story completion screen
             _showCompletionScreen();
+        }
+        
+        // Handle text adherence timer
+        if (_textAdherenceEnabled) {
+          if (state == PlayerState.playing) {
+            _startTextAdherence();
+          } else {
+            _stopTextAdherence();
           }
-          
-          // Handle text adherence timer
-          if (_textAdherenceEnabled) {
-            if (state == PlayerState.playing) {
-              _startTextAdherence();
-            } else {
-              _stopTextAdherence();
-            }
-          }
-        });
+        }
+      });
       }
     });
     
@@ -406,25 +406,25 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       body: Stack(
         children: [
           SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
+        child: Column(
+          children: [
+            _buildHeader(),
                 _buildDashedDivider(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                           _buildStoryHeader(),
                           SizedBox(height: 16.h),
-                          _buildStoryContent(),
-                        ],
-                      ),
-                    ),
+                      _buildStoryContent(),
+                    ],
                   ),
                 ),
+              ),
+            ),
               ],
             ),
           ),
@@ -649,16 +649,16 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             child: Container(
               margin: EdgeInsets.only(top: 4.h),
               padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
-              decoration: BoxDecoration(
+            decoration: BoxDecoration(
                 color: Color(0xFFFF6F3E).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8.h),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 16.h,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.access_time,
+                  size: 16.h,
                     color: Color(0xFFFF6F3E),
                   ),
                   SizedBox(width: 4.h),
@@ -817,18 +817,18 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             padding: EdgeInsets.all(16.h),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12.h),
-              border: Border.all(
+            borderRadius: BorderRadius.circular(12.h),
+            border: Border.all(
                 color: Color(0xFFFFEBE5),
                 width: 1.5,
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
-              children: _buildHighlightedText(
-                widget.story.contentAr,
-                TextDirection.rtl,
-                isArabic: true,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
+            children: _buildHighlightedText(
+              widget.story.contentAr,
+              TextDirection.rtl,
+              isArabic: true,
               ),
             ),
           ),
@@ -845,10 +845,10 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Icon(
+            child: Icon(
                 Icons.swap_vert,
-                color: Colors.white,
-                size: 16.h,
+              color: Colors.white,
+              size: 16.h,
               ),
             ),
           ),
@@ -865,21 +865,21 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             padding: EdgeInsets.all(16.h),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12.h),
-              border: Border.all(
+            borderRadius: BorderRadius.circular(12.h),
+            border: Border.all(
                 color: Color(0xFFEFECEB),
                 width: 1.5,
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: _buildHighlightedText(
-                widget.story.contentEn,
-                TextDirection.ltr,
-                isArabic: false,
-              ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _buildHighlightedText(
+              widget.story.contentEn,
+              TextDirection.ltr,
+              isArabic: false,
             ),
           ),
+        ),
         ),
         // Add extra padding at the bottom to ensure content is not cut off by audio player
         SizedBox(height: 120.h),

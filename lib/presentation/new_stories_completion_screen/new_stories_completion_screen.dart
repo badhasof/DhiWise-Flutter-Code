@@ -177,7 +177,7 @@ class _NewStoriesCompletionScreenState extends State<NewStoriesCompletionScreen>
           children: [
             HomeSixItemWidget(
               HomeSixItemModel(
-                labelfill: story.genre,
+                labelfill: story.subGenre.isNotEmpty ? story.subGenre : story.genre,
                 hisnewbook: story.titleEn,
                 label: "Read Now",
               ),
