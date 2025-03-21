@@ -61,11 +61,10 @@ class StoryService {
   Future<List<Story>> getStoriesByCategory(bool isFiction) async {
     final stories = await getStories();
     
-    // Classify genres into Fiction and Non-Fiction categories
-    final fictionGenres = ['Fantasy', 'Science Fiction', 'Horror', 'Mystery'];
-    
     return stories.where((story) {
-      final isStoryFiction = fictionGenres.contains(story.genre);
+      // Check if the story's genre matches the requested Fiction/Non-Fiction category
+      // Fiction is when genre field contains "Fiction", Non-Fiction is when it doesn't
+      final isStoryFiction = story.genre == "Fiction";
       return isStoryFiction == isFiction;
     }).toList();
   }
@@ -84,13 +83,14 @@ class StoryService {
     }
     
     // Filter by genre if specified
-    if (genre != null) {
-      stories.retainWhere((story) => story.genre == genre);
+    if (genre != null && genre != "All Stories") {
+      // If "All Stories" is selected, don't filter by genre
+      return stories.where((story) => story.subGenre == genre).toList();
     }
     
     // Further filter by sub-genre if specified
-    if (subGenre != null && subGenre.isNotEmpty) {
-      stories.retainWhere((story) => story.subGenre == subGenre);
+    if (subGenre != null && subGenre != "All Stories") {
+      return stories.where((story) => story.subGenre == subGenre).toList();
     }
     
     return stories;
@@ -106,6 +106,20 @@ class StoryService {
   Future<List<Story>> getStoriesBySubGenre(String subGenre) async {
     final stories = await getStories();
     return stories.where((story) => story.subGenre == subGenre).toList();
+  }
+  
+  // Get all available sub-genres for a specific main genre (Fiction/Non-Fiction)
+  Future<List<String>> getAvailableSubGenres(bool isFiction) async {
+    final stories = await getStoriesByCategory(isFiction);
+    
+    // Extract unique sub-genres
+    final subGenres = stories.map((story) => story.subGenre).toSet().toList();
+    
+    // Sort them alphabetically
+    subGenres.sort();
+    
+    // Add "All Stories" as the first option
+    return ["All Stories", ...subGenres];
   }
   
   // Get stories by level

@@ -46,6 +46,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   bool _isFictionSelected = false; // Non-fiction selected by default
   String _selectedSubGenre = "All Stories"; // Track selected sub-genre
   
+  // List to store available sub-genres
+  List<String> _availableSubGenres = ["All Stories"];
+  
   @override
   void initState() {
     super.initState();
@@ -60,10 +63,12 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     
     final stories = await _storyService.getStories();
     final filteredStories = await _storyService.getStoriesByCategory(_isFictionSelected);
+    final subGenres = await _storyService.getAvailableSubGenres(_isFictionSelected);
     
     setState(() {
       _stories = stories;
       _displayedStories = filteredStories;
+      _availableSubGenres = subGenres;
       _isLoading = false;
     });
   }
@@ -74,16 +79,19 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       _isLoading = true;
     });
     
+    // Get the sub-genres for the current fiction/non-fiction selection
+    final subGenres = await _storyService.getAvailableSubGenres(_isFictionSelected);
+    
     List<Story> filteredStories;
     
     if (_selectedSubGenre == "All Stories") {
       // Just filter by fiction/non-fiction
       filteredStories = await _storyService.getStoriesByCategory(_isFictionSelected);
     } else {
-      // Filter by both fiction/non-fiction and genre
+      // Filter by both fiction/non-fiction and sub-genre
       filteredStories = await _storyService.getFilteredStories(
         isFiction: _isFictionSelected,
-        genre: _selectedSubGenre,
+        subGenre: _selectedSubGenre,
       );
     }
     
@@ -91,9 +99,10 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     print('Fiction selected: $_isFictionSelected');
     print('Sub-genre selected: $_selectedSubGenre');
     print('Number of stories: ${filteredStories.length}');
-    print('Genres: ${filteredStories.map((s) => s.genre).toSet().toList()}');
+    print('Available sub-genres: $_availableSubGenres');
     
     setState(() {
+      _availableSubGenres = subGenres;
       _displayedStories = filteredStories;
       _isLoading = false;
     });
@@ -546,16 +555,13 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     // Get the first 3 stories or fewer if there are less than 3
     final displayStories = _isLoading ? [] : _displayedStories.take(3).toList();
     
-    // All available genres (to be shown in the horizontal scroll)
-    final availableGenres = ["All Stories", "Fantasy", "Horror", "Mystery", "Science Fiction"];
-    
     return Container(
       width: double.maxFinite,
       margin: EdgeInsets.only(left: 14.h, right: 14.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Horizontal scrollable row for genres
+          // Horizontal scrollable row for sub-genres
           Container(
             height: 40.h,
             width: double.maxFinite,
@@ -563,13 +569,13 @@ class HomeInitialPageState extends State<HomeInitialPage> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  // Generate genre tabs dynamically
-                  ...availableGenres.map((genre) {
-                    final isSelected = genre == _selectedSubGenre;
+                  // Generate sub-genre tabs dynamically
+                  ..._availableSubGenres.map((subGenre) {
+                    final isSelected = subGenre == _selectedSubGenre;
                     return GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedSubGenre = genre;
+                          _selectedSubGenre = subGenre;
                         });
                         _updateDisplayedStories(); // Update stories when sub-genre is selected
                       },
@@ -586,7 +592,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              genre,
+                              subGenre,
                               style: isSelected
                                 ? theme.textTheme.titleLarge
                                 : CustomTextStyles.titleMediumOnPrimarySemiBold_1,
@@ -611,7 +617,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                 children: [
                   HomeSixItemWidget(
                     HomeSixItemModel(
-                      labelfill: story.genre,
+                      labelfill: story.subGenre,
                       hisnewbook: story.titleEn,
                       label: "Read Now"
                     ),

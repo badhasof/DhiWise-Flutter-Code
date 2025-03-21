@@ -7,6 +7,7 @@ import '../home_screen/widgets/home_six_item_widget.dart';
 import '../home_screen/models/home_six_item_model.dart';
 import '../stories_overview_screen/stories_overview_screen.dart';
 import '../story_screen/story_screen.dart';
+import '../home_screen/home_screen.dart';
 import 'bloc/new_stories_bloc.dart';
 import 'models/new_stories_model.dart';
 
@@ -76,7 +77,12 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
             elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomeScreen.builder(context),
+                ),
+              ),
             ),
             title: Text(
               "All Stories",

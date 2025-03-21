@@ -240,12 +240,12 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       padding: EdgeInsets.only(bottom: 4.h),
       child: GestureDetector(
         onTap: () {
-          // Navigate to the All Stories screen using the builder method
-          Navigator.of(context).pushAndRemoveUntil(
+          // Fix: Use Navigator.pushReplacement instead of pushAndRemoveUntil
+          // This replaces the current screen while keeping the rest of the navigation stack intact
+          Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => NewStoriesScreen.builder(context),
             ),
-            (route) => false, // Remove all previous routes
           );
         },
         child: Container(
@@ -287,12 +287,12 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       padding: EdgeInsets.only(bottom: 4.h),
       child: GestureDetector(
         onTap: () {
-          // Navigate directly to the home screen
-          Navigator.of(context).pushAndRemoveUntil(
+          // Fix: Use Navigator.pushReplacement instead of pushAndRemoveUntil
+          // This replaces the current screen while keeping the rest of the navigation stack intact
+          Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => HomeScreen.builder(context),
             ),
-            (route) => false, // Remove all previous routes
           );
         },
         child: Container(

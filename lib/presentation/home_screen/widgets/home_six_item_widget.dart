@@ -27,8 +27,8 @@ class HomeSixItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // If a story is provided, use its data, otherwise use the model data
-    final String genre = story?.genre ?? homeSixItemModelObj.labelfill!;
+    // Use the labelfill from the model (which we set to story.subGenre in the parent)
+    final String genre = homeSixItemModelObj.labelfill!;
     final String title = story?.titleEn ?? homeSixItemModelObj.hisnewbook!;
     final String buttonText = homeSixItemModelObj.label!;
     
