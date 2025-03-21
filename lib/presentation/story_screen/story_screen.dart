@@ -6,6 +6,7 @@ import 'dart:async';
 import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
 import '../../widgets/audio_control_overlay.dart';
+import '../story_completion_screen/story_completion_screen.dart';
 
 class StoryScreen extends StatefulWidget {
   final Story story;
@@ -125,6 +126,9 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
           _position = Duration.zero;
           _currentWordIndex = 0;
           _resetHighlightedWords();
+          
+          // Show story completion screen
+          _showCompletionScreen();
         }
         
         // Handle text adherence timer
@@ -531,6 +535,26 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                             ),
                           ),
                           
+                          // Test button for completion screen (remove in production)
+                          GestureDetector(
+                            onTap: _showCompletionScreen,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              margin: const EdgeInsets.only(left: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6F3E),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                "Test Completion",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          
                           // Speed control
                           GestureDetector(
                             onTap: _toggleAudioSettings,
@@ -896,6 +920,26 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         ),
       );
     }).toList();
+  }
+
+  // Show story completion screen
+  void _showCompletionScreen() {
+    // Wait a moment before showing completion screen
+    Future.delayed(Duration(milliseconds: 500), () {
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => StoryCompletionScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeOut;
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
+            return SlideTransition(position: offsetAnimation, child: child);
+          },
+        ),
+      );
+    });
   }
 }
 
