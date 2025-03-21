@@ -854,6 +854,8 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             ),
           ),
         ),
+        // Add extra padding at the bottom to ensure content is not cut off by audio player
+        SizedBox(height: 120.h),
       ],
     );
   }
