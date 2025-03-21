@@ -77,12 +77,13 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
             elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => HomeScreen.builder(context),
-                ),
-              ),
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => HomeScreen.builder(context),
+                  ),
+                );
+              },
             ),
             title: Text(
               "All Stories",

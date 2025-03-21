@@ -240,8 +240,7 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       padding: EdgeInsets.only(bottom: 4.h),
       child: GestureDetector(
         onTap: () {
-          // Fix: Use Navigator.pushReplacement instead of pushAndRemoveUntil
-          // This replaces the current screen while keeping the rest of the navigation stack intact
+          // Navigate to the new stories screen, replacing the current screen
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => NewStoriesScreen.builder(context),
