@@ -59,10 +59,10 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
               blastDirection: math.pi / 2, // straight down
               emissionFrequency: 0.05,
               numberOfParticles: 20,
-              maxBlastForce: 20,
-              minBlastForce: 5,
-              gravity: 0.2,
-              particleDrag: 0.05,
+              maxBlastForce: 25, // increased for more distance
+              minBlastForce: 10, // increased for more distance
+              gravity: 0.05, // reduced for slower falling
+              particleDrag: 0.02, // reduced for less resistance
               colors: const [
                 Color(0xFFFF6F3E), // Orange
                 Color(0xFF1CAFFB), // Blue

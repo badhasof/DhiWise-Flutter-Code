@@ -359,10 +359,18 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
 
   @override
   void dispose() {
-    // Stop text adherence timer
-    _stopTextAdherence();
-    // Release the audio player resources
+    // Cancel all timers
+    _highlightTimer?.cancel();
+    
+    // Remove all listeners before disposing
+    _audioPlayer.onPositionChanged.drain();
+    _audioPlayer.onPlayerStateChanged.drain();
+    _audioPlayer.onPlayerComplete.drain();
+    
+    // Make sure to release the audio player resources
+    _audioPlayer.stop();
     _audioPlayer.dispose();
+    
     // Restore the bottom navigation bar when this screen is closed
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
     super.dispose();
@@ -531,26 +539,6 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                                 _isPlaying ? Icons.pause : Icons.play_arrow,
                                 color: Colors.white,
                                 size: 24,
-                              ),
-                            ),
-                          ),
-                          
-                          // Test button for completion screen (remove in production)
-                          GestureDetector(
-                            onTap: _showCompletionScreen,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              margin: const EdgeInsets.only(left: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF6F3E),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                "Test Completion",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                ),
                               ),
                             ),
                           ),
