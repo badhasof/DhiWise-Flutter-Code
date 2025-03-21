@@ -23,6 +23,7 @@ import '../presentation/reminders_settings_screen/reminders_settings_screen.dart
 import '../presentation/friends_settings_screen/friends_settings_screen.dart';
 import '../presentation/leaderboards_settings_screen/leaderboards_settings_screen.dart';
 import '../presentation/announcements_settings_screen/announcements_settings_screen.dart';
+import '../presentation/new_stories_completion_screen/new_stories_completion_screen.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -74,6 +75,8 @@ class AppRoutes {
   static const String leaderboardsSettingsScreen = '/leaderboards_settings_screen';
   
   static const String announcementsSettingsScreen = '/announcements_settings_screen';
+  
+  static const String newStoriesCompletionScreen = '/new_stories_completion_screen';
 
   static Map<String, WidgetBuilder> get routes => {
         onboardimgScreen: OnboardimgScreen.builder,
@@ -100,6 +103,7 @@ class AppRoutes {
         remindersSettingsScreen: RemindersSettingsScreen.builder,
         friendsSettingsScreen: FriendsSettingsScreen.builder,
         leaderboardsSettingsScreen: LeaderboardsSettingsScreen.builder,
-        announcementsSettingsScreen: AnnouncementsSettingsScreen.builder
+        announcementsSettingsScreen: AnnouncementsSettingsScreen.builder,
+        newStoriesCompletionScreen: NewStoriesCompletionScreen.builder
       };
 }

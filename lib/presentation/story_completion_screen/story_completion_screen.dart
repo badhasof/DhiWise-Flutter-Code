@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:confetti/confetti.dart';
 import 'dart:math' as math;
 import '../../core/app_export.dart';
-import '../new_stories_screen/new_stories_screen.dart';
+import '../new_stories_completion_screen/new_stories_completion_screen.dart';
 import '../home_screen/home_screen.dart';
 
 class StoryCompletionScreen extends StatefulWidget {
@@ -240,10 +240,10 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       padding: EdgeInsets.only(bottom: 4.h),
       child: GestureDetector(
         onTap: () {
-          // Navigate to the new stories screen, replacing the current screen
+          // Navigate to the new stories completion screen, replacing the current screen
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => NewStoriesScreen.builder(context),
+              builder: (context) => NewStoriesCompletionScreen.builder(context),
             ),
           );
         },

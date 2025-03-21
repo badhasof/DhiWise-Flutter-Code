@@ -8,26 +8,26 @@ import '../home_screen/models/home_six_item_model.dart';
 import '../stories_overview_screen/stories_overview_screen.dart';
 import '../story_screen/story_screen.dart';
 import '../home_screen/home_screen.dart';
-import 'bloc/new_stories_bloc.dart';
-import 'models/new_stories_model.dart';
+import '../new_stories_screen/bloc/new_stories_bloc.dart';
+import '../new_stories_screen/models/new_stories_model.dart';
 
-class NewStoriesScreen extends StatefulWidget {
-  const NewStoriesScreen({Key? key}) : super(key: key);
+class NewStoriesCompletionScreen extends StatefulWidget {
+  const NewStoriesCompletionScreen({Key? key}) : super(key: key);
 
   static Widget builder(BuildContext context) {
     return BlocProvider<NewStoriesBloc>(
       create: (context) => NewStoriesBloc(NewStoriesState(
         newStoriesModelObj: NewStoriesModel(),
       ))..add(NewStoriesInitialEvent()),
-      child: NewStoriesScreen(),
+      child: NewStoriesCompletionScreen(),
     );
   }
 
   @override
-  State<NewStoriesScreen> createState() => _NewStoriesScreenState();
+  State<NewStoriesCompletionScreen> createState() => _NewStoriesCompletionScreenState();
 }
 
-class _NewStoriesScreenState extends State<NewStoriesScreen> {
+class _NewStoriesCompletionScreenState extends State<NewStoriesCompletionScreen> {
   // Story service instance
   final StoryService _storyService = StoryService();
   
@@ -78,7 +78,14 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                Navigator.of(context).pop();
+                // Go directly to home screen when back button is pressed
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomeScreen.builder(context),
+                  ),
+                  (route) => false,
+                );
               },
             ),
             title: Text(
@@ -184,4 +191,4 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
       }).toList(),
     );
   }
-}
+} 
