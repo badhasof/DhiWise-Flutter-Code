@@ -3,7 +3,6 @@ import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
 import '../../services/story_service.dart';
 import '../story_screen/story_screen.dart';
-import '../../widgets/custom_icon_button.dart';
 
 class StoryData {
   final String title;
@@ -70,35 +69,33 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFFF9F4),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildTopBar(),
             Expanded(
               child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildImage(),
-                    Padding(
-                      padding: EdgeInsets.all(16.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLevelAndDuration(),
-                          SizedBox(height: 16.h),
-                          _buildTitles(),
-                          SizedBox(height: 24.h),
-                          _buildDescription(),
-                          SizedBox(height: 24.h),
-                          _buildReadNowButton(),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: Padding(
+                  padding: EdgeInsets.all(16.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStoryImage(),
+                      SizedBox(height: 16.h),
+                      _buildTagsAndTitles(),
+                      SizedBox(height: 16.h),
+                      _buildDescriptionSection(),
+                      SizedBox(height: 24.h),
+                    ],
+                  ),
                 ),
               ),
+            ),
+            SizedBox(height: 8.h),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.h, 0, 16.h, 16.h),
+              child: _buildReadNowButton(),
             ),
           ],
         ),
@@ -106,51 +103,20 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Text(
-                "Overview",
-                style: theme.textTheme.titleLarge,
-              ),
-              IconButton(
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.black,
-                ),
-                onPressed: () {
-                  setState(() {
-                    isFavorite = !isFavorite;
-                  });
-                },
-              ),
-            ],
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.h),
-            padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
+  Widget _buildTopBar() {
+    return Column(
+      children: [
+        // Status bar content (time, battery, etc.)
+        // Trail time indicator
+        Container(
+          width: double.infinity,
+          alignment: Alignment.center,
+          child: Container(
+            margin: EdgeInsets.only(top: 4.h),
+            padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
             decoration: BoxDecoration(
               color: appTheme.deepOrangeA200.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20.h),
+              borderRadius: BorderRadius.circular(8.h),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -162,69 +128,60 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
                 ),
                 SizedBox(width: 4.h),
                 Text(
-                  "Trial time: 30:00",
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  "Trail time: 30:00",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 12.fSize,
+                    fontWeight: FontWeight.w500,
                     color: appTheme.deepOrangeA200,
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImage() {
-    return Container(
-      width: double.infinity,
-      height: 240.h,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.h),
-        image: DecorationImage(
-          image: AssetImage(widget.storyData.imagePath),
-          fit: BoxFit.cover,
         ),
-      ),
-      margin: EdgeInsets.all(16.h),
-    );
-  }
-
-  Widget _buildLevelAndDuration() {
-    return Row(
-      children: [
+        // Navigation bar with back button, title, and favorite button
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
+          padding: EdgeInsets.fromLTRB(16.h, 4.h, 16.h, 12.h),
           decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(20.h),
-          ),
-          child: Text(
-            widget.storyData.level,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.white,
+            color: Color(0xFFFFF9F4),
+            border: Border(
+              bottom: BorderSide(
+                color: Color(0xFFEFECEB),
+                width: 1,
+              ),
             ),
           ),
-        ),
-        SizedBox(width: 12.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: appTheme.deepOrangeA200.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20.h),
-          ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                Icons.access_time,
-                size: 16.h,
-                color: appTheme.deepOrangeA200,
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Color(0xFFAB9C97),
+                  size: 24.h,
+                ),
               ),
-              SizedBox(width: 4.h),
               Text(
-                widget.storyData.duration,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: appTheme.deepOrangeA200,
+                "Overview",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 18.fSize,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF37251F),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    isFavorite = !isFavorite;
+                  });
+                },
+                child: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: Color(0xFFFF4C4B),
+                  size: 24.h,
                 ),
               ),
             ],
@@ -234,84 +191,216 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
     );
   }
 
-  Widget _buildTitles() {
+  Widget _buildStoryImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.h),
+      child: Image.asset(
+        widget.storyData.imagePath,
+        width: double.infinity,
+        height: 200.h,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildTagsAndTitles() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Level and duration tags
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: Color(0xFF1CAFFB),
+                borderRadius: BorderRadius.circular(8.h),
+              ),
+              child: Text(
+                widget.storyData.level,
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 12.fSize,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: Color(0xFFFFEBE5),
+                borderRadius: BorderRadius.circular(8.h),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 14.h,
+                    color: appTheme.deepOrangeA200,
+                  ),
+                  SizedBox(width: 4.h),
+                  Text(
+                    widget.storyData.duration,
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 12.fSize,
+                      fontWeight: FontWeight.w500,
+                      color: appTheme.deepOrangeA200,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        
+        // Story title (English)
         Text(
           widget.storyData.title,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 24.fSize,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF37251F),
+            height: 1.5,
           ),
         ),
         SizedBox(height: 8.h),
+        
+        // Story title (Arabic)
         Text(
           widget.storyData.arabicTitle,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontFamily: 'Arabic',
+          style: TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 18.fSize,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF37251F),
+            height: 1.5,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDescription() {
-    return Text(
-      widget.storyData.description,
-      style: theme.textTheme.bodyLarge?.copyWith(
-        color: Colors.grey[700],
-        height: 1.5,
-      ),
+  Widget _buildDescriptionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Dashed line separator
+        Container(
+          width: double.infinity,
+          height: 1,
+          child: CustomPaint(
+            painter: DashedLinePainter(color: Color(0xFFDBD3D1)),
+          ),
+        ),
+        
+        SizedBox(height: 16.h),
+        
+        // Story description
+        Text(
+          widget.storyData.description,
+          style: TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 16.fSize,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF513E37),
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildReadNowButton() {
     return Container(
       width: double.infinity,
-      height: 56.h,
-      child: ElevatedButton(
-        onPressed: () {
-          // Navigate to the story screen
-          if (_story != null) {
-            Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(
-                builder: (context) => StoryScreen(story: _story!),
-              ),
-            );
-          } else {
-            // Show a snackbar if the story is not found
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Story content not available yet'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: appTheme.deepOrangeA200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.h),
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFD84918),
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (_story != null) {
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => StoryScreen(story: _story!),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Story content not available yet'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(12.h),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            decoration: BoxDecoration(
+              color: appTheme.deepOrangeA200,
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Read now",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 16.fSize,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 8.h),
+                Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Read now",
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(width: 8.h),
-            Icon(
-              Icons.arrow_forward,
-              color: Colors.white,
-            ),
-          ],
         ),
       ),
     );
   }
+}
+
+// Custom painter for dashed line
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  
+  DashedLinePainter({required this.color});
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+      
+    double dashWidth = 3;
+    double dashSpace = 3;
+    double startX = 0;
+    
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0),
+        Offset(startX + dashWidth, 0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 } 

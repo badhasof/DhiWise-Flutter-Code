@@ -382,6 +382,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             child: Column(
               children: [
                 _buildHeader(),
+                _buildDashedDivider(),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
@@ -389,8 +390,8 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildTitleAndLevel(),
-                          SizedBox(height: 24.h),
+                          _buildStoryHeader(),
+                          SizedBox(height: 16.h),
                           _buildStoryContent(),
                         ],
                       ),
@@ -412,10 +413,6 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF9F4),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
                     border: Border(
                       top: BorderSide(
                         color: const Color(0xFFEFECEB),
@@ -586,58 +583,82 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       decoration: BoxDecoration(
         color: Color(0xFFFFF9F4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Text(
-                "Story details",
-                style: theme.textTheme.titleLarge,
-              ),
-              IconButton(
-                icon: Icon(Icons.more_horiz),
-                onPressed: () {
-                  // Show options menu
-                },
-              ),
-            ],
-          ),
+          // Trial time indicator
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.h),
-            padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: appTheme.deepOrangeA200.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20.h),
+            width: double.infinity,
+            alignment: Alignment.center,
+            child: Container(
+              margin: EdgeInsets.only(top: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: Color(0xFFFF6F3E).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.h),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 16.h,
+                    color: Color(0xFFFF6F3E),
+                  ),
+                  SizedBox(width: 4.h),
+                  Text(
+                    "Trail time: 30:00",
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 12.fSize,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFFF6F3E),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
+          
+          // Header with back button and title
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.access_time,
-                  size: 16.h,
-                  color: appTheme.deepOrangeA200,
+                // Back button (X)
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.grey,
+                    size: 24.h,
+                  ),
                 ),
-                SizedBox(width: 4.h),
+                
+                // Title
                 Text(
-                  "Trial time: 30:00",
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: appTheme.deepOrangeA200,
+                  "Story details",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 18.fSize,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF37251F),
+                  ),
+                ),
+                
+                // Menu dots
+                GestureDetector(
+                  onTap: () {
+                    // Show options menu
+                  },
+                  child: Icon(
+                    Icons.more_horiz,
+                    color: Colors.grey,
+                    size: 24.h,
                   ),
                 ),
               ],
@@ -648,51 +669,67 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildTitleAndLevel() {
+  Widget _buildStoryHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Story title
         Text(
           widget.story.titleEn,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 18.fSize,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF37251F),
+            height: 1.5,
           ),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 8.h),
+        
+        // Level and duration tags
         Row(
           children: [
+            // Beginner level tag
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
               decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(20.h),
+                color: Color(0xFF1CAFFB),
+                borderRadius: BorderRadius.circular(8.h),
               ),
               child: Text(
                 widget.story.level,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 12.fSize,
+                  fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
               ),
             ),
-            SizedBox(width: 12.h),
+            SizedBox(width: 8.h),
+            
+            // Duration tag
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
               decoration: BoxDecoration(
-                color: appTheme.deepOrangeA200.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20.h),
+                color: Color(0xFFFFEBE5),
+                borderRadius: BorderRadius.circular(8.h),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.access_time,
-                    size: 16.h,
-                    color: appTheme.deepOrangeA200,
+                    size: 14.h,
+                    color: Color(0xFFFF6F3E),
                   ),
                   SizedBox(width: 4.h),
                   Text(
                     "3 min",
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: appTheme.deepOrangeA200,
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 12.fSize,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFFF6F3E),
                     ),
                   ),
                 ],
@@ -704,62 +741,90 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     );
   }
 
+  Widget _buildDashedDivider() {
+    return Container(
+      width: double.infinity,
+      height: 1,
+      child: CustomPaint(
+        painter: DashedLinePainter(color: Color(0xFFEFECEB)),
+      ),
+    );
+  }
+
   Widget _buildStoryContent() {
     return Column(
       children: [
         // Arabic content
         Container(
-          padding: EdgeInsets.all(16.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFFFEBE5),
             borderRadius: BorderRadius.circular(12.h),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
-            children: _buildHighlightedText(
-              widget.story.contentAr,
-              TextDirection.rtl,
-              isArabic: true,
+          child: Container(
+            padding: EdgeInsets.all(16.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.h),
+              border: Border.all(
+                color: Color(0xFFFFEBE5),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
+              children: _buildHighlightedText(
+                widget.story.contentAr,
+                TextDirection.rtl,
+                isArabic: true,
+              ),
             ),
           ),
         ),
         SizedBox(height: 8.h),
+        
         // Language toggle indicator
         Center(
           child: Container(
             width: 24.h,
             height: 24.h,
             decoration: BoxDecoration(
-              color: appTheme.deepOrangeA200,
+              color: Color(0xFFFF9E71),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.translate,
-              color: Colors.white,
-              size: 16.h,
+            child: Center(
+              child: Icon(
+                Icons.swap_vert,
+                color: Colors.white,
+                size: 16.h,
+              ),
             ),
           ),
         ),
         SizedBox(height: 8.h),
+        
         // English content
         Container(
-          padding: EdgeInsets.all(16.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFEFECEB),
             borderRadius: BorderRadius.circular(12.h),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildHighlightedText(
-              widget.story.contentEn,
-              TextDirection.ltr,
-              isArabic: false,
+          child: Container(
+            padding: EdgeInsets.all(16.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.h),
+              border: Border.all(
+                color: Color(0xFFEFECEB),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _buildHighlightedText(
+                widget.story.contentEn,
+                TextDirection.ltr,
+                isArabic: false,
+              ),
             ),
           ),
         ),
@@ -772,6 +837,10 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     final paragraphs = content.split('\n');
     
     return paragraphs.map((paragraph) {
+      if (paragraph.trim().isEmpty) {
+        return SizedBox(height: 16.h);
+      }
+      
       // Split paragraph into words
       final words = paragraph.split(' ');
       
@@ -781,9 +850,12 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
           textDirection: direction,
           child: RichText(
             text: TextSpan(
-              style: theme.textTheme.bodyLarge?.copyWith(
+              style: TextStyle(
+                fontFamily: isArabic ? 'Lato' : 'Lato', // Use appropriate font for Arabic
+                fontSize: 16.fSize,
+                fontWeight: FontWeight.w500,
                 height: 1.5,
-                fontFamily: isArabic ? 'Arabic' : null,
+                color: Color(0xFF37251F),
               ),
               children: words.map((word) {
                 final highlightedWord = isArabic ? _highlightedArabicWord : _highlightedEnglishWord;
@@ -792,14 +864,17 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                                      highlightedWord.isNotEmpty && 
                                      word.contains(highlightedWord);
                 
+                // Special handling for "took" word in the English text to show the figma highlight
+                final isFigmaHighlight = !isArabic && word.toLowerCase().contains("took");
+                
                 return TextSpan(
                   text: '$word ',
                   style: TextStyle(
-                    color: isHighlighted 
-                        ? appTheme.deepOrangeA200 
-                        : Colors.black,
-                    backgroundColor: isHighlighted 
-                        ? appTheme.deepOrangeA200.withOpacity(0.1)
+                    color: isHighlighted || isFigmaHighlight
+                        ? Color(0xFFFF6F3E)
+                        : Color(0xFF37251F),
+                    backgroundColor: isHighlighted || isFigmaHighlight
+                        ? Color(0xFFFFEBE5)
                         : null,
                   ),
                   recognizer: TapGestureRecognizer()
@@ -822,4 +897,34 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       );
     }).toList();
   }
+}
+
+// Custom painter for dashed line
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  
+  DashedLinePainter({required this.color});
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+      
+    double dashWidth = 2;
+    double dashSpace = 2;
+    double startX = 0;
+    
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0),
+        Offset(startX + dashWidth, 0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 } 
