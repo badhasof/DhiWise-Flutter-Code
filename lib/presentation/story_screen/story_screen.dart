@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
@@ -468,6 +469,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                                 final progressWidth = width * _currentPosition.clamp(0.0, 1.0);
                                 
                                 return Stack(
+                                  clipBehavior: Clip.none,
                                   children: [
                                     // Progress fill
                                     Container(
@@ -480,7 +482,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                                     // Thumb/handle
                                     Positioned(
                                       left: progressWidth - 8,
-                                      top: -6,
+                                      top: -5.5,
                                       child: GestureDetector(
                                         onHorizontalDragUpdate: (details) {
                                           final RenderBox box = context.findRenderObject() as RenderBox;
@@ -490,10 +492,17 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                                         },
                                         child: Container(
                                           width: 16,
-                                          height: 16,
+                                          height: 19,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            shape: BoxShape.circle,
+                                            borderRadius: BorderRadius.circular(10),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.1),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
                                             border: Border.all(
                                               color: const Color(0xFF1CAFFB),
                                               width: 1,
@@ -544,15 +553,33 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                           GestureDetector(
                             onTap: _togglePlayback,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              width: 64,
+                              height: 64,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1CAFFB),
-                                borderRadius: BorderRadius.circular(12),
+                                color: const Color(0xFF4AA9FB),
+                                borderRadius: BorderRadius.circular(16),
+                                border: const Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF0A8FD4),
+                                    width: 4,
+                                  ),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF4AA9FB).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: Icon(
-                                _isPlaying ? Icons.pause : Icons.play_arrow,
-                                color: Colors.white,
-                                size: 24,
+                              child: Center(
+                                child: _isPlaying 
+                                  ? Icon(Icons.pause, color: Colors.white, size: 32)
+                                  : SvgPicture.asset(
+                                      'assets/svg/play_button/play_button.svg',
+                                      width: 25,
+                                      height: 24,
+                                    ),
                               ),
                             ),
                           ),

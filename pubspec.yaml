@@ -35,6 +35,8 @@ flutter:
     - assets/images/settings_icons/
     - assets/icons/
     - assets/data/audio/
+    - assets/svg/
+    - assets/svg/play_button/
     
   fonts: 
     - family: Lato
