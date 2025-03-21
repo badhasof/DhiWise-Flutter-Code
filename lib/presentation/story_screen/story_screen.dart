@@ -71,7 +71,10 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     );
     
     // Initialize audio player
-    _initializeAudioPlayer();
+    _audioPlayer = AudioPlayer();
+    
+    // Set up audio player
+    _setupAudioPlayer();
     
     // Load audio data
     _loadAudio();
@@ -88,58 +91,69 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         .toList();
   }
 
-  void _initializeAudioPlayer() {
-    _audioPlayer = AudioPlayer();
-    
-    // Set up audio player listeners
+  void _setupAudioPlayer() {
+    // Setup audio player listeners
     _audioPlayer.onDurationChanged.listen((Duration duration) {
-      setState(() {
-        _duration = duration;
-        // Calculate ms per word for text adherence
-        if (_currentLanguage == 'ar') {
-          _msPerWord = duration.inMilliseconds / _arabicWords.length;
-        } else {
-          _msPerWord = duration.inMilliseconds / _englishWords.length;
-        }
-      });
+      if (mounted) {
+        setState(() {
+          _duration = duration;
+          // Calculate ms per word for text adherence
+          if (_currentLanguage == 'ar') {
+            _msPerWord = duration.inMilliseconds / _arabicWords.length;
+          } else {
+            _msPerWord = duration.inMilliseconds / _englishWords.length;
+          }
+        });
+      }
     });
     
     _audioPlayer.onPositionChanged.listen((Duration position) {
-      setState(() {
-        _position = position;
-        if (_duration.inMilliseconds > 0) {
-          _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
-          
-          // Update highlighted word if text adherence is enabled
-          if (_textAdherenceEnabled && _isPlaying) {
-            _updateHighlightedWord(position);
+      if (mounted) { // Add safety check
+        setState(() {
+          _position = position;
+          if (_duration.inMilliseconds > 0) {
+            _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
+            
+            // Update highlighted word if text adherence is enabled
+            if (_textAdherenceEnabled && _isPlaying) {
+              _updateHighlightedWord(position);
+            }
           }
-        }
-      });
+        });
+      }
+    });
+
+    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+      if (mounted) { // Add safety check
+        setState(() {
+          _isPlaying = state == PlayerState.playing;
+          if (state == PlayerState.completed) {
+            _currentPosition = 0.0;
+            _position = Duration.zero;
+            _currentWordIndex = 0;
+            _resetHighlightedWords();
+            
+            // Show story completion screen
+            _showCompletionScreen();
+          }
+          
+          // Handle text adherence timer
+          if (_textAdherenceEnabled) {
+            if (state == PlayerState.playing) {
+              _startTextAdherence();
+            } else {
+              _stopTextAdherence();
+            }
+          }
+        });
+      }
     });
     
-    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      setState(() {
-        _isPlaying = state == PlayerState.playing;
-        if (state == PlayerState.completed) {
-          _currentPosition = 0.0;
-          _position = Duration.zero;
-          _currentWordIndex = 0;
-          _resetHighlightedWords();
-          
-          // Show story completion screen
-          _showCompletionScreen();
-        }
-        
-        // Handle text adherence timer
-        if (_textAdherenceEnabled) {
-          if (state == PlayerState.playing) {
-            _startTextAdherence();
-          } else {
-            _stopTextAdherence();
-          }
-        }
-      });
+    // Additional direct completion listener for reliability
+    _audioPlayer.onPlayerComplete.listen((_) {
+      if (mounted) {
+        _showCompletionScreen();
+      }
     });
   }
   
@@ -912,21 +926,26 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
 
   // Show story completion screen
   void _showCompletionScreen() {
+    // Stop any ongoing audio
+    _audioPlayer.stop();
+    
     // Wait a moment before showing completion screen
     Future.delayed(Duration(milliseconds: 500), () {
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => StoryCompletionScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.easeOut;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(position: offsetAnimation, child: child);
-          },
-        ),
-      );
+      if (mounted) {  // Add safety check
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const StoryCompletionScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 1.0);
+              const end = Offset.zero;
+              const curve = Curves.easeOut;
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(position: offsetAnimation, child: child);
+            },
+          ),
+        );
+      }
     });
   }
 }

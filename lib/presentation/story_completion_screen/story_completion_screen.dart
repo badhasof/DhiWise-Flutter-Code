@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:confetti/confetti.dart';
 import 'dart:math' as math;
 import '../../core/app_export.dart';
+import '../new_stories_screen/new_stories_screen.dart';
+import '../home_screen/home_screen.dart';
 
 class StoryCompletionScreen extends StatefulWidget {
   const StoryCompletionScreen({Key? key}) : super(key: key);
@@ -21,9 +23,17 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
     // Initialize confetti controller
     _confettiController = ConfettiController(duration: const Duration(seconds: 5));
     
-    // Play confetti when screen loads
-    Future.delayed(Duration(milliseconds: 300), () {
-      _confettiController.play();
+    // More reliable way to ensure animation plays after screen is fully built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This ensures we're not calling play() during build
+      if (mounted) {
+        // Add a brief delay to ensure the animation is visible
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (mounted) {
+            _confettiController.play();
+          }
+        });
+      }
     });
   }
 
@@ -230,11 +240,13 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       padding: EdgeInsets.only(bottom: 4.h),
       child: GestureDetector(
         onTap: () {
-          // Close this screen first
-          Navigator.pop(context);
-          
-          // Then close the story screen to go back to stories list
-          Navigator.pop(context);
+          // Navigate to the All Stories screen using the builder method
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => NewStoriesScreen.builder(context),
+            ),
+            (route) => false, // Remove all previous routes
+          );
         },
         child: Container(
           decoration: BoxDecoration(
@@ -275,8 +287,13 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       padding: EdgeInsets.only(bottom: 4.h),
       child: GestureDetector(
         onTap: () {
-          // Close all screens and go back to home
-          Navigator.popUntil(context, (route) => route.isFirst);
+          // Navigate directly to the home screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => HomeScreen.builder(context),
+            ),
+            (route) => false, // Remove all previous routes
+          );
         },
         child: Container(
           decoration: BoxDecoration(
