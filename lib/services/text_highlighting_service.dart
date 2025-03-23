@@ -57,8 +57,9 @@ class TextHighlightingService {
         return SizedBox(height: 16.h);
       }
       
-      // Split paragraph into words
-      final words = paragraph.split(' ');
+      // Split paragraph into normalized words for better matching
+      final String normalizedParagraph = _normalizeFullText(paragraph);
+      final words = normalizedParagraph.split(' ');
       
       return Padding(
         padding: EdgeInsets.only(bottom: 16.h),
@@ -74,8 +75,18 @@ class TextHighlightingService {
                 color: Color(0xFF37251F),
               ),
               children: words.map((word) {
-                // Check if this word should be highlighted by exact matching
-                final isHighlighted = word == highlightedWord;
+                // Check if this word should be highlighted using improved word matching logic
+                final isHighlighted = highlightedWord != null && 
+                                     _wordsMatch(word, highlightedWord);
+                
+                // Add debug logging for near-misses that might be helpful
+                if (highlightedWord != null && 
+                    word.length > 2 && 
+                    !isHighlighted && 
+                    _calculateWordSimilarity(_normalizeWord(word), _normalizeWord(highlightedWord)) > 0.6) {
+                  debugPrint('Near miss highlighting: "$word" vs "$highlightedWord", '
+                      'similarity: ${_calculateWordSimilarity(_normalizeWord(word), _normalizeWord(highlightedWord))}');
+                }
                 
                 return TextSpan(
                   text: '$word ',
@@ -100,19 +111,210 @@ class TextHighlightingService {
   
   /// Extract ordered array of words from content
   List<String> extractWordsArray(String content) {
-    return content
-        .replaceAll('\n', ' ')
+    // First, normalize the content to ensure consistent processing
+    String normalizedContent = _normalizeFullText(content);
+    
+    // Split the normalized content into words and filter out empty strings
+    return normalizedContent
         .split(' ')
         .where((word) => word.isNotEmpty)
         .toList();
   }
+
+  /// Normalize full text for consistent processing
+  String _normalizeFullText(String text) {
+    // Handle newlines, periods, and other punctuation consistently
+    String normalized = text
+        .replaceAll('\n', ' ')  // Replace newlines with spaces
+        .replaceAll('.', ' . ') // Add spaces around periods
+        .replaceAll('،', ' ، ') // Add spaces around Arabic commas
+        .replaceAll('!', ' ! ') // Add spaces around exclamation marks
+        .replaceAll('?', ' ? ') // Add spaces around question marks
+        .replaceAll(':', ' : ') // Add spaces around colons
+        .replaceAll('؛', ' ؛ ') // Add spaces around Arabic semicolons
+        .replaceAll('"', ' " ') // Add spaces around quotes
+        .replaceAll('(', ' ( ') // Add spaces around parentheses
+        .replaceAll(')', ' ) ') // Add spaces around parentheses
+        .replaceAll('-', ' - '); // Add spaces around hyphens
+    
+    // Replace multiple spaces with a single space
+    normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+    
+    // Normalize Arabic characters
+    normalized = _normalizeArabicChars(normalized);
+    
+    return normalized;
+  }
+
+  /// Normalize Arabic characters for consistent matching
+  String _normalizeArabicChars(String text) {
+    return text
+        // Normalize Ya variations
+        .replaceAll('ی', 'ي')  // Farsi Ya to Arabic Ya
+        .replaceAll('ى', 'ي')  // Alif Maqsura to Ya
+        
+        // Normalize Alif variations
+        .replaceAll('إ', 'ا')  // Alif with Hamza below to simple Alif
+        .replaceAll('أ', 'ا')  // Alif with Hamza above to simple Alif
+        .replaceAll('آ', 'ا')  // Alif with Madda above to simple Alif
+        .replaceAll('ٱ', 'ا')  // Alif Wasla to simple Alif
+        
+        // Normalize other characters
+        .replaceAll('ة', 'ه')  // Ta Marbuta to Ha
+        .replaceAll('ؤ', 'و')  // Waw with Hamza above to Waw
+        .replaceAll('ئ', 'ي')  // Ya with Hamza above to Ya
+        
+        // Normalize Ha variations
+        .replaceAll('ھ', 'ه')  // Alternative Ha form to standard Ha
+        
+        // Normalize other potentially problematic characters
+        .replaceAll('ـ', '')   // Tatweel (kashida) to nothing
+        .replaceAll('٫', '.')  // Arabic decimal separator to period
+        .replaceAll('،', ','); // Arabic comma to Latin comma
+  }
+
+  /// Utility method to normalize words for better matching
+  String _normalizeWord(String word) {
+    // First apply general Arabic character normalization
+    String normalized = _normalizeArabicChars(word);
+    
+    // Then apply more aggressive normalization for word matching
+    normalized = normalized
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[.،!?,;:"()،\-]'), '') // Remove punctuation
+        .replaceAll(RegExp(r'\s+'), ' ');           // Normalize spaces
+    
+    return normalized;
+  }
   
-  /// Get word at specific index in the array
-  String? getWordAtIndex(List<String> words, int index) {
-    if (index >= 0 && index < words.length) {
-      return words[index];
+  /// Check if two words match after normalization
+  bool _wordsMatch(String word1, String word2) {
+    final normalized1 = _normalizeWord(word1);
+    final normalized2 = _normalizeWord(word2);
+    
+    // Add debug logging for problematic words
+    if (word1.length > 2 && word2.length > 2 && 
+        normalized1 != normalized2 && 
+        (_calculateWordSimilarity(normalized1, normalized2) > 0.7)) {
+      debugPrint('Near miss match: "$word1" -> "$normalized1" vs "$word2" -> "$normalized2"');
     }
-    return null;
+    
+    // Check for exact match or very high similarity
+    if (normalized1 == normalized2) {
+      return true;
+    }
+    
+    // If words are longer than 3 characters, also accept high similarity matches
+    if (normalized1.length > 3 && normalized2.length > 3) {
+      double similarity = _calculateWordSimilarity(normalized1, normalized2);
+      if (similarity >= 0.8) { // 80% similarity threshold for longer words
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /// Find the best match for a word in a list of candidate words
+  int _findBestWordMatch(String word, List<String> candidates, int startIndex, int maxLookAhead) {
+    final normalizedWord = _normalizeWord(word);
+    
+    // If the word is very short (like a, an, in, etc.), be more strict with matching
+    bool isShortWord = normalizedWord.length <= 2;
+    
+    // First try exact normalized match - highest priority
+    for (int i = startIndex; i < Math.min(startIndex + maxLookAhead, candidates.length); i++) {
+      final normalizedCandidate = _normalizeWord(candidates[i]);
+      
+      if (normalizedWord == normalizedCandidate) {
+        return i;  // Found exact normalized match
+      }
+    }
+    
+    // For short words (1-2 chars), we don't use fuzzy matching to avoid false positives
+    if (isShortWord) {
+      return -1;
+    }
+    
+    // If no exact match, try for high similarity partial matches
+    int bestMatchIndex = -1;
+    double highestSimilarity = 0.75; // Higher threshold for more precision
+    
+    for (int i = startIndex; i < Math.min(startIndex + maxLookAhead, candidates.length); i++) {
+      final normalizedCandidate = _normalizeWord(candidates[i]);
+      
+      // Only consider candidates with similar length to avoid matching
+      // short words to parts of longer words
+      if (normalizedCandidate.length < normalizedWord.length * 0.5 ||
+          normalizedCandidate.length > normalizedWord.length * 1.5) {
+        continue;
+      }
+      
+      // Calculate similarity score
+      final similarity = _calculateWordSimilarity(normalizedWord, normalizedCandidate);
+      
+      // If this is the best match so far, remember it
+      if (similarity > highestSimilarity) {
+        highestSimilarity = similarity;
+        bestMatchIndex = i;
+      }
+    }
+    
+    return bestMatchIndex;  // Returns -1 if no good match found
+  }
+  
+  /// Calculate similarity between two words (0.0-1.0)
+  double _calculateWordSimilarity(String word1, String word2) {
+    // If either string is empty, return 0
+    if (word1.isEmpty || word2.isEmpty) return 0.0;
+    
+    // If strings are identical, return 1
+    if (word1 == word2) return 1.0;
+    
+    // First check if one is a substring of the other
+    if (word1.contains(word2)) {
+      return word2.length / word1.length;
+    }
+    if (word2.contains(word1)) {
+      return word1.length / word2.length;
+    }
+    
+    // Calculate Levenshtein distance (edit distance)
+    final int distance = _levenshteinDistance(word1, word2);
+    final int maxLength = Math.max(word1.length, word2.length);
+    
+    // Convert distance to similarity (1.0 means identical, 0.0 means completely different)
+    return 1.0 - (distance / maxLength);
+  }
+  
+  /// Calculate Levenshtein distance between two strings
+  int _levenshteinDistance(String s, String t) {
+    if (s == t) return 0;
+    if (s.isEmpty) return t.length;
+    if (t.isEmpty) return s.length;
+    
+    List<int> v0 = List<int>.filled(t.length + 1, 0);
+    List<int> v1 = List<int>.filled(t.length + 1, 0);
+    
+    for (int i = 0; i <= t.length; i++) {
+      v0[i] = i;
+    }
+    
+    for (int i = 0; i < s.length; i++) {
+      v1[0] = i + 1;
+      
+      for (int j = 0; j < t.length; j++) {
+        int cost = (s[i] == t[j]) ? 0 : 1;
+        v1[j + 1] = Math.min(Math.min(v1[j] + 1, v0[j + 1] + 1), v0[j] + cost);
+      }
+      
+      for (int j = 0; j <= t.length; j++) {
+        v0[j] = v1[j];
+      }
+    }
+    
+    return v1[t.length];
   }
   
   /// Map timestamps to word indices to ensure all words are highlighted
@@ -149,17 +351,22 @@ class TextHighlightingService {
     // Initialize index for tracking our position in both arrays
     int contentIndex = 0;
     
-    // First pass: Try to match timestamp words to content words directly
+    // First pass: Try to match timestamp words to content words directly using improved normalized comparison
     for (int i = 0; i < wordTimestamps.words.length && contentIndex < contentWords.length; i++) {
       final timestampWord = wordTimestamps.words[i];
       
+      // Skip very short words or punctuation in timestamps (usually noise or artifacts)
+      if (timestampWord.word.trim().length < 2) {
+        continue;
+      }
+      
       // Try to find a match for this timestamp word in upcoming content words
-      // Allow looking ahead up to 3 words to handle small variations
+      // Allow looking ahead up to 10 words to handle variations in text
       int matchIndex = _findBestWordMatch(
         timestampWord.word, 
         contentWords, 
         contentIndex, 
-        5  // Look ahead up to 5 words
+        10  // Increased look-ahead to handle more variations
       );
       
       if (matchIndex >= 0) {
@@ -186,6 +393,7 @@ class TextHighlightingService {
                 'start': wordStart,
                 'end': wordEnd,
                 'matched': false,  // Mark as estimated
+                'visualization': 'skipped',  // Mark why it was included
               });
               
               currentTime = wordEnd;
@@ -205,12 +413,18 @@ class TextHighlightingService {
                 'start': wordStart,
                 'end': wordEnd,
                 'matched': false,
+                'visualization': 'skipped-small',
               });
               
               currentTime = wordEnd;
             }
           }
         }
+        
+        // Add extra debug info to understand matching quality
+        String normalizedTimestampWord = _normalizeWord(timestampWord.word);
+        String normalizedContentWord = _normalizeWord(contentWords[matchIndex]);
+        double similarity = _calculateWordSimilarity(normalizedTimestampWord, normalizedContentWord);
         
         // Now add the matched word with its exact timestamp
         indexMap.add({
@@ -219,22 +433,84 @@ class TextHighlightingService {
           'start': timestampWord.start,
           'end': timestampWord.end,
           'matched': true,
+          'originalTimestampWord': timestampWord.word, // Store original for debugging
+          'similarity': similarity,  // Store similarity score for debugging
         });
+        
+        // Log matching details for debugging
+        if (similarity < 1.0 && timestampWord.word.length > 2) {
+          debugPrint('Word match: "${timestampWord.word}" -> "${contentWords[matchIndex]}", '
+              'similarity: $similarity');
+        }
         
         // Update content index to continue after this match
         contentIndex = matchIndex + 1;
       } else {
         // No match found - try simple sequential assignment
         if (contentIndex < contentWords.length) {
-          indexMap.add({
-            'index': contentIndex,
-            'word': contentWords[contentIndex],
-            'start': timestampWord.start,
-            'end': timestampWord.end,
-            'matched': false,
-          });
+          // Try to find any available word with at least some similarity
+          bool foundAnyMatch = false;
+          for (int j = contentIndex; j < Math.min(contentIndex + 15, contentWords.length); j++) {
+            if (_normalizeWord(timestampWord.word).length > 2 && 
+                _calculateWordSimilarity(_normalizeWord(timestampWord.word), _normalizeWord(contentWords[j])) > 0.6) {
+              
+              // Found a reasonable match - use it
+              double similarity = _calculateWordSimilarity(
+                  _normalizeWord(timestampWord.word), _normalizeWord(contentWords[j]));
+              
+              // Fill in skipped words with estimated timings
+              if (j > contentIndex) {
+                double timePerWord = timestampWord.start / (j - contentIndex + 1);
+                double currentTime = indexMap.isEmpty ? 
+                    0.0 : (indexMap.last['end'] as num).toDouble();
+                
+                for (int k = contentIndex; k < j; k++) {
+                  indexMap.add({
+                    'index': k,
+                    'word': contentWords[k],
+                    'start': currentTime,
+                    'end': currentTime + timePerWord,
+                    'matched': false,
+                    'visualization': 'low-match-skip',
+                  });
+                  currentTime += timePerWord;
+                }
+              }
+              
+              indexMap.add({
+                'index': j,
+                'word': contentWords[j],
+                'start': timestampWord.start,
+                'end': timestampWord.end,
+                'matched': true,
+                'originalTimestampWord': timestampWord.word,
+                'similarity': similarity,
+                'visualization': 'fuzzy-match',
+              });
+              
+              debugPrint('Fuzzy match: "${timestampWord.word}" -> "${contentWords[j]}", '
+                  'similarity: $similarity');
+              
+              contentIndex = j + 1;
+              foundAnyMatch = true;
+              break;
+            }
+          }
           
-          contentIndex++;
+          // If no match was found, just use sequential assignment
+          if (!foundAnyMatch) {
+            indexMap.add({
+              'index': contentIndex,
+              'word': contentWords[contentIndex],
+              'start': timestampWord.start,
+              'end': timestampWord.end,
+              'matched': false,
+              'originalTimestampWord': timestampWord.word,
+              'visualization': 'sequential-fallback',
+            });
+            
+            contentIndex++;
+          }
         }
       }
     }
@@ -274,6 +550,7 @@ class TextHighlightingService {
           'start': startTime,
           'end': wordEnd,
           'matched': false,
+          'visualization': 'remaining-words',
         });
         
         startTime = wordEnd;
@@ -305,13 +582,58 @@ class TextHighlightingService {
         nextWord['start'] = currentEnd;
       }
       
-      // Add visual start time for pre-highlighting
-      nextWord['visualStart'] = Math.max(0.0, (nextWord['start'] as num).toDouble() - 0.1);
+      // Add visual start time for pre-highlighting - reduce to slow down transitions
+      nextWord['visualStart'] = Math.max(0.0, (nextWord['start'] as num).toDouble() - 0.05);
     }
     
     // Make sure first word is always highlighted from the beginning
     if (indexMap.isNotEmpty) {
       indexMap.first['visualStart'] = 0.0;
+      
+      // Give the first word a bit longer duration to ensure it's visible
+      // Extend the first word's end time if it's too short (less than 400ms)
+      final firstWordEnd = (indexMap.first['end'] as num).toDouble();
+      final firstWordStart = (indexMap.first['start'] as num).toDouble();
+      final firstWordDuration = firstWordEnd - firstWordStart;
+      
+      if (firstWordDuration < 0.4) {  // If duration is less than 400ms
+        // Make sure the first word gets at least 400ms of visibility
+        indexMap.first['end'] = firstWordStart + 0.4;
+        
+        // Adjust subsequent words if needed
+        if (indexMap.length > 1) {
+          // Get the next word's start time
+          final nextWordStart = (indexMap[1]['start'] as num).toDouble();
+          
+          // If our extension creates an overlap, adjust the next word's start time
+          if (firstWordStart + 0.4 > nextWordStart) {
+            indexMap[1]['start'] = firstWordStart + 0.4;
+          }
+          
+          // Ensure the second word gets enough visibility time too
+          if (indexMap.length > 1) {
+            // Make sure second word has sufficient duration (at least 500ms - increased from 300ms)
+            final secondWordStart = (indexMap[1]['start'] as num).toDouble();
+            final secondWordEnd = (indexMap[1]['end'] as num).toDouble();
+            final secondWordDuration = secondWordEnd - secondWordStart;
+            
+            if (secondWordDuration < 0.5) {
+              indexMap[1]['end'] = secondWordStart + 0.5;
+              
+              // Adjust subsequent words if needed
+              if (indexMap.length > 2) {
+                final thirdWordStart = (indexMap[2]['start'] as num).toDouble();
+                if (secondWordStart + 0.5 > thirdWordStart) {
+                  indexMap[2]['start'] = secondWordStart + 0.5;
+                }
+              }
+            }
+            
+            // Set visualStart for second word earlier to prepare for highlighting
+            indexMap[1]['visualStart'] = Math.max(0.0, secondWordStart - 0.15);
+          }
+        }
+      }
     }
     
     return indexMap;
@@ -328,8 +650,10 @@ class TextHighlightingService {
     double msPerWord
   ) {
     // Convert position to seconds for precise time comparison
-    // Add a much larger look-ahead offset to match our extremely aggressive main method
-    final lookAheadOffset = 0.6; // 600ms for very aggressive precision
+    // Use gender-aware timing - faster transitions for female voices
+    // Check if any timestamp words have female-specific metadata or timing
+    final bool isFemaleVoice = currentLanguage == 'en' && msPerWord < 300; // Female typically has shorter words
+    final lookAheadOffset = isFemaleVoice ? 0.45 : 0.3; // Increased offset for female audio
     final positionInSeconds = position.inMilliseconds / 1000.0 + lookAheadOffset;
     
     // Get the current word list based on language
@@ -341,7 +665,8 @@ class TextHighlightingService {
     }
     
     // At beginning of playback, always highlight first word
-    if (position.inMilliseconds < 100) {
+    // Increase this threshold to ensure the first word is highlighted for longer
+    if (position.inMilliseconds < 200) {
       _currentHighlightIndex = 0;
       final firstWord = getWordAtIndex(currentWords, 0);
       if (firstWord != null) {
@@ -363,6 +688,21 @@ class TextHighlightingService {
         final wordData = indexMap[i];
         final start = wordData['start'] as double;
         final end = wordData['end'] as double;
+        
+        // Special case for the second word transition - ensure it's visible
+        if (i == 1 && _currentHighlightIndex == 0) {
+          // If we're near the end of the first word, prepare to transition to second
+          // Check if likely female voice based on word duration
+          final bool likelyFemaleVoice = indexMap.length > 3 && 
+              ((indexMap[0]['end'] as double) - (indexMap[0]['start'] as double)) < 0.25;
+          
+          // Use more aggressive timing for female voice
+          final transitionOffset = likelyFemaleVoice ? 0.25 : 0.2;
+          if (positionInSeconds >= (indexMap[0]['end'] as double) - transitionOffset) {
+            _currentHighlightIndex = 1;
+            return wordData['word'] as String;
+          }
+        }
         
         // If position is exactly within this word's time range
         if (positionInSeconds >= start && positionInSeconds < end) {
@@ -387,12 +727,33 @@ class TextHighlightingService {
         final nextStart = nextWordData['start'] is int ? 
             (nextWordData['start'] as int).toDouble() : nextWordData['start'] as double;
         
-        // Very aggressively anticipate the next word - 250ms ahead of the end
-        // This ensures extremely smooth transitions between words
-        if (positionInSeconds >= currentEnd - 0.25) {
-          _currentHighlightIndex++;
-          final word = indexMap[_currentHighlightIndex]['word'] as String;
-          return word;
+        // Very aggressively anticipate the next word - reduce look-ahead to slow down transitions
+        // Use voice-specific timing
+        final bool likelyFemaleVoice = indexMap.length > 3 && 
+            ((currentEnd - (currentWordData['start'] as double)) < 0.25);
+        
+        // More aggressive timing for female voice
+        final transitionOffset = likelyFemaleVoice ? 0.2 : 0.15;
+        
+        if (positionInSeconds >= currentEnd - transitionOffset) {
+          // Special case for second word - extend its display time
+          if (_currentHighlightIndex == 1) {
+            // For second word, wait until we're much closer to the end
+            if (positionInSeconds >= currentEnd - 0.1) {
+              _currentHighlightIndex++;
+              final word = indexMap[_currentHighlightIndex]['word'] as String;
+              return word;
+            } else {
+              // Keep showing the second word
+              final word = indexMap[_currentHighlightIndex]['word'] as String;
+              return word;
+            }
+          } else {
+            // Normal transition for other words
+            _currentHighlightIndex++;
+            final word = indexMap[_currentHighlightIndex]['word'] as String;
+            return word;
+          }
         }
       }
       
@@ -465,7 +826,8 @@ class TextHighlightingService {
     }
 
     // For very early positions, always return the first word
-    if (position.inMilliseconds < 100) {
+    // Increase this threshold to ensure the first word is highlighted longer
+    if (position.inMilliseconds < 200) {
       _currentHighlightIndex = 0;
       return 0;  // Return first word index
     }
@@ -473,8 +835,44 @@ class TextHighlightingService {
     // Convert position to seconds for precise comparison
     final positionInSeconds = position.inMilliseconds / 1000.0;
     
-    // Increase look-ahead timing to compensate for audio processing and rendering delays
-    final adjustedPosition = positionInSeconds + 0.75; // 750ms look-ahead
+    // Check if this is likely female voice audio (use timing analysis)
+    final bool likelyFemaleVoice = wordIndexMap.length > 3 && 
+        wordIndexMap.where((w) => 
+            ((w['end'] as num).toDouble() - (w['start'] as num).toDouble()) < 0.25
+        ).length > wordIndexMap.length / 2;
+    
+    // Adjust look-ahead timing based on voice type
+    final lookAheadTiming = likelyFemaleVoice ? 0.55 : 0.4; // More aggressive for female voice
+    final adjustedPosition = positionInSeconds + lookAheadTiming;
+    
+    // Special case for the first word - ensure it's highlighted for its full duration
+    if (wordIndexMap.isNotEmpty && _currentHighlightIndex == 0) {
+      final firstWord = wordIndexMap.first;
+      final firstWordEnd = (firstWord['end'] as num).toDouble();
+      
+      // Give the first word a slightly longer display time
+      if (adjustedPosition < firstWordEnd + 0.1) {
+        return 0;  // Keep showing the first word
+      }
+      
+      // Special case for transition to second word
+      if (wordIndexMap.length > 1 && adjustedPosition >= firstWordEnd) {
+        // Transition to second word immediately after first word ends
+        _currentHighlightIndex = 1;
+        return 1;  // Move to second word
+      }
+    }
+    
+    // Special case for second word - ensure it stays visible longer
+    if (wordIndexMap.length > 1 && _currentHighlightIndex == 1) {
+      final secondWord = wordIndexMap[1];
+      final secondWordEnd = (secondWord['end'] as num).toDouble();
+      
+      // Add extra time to the second word
+      if (adjustedPosition < secondWordEnd + 0.3) {  // Extra 300ms buffer
+        return 1;  // Keep showing the second word
+      }
+    }
     
     // Step 1: First check if we're still within the current word's time range
     // This prevents unnecessary jumping between words and provides stability
@@ -495,7 +893,7 @@ class TextHighlightingService {
         
         // If we're within the early transition window, move to the next word
         if (adjustedPosition >= wordEnd && adjustedPosition < nextStart &&
-            (nextStart - adjustedPosition) <= 0.3) { // 300ms early transition
+            (nextStart - adjustedPosition) <= 0.15) { // Reduced from 300ms to 150ms early transition
           _currentHighlightIndex += 1;
           return _currentHighlightIndex;
         }
@@ -591,34 +989,11 @@ class TextHighlightingService {
     return low;
   }
 
-  /// Utility method to normalize words for better matching
-  String _normalizeWord(String word) {
-    // Convert to lowercase, trim whitespace, remove punctuation, normalize spaces
-    return word
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[.،!?,;:"()،]'), '') // Include Arabic comma
-        .replaceAll(RegExp(r'\s+'), ' ');  // Normalize spaces
-  }
-  
-  /// Check if two words match after normalization
-  bool _wordsMatch(String word1, String word2) {
-    final normalized1 = _normalizeWord(word1);
-    final normalized2 = _normalizeWord(word2);
-    return normalized1 == normalized2;
-  }
-  
-  /// Find the best match for a word in a list of candidate words
-  int _findBestWordMatch(String word, List<String> candidates, int startIndex, int maxLookAhead) {
-    // First try exact match
-    for (int i = startIndex; i < Math.min(startIndex + maxLookAhead, candidates.length); i++) {
-      if (_wordsMatch(word, candidates[i])) {
-        return i;  // Found exact match
-      }
+  /// Get word at specific index in the array
+  String? getWordAtIndex(List<String> words, int index) {
+    if (index >= 0 && index < words.length) {
+      return words[index];
     }
-    
-    // If no exact match, try to find the closest match
-    // This helps with slight variations in spelling or punctuation
-    return -1;  // No match found
+    return null;
   }
 } 

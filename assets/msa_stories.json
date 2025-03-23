@@ -3,13 +3,13 @@
     {
       "id": "the-tiny-dragon",
       "title_en": "The Tiny Dragon",
-      "title_ar": "التنین الصغیر",
+      "title_ar": "التنين الصغير",
       "genre": "Fiction",
       "sub_genre": "Fantasy",
       "level": "Beginner",
       "dialect": "Modern Standard Arabic",
       "summary_en": "A heartwarming tale of a baby dragon's persistence in learning to breathe fire, teaching young readers about courage and determination.",
-      "content_ar": "كان ھناك تنین صغیر یعیش مع عائلتھ في كھف عالٍ بین الجبال. حاول مراراً أن ینفث النار مثل والدیھ، لكنھ لم ینجح سوى في إخراج\n. دخان رمادي خفیف. شعر بالحزن والإحباط، لكنھ لم یستسلم\n\nیوما بعد یوم، أصبح الدخان أكثف وأدفأ. وفي صباح مشرق، وبینما كان یحاول للمرة في كل صباح، كان یقف أمام البحیرة ویتدرب. ً\nالمئة، خرج من فمھ لھب ذھبي صغیر. فرح التنین الصغیر وطار حول الكھف فخوراً بنفسھ، وعلم أن الشجاعة الحقیقیة تكمن في\n\n.المثابرة",
+      "content_ar": "كان هناك تنين صغير يعيش مع عائلته في كهف عالٍ بين الجبال. حاول مراراً أن ينفث النار مثل والديه، لكنه لم ينجح سوى في إخراج\n. دخان رمادي خفيف. شعر بالحزن والإحباط، لكنه لم يستسلم\n\nفي كل صباح، كان يقف أمام البحيرة ويتدرب. يوماً بعد يوم، أصبح الدخان أكثف وأدفأ. وفي صباح مشرق، وبينما كان يحاول للمرة\nالمئة، خرج من فمه لهب ذهبي صغير. فرح التنين الصغير وطار حول الكهف فخوراً بنفسه، وعلم أن الشجاعة الحقيقية تكمن في\n\n.المثابرة",
       "content_en": "There was a little dragon who lived with his family in a high cave among the mountains. He tried repeatedly to breathe fire like his parents, but only managed to produce light grey smoke. He felt sad and frustrated, but he didn't give up.\n\nEvery morning, he would stand by the lake and practice. Day after day, the smoke became thicker and warmer. Then on one bright morning, while trying for the hundredth time, a small golden flame emerged from his mouth. The tiny dragon flew joyfully around the cave, proud of himself, and learned that true courage lies in persistence.",
       "audio_ar_male": "data/audio/the-tiny-dragon_ar_male.mp3",
       "audio_ar_female": "data/audio/the-tiny-dragon_ar_female.mp3"
