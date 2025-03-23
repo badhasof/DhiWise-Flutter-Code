@@ -6,6 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import '../../core/app_export.dart';
 import '../../domain/story/story_model.dart';
+import '../../domain/story/word_timestamp.dart';
+import '../../services/timestamp_service.dart';
+import '../../services/text_highlighting_service.dart';
 import '../../widgets/audio_control_overlay.dart';
 import '../story_completion_screen/story_completion_screen.dart';
 
@@ -22,50 +25,65 @@ class StoryScreen extends StatefulWidget {
 }
 
 class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin {
-  // Audio player
-  late AudioPlayer _audioPlayer;
-  // Audio duration
-  Duration _duration = Duration.zero;
-  // Current position
-  Duration _position = Duration.zero;
-  // Current playback position
-  double _currentPosition = 0.0;
-  // Playback speed
-  double _playbackSpeed = 1.0;
-  // Is playing
+  // Instance variables
+  AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
-  // Is audio loaded
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
   bool _isAudioLoaded = false;
-  // Current language being played
-  String _currentLanguage = 'ar'; // Default to Arabic
-  // Male voice is selected (default is true for backward compatibility)
+  double _currentPosition = 0.0;
+  String _currentLanguage = 'ar';
   bool _isMaleVoice = true;
+  bool _textAdherenceEnabled = true;
+  int _currentWordIndex = 0;
+  double _lastUpdateTime = 0.0;
+  
+  // Word lists for current content
+  late List<String> _arabicWords;
+  late List<String> _englishWords;
+  
+  // Word highlighting frequency timer for more precise updates
+  Timer? _precisionHighlightTimer;
+  
+  // Handling milliseconds per word (used as fallback)
+  double _msPerWord = 500.0;
+  
+  // Timer for text adherence highlighting
+  Timer? _highlightTimer;
+  
+  // Text highlighting service
+  final TextHighlightingService _textHighlightingService = TextHighlightingService();
+  
+  // Word timestamps
+  WordTimestampCollection? _wordTimestamps;
+  
   // Audio settings overlay visible
   bool _showAudioSettings = false;
   // Highlighted word in Arabic
   String? _highlightedArabicWord = '';
   // Highlighted word in English
   String? _highlightedEnglishWord = '';
-  // Text adherence mode enabled
-  bool _textAdherenceEnabled = false;
-  // Timer for text highlighting in adherence mode
-  Timer? _highlightTimer;
-  // Word lists for current content
-  late List<String> _arabicWords;
-  late List<String> _englishWords;
-  // Current word index for highlighting
-  int _currentWordIndex = 0;
-  // Estimated time per word (calculated based on audio duration)
-  double _msPerWord = 0.0;
+  // Playback speed
+  double _playbackSpeed = 1.0;
   // Animation controller for smooth transitions
   late AnimationController _animationController;
-
+  
+  // Timestamp service
+  final TimestampService _timestampService = TimestampService();
+  
+  // Current highlighted word with precise timestamp
+  WordTimestamp? _currentHighlightedWord;
+  
   @override
   void initState() {
     super.initState();
-    // Initialize word lists
-    _arabicWords = _getWords(widget.story.contentAr);
-    _englishWords = _getWords(widget.story.contentEn);
+    // Initialize word lists using the service method
+    _arabicWords = _textHighlightingService.extractWordsArray(widget.story.contentAr);
+    _englishWords = _textHighlightingService.extractWordsArray(widget.story.contentEn);
+    
+    // Make sure highlighting index is reset at start
+    _textHighlightingService.resetCurrentIndex();
+    
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -83,103 +101,150 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 
-  List<String> _getWords(String content) {
-    // Split content into words and remove empty strings
-    return content
-        .replaceAll('\n', ' ')
-        .split(' ')
-        .where((word) => word.isNotEmpty)
-        .toList();
-  }
-
   void _setupAudioPlayer() {
     // Setup audio player listeners
     _audioPlayer.onDurationChanged.listen((Duration duration) {
       if (mounted) {
-      setState(() {
-        _duration = duration;
-        // Calculate ms per word for text adherence
-        if (_currentLanguage == 'ar') {
-          _msPerWord = duration.inMilliseconds / _arabicWords.length;
-        } else {
-          _msPerWord = duration.inMilliseconds / _englishWords.length;
-        }
-      });
+        setState(() {
+          _duration = duration;
+          // Calculate ms per word for text adherence (fallback method)
+          if (_currentLanguage == 'ar') {
+            _msPerWord = duration.inMilliseconds / _arabicWords.length;
+          } else {
+            _msPerWord = duration.inMilliseconds / _englishWords.length;
+          }
+        });
       }
     });
     
+    // Configure audio player for maximum precision in position updates
+    _audioPlayer.setPlayerMode(PlayerMode.lowLatency);
+    
+    // Start a high-precision timer for more frequent word highlighting updates
+    _startPrecisionHighlightTimer();
+    
+    // Set up position update listener for state tracking
     _audioPlayer.onPositionChanged.listen((Duration position) {
       if (mounted) { // Add safety check
-      setState(() {
-        _position = position;
-        if (_duration.inMilliseconds > 0) {
-          _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
-          
-          // Update highlighted word if text adherence is enabled
-          if (_textAdherenceEnabled && _isPlaying) {
-            _updateHighlightedWord(position);
+        // Update position in state
+        setState(() {
+          _position = position;
+          if (_duration.inMilliseconds > 0) {
+            _currentPosition = _position.inMilliseconds / _duration.inMilliseconds;
           }
-        }
-      });
+        });
       }
     });
     
+    // Player state change listener (playing, paused, stopped, completed)
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
       if (mounted) { // Add safety check
-      setState(() {
-        _isPlaying = state == PlayerState.playing;
-        if (state == PlayerState.completed) {
-          _currentPosition = 0.0;
-          _position = Duration.zero;
-          _currentWordIndex = 0;
-          _resetHighlightedWords();
-            
-            // Show story completion screen
-            _showCompletionScreen();
-        }
-        
-        // Handle text adherence timer
-        if (_textAdherenceEnabled) {
-          if (state == PlayerState.playing) {
+        setState(() {
+          _isPlaying = state == PlayerState.playing;
+          
+          // If playback starts, make sure text adherence is working
+          if (_isPlaying && _textAdherenceEnabled) {
             _startTextAdherence();
-          } else {
+          }
+          
+          // If playback stops or pauses, stop text adherence
+          if (!_isPlaying && _textAdherenceEnabled) {
             _stopTextAdherence();
           }
-        }
-      });
+          
+          // Check if playback is completed
+          if (state == PlayerState.completed) {
+            // Reset position
+            _position = Duration.zero;
+            _currentPosition = 0.0;
+            
+            // Reset highlighted words
+            _resetHighlightedWords();
+            
+            // Show completion screen
+            _showCompletionScreen();
+          }
+        });
       }
     });
     
-    // Additional direct completion listener for reliability
+    // Additional listener for player completion
     _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) {
+        setState(() {
+          _isPlaying = false;
+          _position = Duration.zero;
+          _currentPosition = 0.0;
+          
+          // Reset highlighted words
+          _resetHighlightedWords();
+        });
+        
+        // Show completion screen
         _showCompletionScreen();
       }
     });
   }
   
   Future<void> _loadAudio() async {
-    // Check if Arabic audio exists
+    String? audioPath;
+    
+    // Determine which audio file to play based on language and voice preference
     if (_currentLanguage == 'ar') {
-      String? audioPath = _isMaleVoice ? widget.story.audioArMale : widget.story.audioArFemale;
-      
-      // Fallback to regular audio_ar if gendered paths don't exist
-      if (audioPath == null || audioPath.isEmpty) {
+      // Check for gender-specific audio files
+      if (_isMaleVoice && widget.story.audioArMale != null && widget.story.audioArMale!.isNotEmpty) {
+        audioPath = widget.story.audioArMale;
+      } else if (!_isMaleVoice && widget.story.audioArFemale != null && widget.story.audioArFemale!.isNotEmpty) {
+        audioPath = widget.story.audioArFemale;
+      } else if (widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
+        // Fallback to generic Arabic audio
         audioPath = widget.story.audioAr;
       }
       
+      // Load timestamps for Arabic audio
       if (audioPath != null && audioPath.isNotEmpty) {
-        try {
+        _wordTimestamps = await _timestampService.loadTimestamps(audioPath);
+      }
+      
+      // Load audio source
+      try {
+        if (audioPath != null && audioPath.isNotEmpty) {
           await _audioPlayer.setSource(AssetSource(audioPath));
           await _audioPlayer.setPlaybackRate(_playbackSpeed);
+          
+          // Immediately update highlighted word at position zero
+          // This needs to happen before setting _isAudioLoaded to ensure the UI updates
+          setState(() {
+            if (_currentLanguage == 'ar' && _arabicWords.isNotEmpty) {
+              _highlightedArabicWord = _arabicWords.first;
+              _highlightedEnglishWord = '';
+            } else if (_currentLanguage == 'en' && _englishWords.isNotEmpty) {
+              _highlightedEnglishWord = _englishWords.first;
+              _highlightedArabicWord = '';
+            }
+          });
+          
           setState(() {
             _isAudioLoaded = true;
           });
-        } catch (e) {
-          print('Error loading Arabic audio: $e');
+          
+          _updateHighlightedWord(Duration.zero);
+        } else {
+          setState(() {
+            _isAudioLoaded = false;
+          });
         }
+      } catch (e) {
+        // Handle error
       }
     } else if (_currentLanguage == 'en' && widget.story.audioEn != null && widget.story.audioEn!.isNotEmpty) {
+      audioPath = widget.story.audioEn;
+      
+      // Load timestamps for English audio
+      if (audioPath != null && audioPath.isNotEmpty) {
+        _wordTimestamps = await _timestampService.loadTimestamps(audioPath);
+      }
+      
       try {
         await _audioPlayer.setSource(AssetSource(widget.story.audioEn!));
         await _audioPlayer.setPlaybackRate(_playbackSpeed);
@@ -187,7 +252,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
           _isAudioLoaded = true;
         });
       } catch (e) {
-        print('Error loading English audio: $e');
+        // Handle error
       }
     } else {
       setState(() {
@@ -196,24 +261,131 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     }
   }
 
-  // Update highlighted word based on current position
+  // Update highlighted word based on current position with exact timing
   void _updateHighlightedWord(Duration position) {
-    if (_msPerWord <= 0) return;
+    if (!_textAdherenceEnabled) return;
     
-    int wordIndex = (position.inMilliseconds / _msPerWord).floor();
-    List<String> currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
+    // Special case for start of playback to ensure first word is highlighted
+    if (position.inMilliseconds < 100) {
+      final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
+      if (currentWords.isNotEmpty) {
+        setState(() {
+          if (_currentLanguage == 'ar') {
+            _highlightedArabicWord = currentWords.first;
+            _highlightedEnglishWord = '';
+          } else {
+            _highlightedEnglishWord = currentWords.first;
+            _highlightedArabicWord = '';
+          }
+          _currentWordIndex = 0;
+        });
+        return;
+      }
+    }
     
-    if (wordIndex < currentWords.length && wordIndex != _currentWordIndex) {
-      setState(() {
-        _currentWordIndex = wordIndex;
-        if (_currentLanguage == 'ar') {
-          _highlightedArabicWord = currentWords[wordIndex];
-          _highlightedEnglishWord = '';
-        } else {
-          _highlightedEnglishWord = currentWords[wordIndex];
-          _highlightedArabicWord = '';
+    // First approach: Setup the index map if we have timestamps
+    if (_wordTimestamps != null && _wordTimestamps!.words.isNotEmpty) {
+      // Initialize the index map if empty (first time)
+      if (_textHighlightingService.wordIndexMap.isEmpty) {
+        final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
+        
+        // Print debug info about timestamp collection and content words
+        print("Timestamp words: ${_wordTimestamps!.words.length}, Content words: ${currentWords.length}");
+        
+        // Create the index map with direct timestamp matching
+        final indexMap = _textHighlightingService.createWordIndexMap(_wordTimestamps, currentWords);
+        _textHighlightingService.setWordIndexMap(indexMap);
+        
+        // Verify all content words are represented in the index map
+        print("Index map created with ${indexMap.length} words");
+      }
+      
+      // Get the index of the word to highlight at current position using timestamp-based lookup
+      int wordIndex = _textHighlightingService.findHighlightedWordAtPosition(position);
+      
+      // Check if the index is valid
+      if (wordIndex >= 0) {
+        final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
+        
+        // Get the actual word at this index if it's valid
+        if (wordIndex < currentWords.length) {
+          final wordToHighlight = currentWords[wordIndex];
+          
+          // Check if the word is actually new to avoid unnecessary UI updates
+          final currentHighlighted = _currentLanguage == 'ar' ? _highlightedArabicWord : _highlightedEnglishWord;
+          
+          if (wordToHighlight != currentHighlighted) {
+            // Update the UI with the new highlighted word immediately
+            setState(() {
+              if (_currentLanguage == 'ar') {
+                _highlightedArabicWord = wordToHighlight;
+                _highlightedEnglishWord = '';
+              } else {
+                _highlightedEnglishWord = wordToHighlight;
+                _highlightedArabicWord = '';
+              }
+              _currentWordIndex = wordIndex;
+            });
+          }
         }
-      });
+      } else if (wordIndex == -1 && _currentWordIndex > 0) {
+        // We have a -1 index but we've already started highlighting words
+        // This is likely an edge case, so maintain the current word
+        // Don't reset highlighting to avoid skipping words
+      } else if (wordIndex == -1) {
+        // Initial case: No word to highlight yet (before first word)
+        // But let's highlight the first word anyway for better UX
+        final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
+        if (currentWords.isNotEmpty) {
+          setState(() {
+            if (_currentLanguage == 'ar') {
+              _highlightedArabicWord = currentWords.first;
+              _highlightedEnglishWord = '';
+            } else {
+              _highlightedEnglishWord = currentWords.first;
+              _highlightedArabicWord = '';
+            }
+            _currentWordIndex = 0;
+          });
+        }
+      }
+    } else {
+      // Fallback to the sequential approach if we don't have timestamps
+      _updateHighlightedWordSequential(position);
+    }
+  }
+  
+  // Separate method for the sequential approach to keep the main method clean
+  void _updateHighlightedWordSequential(Duration position) {
+    // Use the sequential approach to find the highlighted word
+    final wordToHighlight = _textHighlightingService.findHighlightedWordAtSequentialPosition(
+      _wordTimestamps,
+      position,
+      _currentLanguage,
+      _arabicWords,
+      _englishWords,
+      _currentWordIndex,
+      _msPerWord
+    );
+    
+    if (wordToHighlight != null) {
+      // Check if the word is actually new to avoid unnecessary UI updates
+      final currentHighlighted = _currentLanguage == 'ar' ? _highlightedArabicWord : _highlightedEnglishWord;
+      
+      if (wordToHighlight != currentHighlighted) {
+        // Update the UI with the new highlighted word immediately
+        setState(() {
+          if (_currentLanguage == 'ar') {
+            _highlightedArabicWord = wordToHighlight;
+            _highlightedEnglishWord = '';
+          } else {
+            _highlightedEnglishWord = wordToHighlight;
+            _highlightedArabicWord = '';
+          }
+          // Update current word index to match the service's tracking
+          _currentWordIndex = _textHighlightingService.getCurrentIndex();
+        });
+      }
     }
   }
   
@@ -222,6 +394,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     setState(() {
       _highlightedArabicWord = '';
       _highlightedEnglishWord = '';
+      _textHighlightingService.resetCurrentIndex();
     });
   }
   
@@ -264,6 +437,24 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     if (_isPlaying) {
       await _audioPlayer.pause();
     } else {
+      // When starting playback, make sure first word is highlighted immediately
+      if (_position.inMilliseconds < 100) {
+        // If we're at the start, force highlight the first word and reset index
+        _textHighlightingService.resetCurrentIndex();
+        setState(() {
+          if (_currentLanguage == 'ar' && _arabicWords.isNotEmpty) {
+            _highlightedArabicWord = _arabicWords.first;
+            _highlightedEnglishWord = '';
+          } else if (_currentLanguage == 'en' && _englishWords.isNotEmpty) {
+            _highlightedEnglishWord = _englishWords.first;
+            _highlightedArabicWord = '';
+          }
+        });
+      } else {
+        // Otherwise update based on current position
+        _updateHighlightedWord(_position);
+      }
+      
       await _audioPlayer.resume();
     }
   }
@@ -279,6 +470,9 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         _currentPosition = 0.0;
         _currentWordIndex = 0;
         _resetHighlightedWords();
+        _textHighlightingService.resetCurrentIndex();
+        // Reset word index map for new language
+        _textHighlightingService.setWordIndexMap([]);
       });
     } else if (_currentLanguage == 'en' && widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
       await _audioPlayer.stop();
@@ -289,6 +483,9 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         _currentPosition = 0.0;
         _currentWordIndex = 0;
         _resetHighlightedWords();
+        _textHighlightingService.resetCurrentIndex();
+        // Reset word index map for new language
+        _textHighlightingService.setWordIndexMap([]);
       });
     }
   }
@@ -301,6 +498,11 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
     
     final position = Duration(milliseconds: (value * _duration.inMilliseconds).round());
     await _audioPlayer.seek(position);
+    
+    // Reset highlight index if seeking to beginning
+    if (position.inMilliseconds < 100) {
+      _textHighlightingService.resetCurrentIndex();
+    }
     
     // Update highlighted word if text adherence is enabled
     if (_textAdherenceEnabled) {
@@ -376,6 +578,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
   void dispose() {
     // Cancel all timers
     _highlightTimer?.cancel();
+    _precisionHighlightTimer?.cancel();
     
     // Remove all listeners before disposing
     _audioPlayer.onPositionChanged.drain();
@@ -817,18 +1020,25 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             padding: EdgeInsets.all(16.h),
             decoration: BoxDecoration(
               color: Colors.white,
-            borderRadius: BorderRadius.circular(12.h),
-            border: Border.all(
-                color: Color(0xFFFFEBE5),
-                width: 1.5,
+              borderRadius: BorderRadius.circular(12.h),
+              border: Border.all(
+                  color: Color(0xFFFFEBE5),
+                  width: 1.5,
               ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
-            children: _buildHighlightedText(
-              widget.story.contentAr,
-              TextDirection.rtl,
-              isArabic: true,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
+              children: _textHighlightingService.buildHighlightedTextParagraphs(
+                widget.story.contentAr,
+                TextDirection.rtl,
+                _highlightedArabicWord,
+                true,
+                (word) {
+                  setState(() {
+                    _highlightedArabicWord = word;
+                    _highlightedEnglishWord = '';
+                  });
+                }
               ),
             ),
           ),
@@ -845,10 +1055,10 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
               shape: BoxShape.circle,
             ),
             child: Center(
-            child: Icon(
+              child: Icon(
                 Icons.swap_vert,
-              color: Colors.white,
-              size: 16.h,
+                color: Colors.white,
+                size: 16.h,
               ),
             ),
           ),
@@ -865,92 +1075,33 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             padding: EdgeInsets.all(16.h),
             decoration: BoxDecoration(
               color: Colors.white,
-            borderRadius: BorderRadius.circular(12.h),
-            border: Border.all(
-                color: Color(0xFFEFECEB),
-                width: 1.5,
+              borderRadius: BorderRadius.circular(12.h),
+              border: Border.all(
+                  color: Color(0xFFEFECEB),
+                  width: 1.5,
               ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildHighlightedText(
-              widget.story.contentEn,
-              TextDirection.ltr,
-              isArabic: false,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _textHighlightingService.buildHighlightedTextParagraphs(
+                widget.story.contentEn,
+                TextDirection.ltr,
+                _highlightedEnglishWord,
+                false,
+                (word) {
+                  setState(() {
+                    _highlightedEnglishWord = word;
+                    _highlightedArabicWord = '';
+                  });
+                }
+              ),
             ),
           ),
-        ),
         ),
         // Add extra padding at the bottom to ensure content is not cut off by audio player
         SizedBox(height: 120.h),
       ],
     );
-  }
-
-  List<Widget> _buildHighlightedText(String content, TextDirection direction, {required bool isArabic}) {
-    // Split content into paragraphs
-    final paragraphs = content.split('\n');
-    
-    return paragraphs.map((paragraph) {
-      if (paragraph.trim().isEmpty) {
-        return SizedBox(height: 16.h);
-      }
-      
-      // Split paragraph into words
-      final words = paragraph.split(' ');
-      
-      return Padding(
-        padding: EdgeInsets.only(bottom: 16.h),
-        child: Directionality(
-          textDirection: direction,
-          child: RichText(
-            text: TextSpan(
-              style: TextStyle(
-                fontFamily: isArabic ? 'Lato' : 'Lato', // Use appropriate font for Arabic
-                fontSize: 16.fSize,
-                fontWeight: FontWeight.w500,
-                height: 1.5,
-                color: Color(0xFF37251F),
-              ),
-              children: words.map((word) {
-                final highlightedWord = isArabic ? _highlightedArabicWord : _highlightedEnglishWord;
-                // Only highlight if the highlighted word is not empty and is contained in the current word
-                final isHighlighted = highlightedWord != null && 
-                                     highlightedWord.isNotEmpty && 
-                                     word.contains(highlightedWord);
-                
-                // Special handling for "took" word in the English text to show the figma highlight
-                final isFigmaHighlight = !isArabic && word.toLowerCase().contains("took");
-                
-                return TextSpan(
-                  text: '$word ',
-                  style: TextStyle(
-                    color: isHighlighted || isFigmaHighlight
-                        ? Color(0xFFFF6F3E)
-                        : Color(0xFF37251F),
-                    backgroundColor: isHighlighted || isFigmaHighlight
-                        ? Color(0xFFFFEBE5)
-                        : null,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      setState(() {
-                        if (isArabic) {
-                          _highlightedArabicWord = word;
-                          // TODO: Find corresponding English word
-                        } else {
-                          _highlightedEnglishWord = word;
-                          // TODO: Find corresponding Arabic word
-                        }
-                      });
-                    },
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      );
-    }).toList();
   }
 
   // Show story completion screen
@@ -974,6 +1125,21 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             },
           ),
         );
+      }
+    });
+  }
+
+  // Start high-precision timer for text highlighting
+  void _startPrecisionHighlightTimer() {
+    // Cancel any existing timer
+    _precisionHighlightTimer?.cancel();
+    
+    // Create a new timer that updates more frequently than the audio position updates
+    // 10ms = 100 updates per second for ultra-smooth highlighting
+    _precisionHighlightTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+      if (_isPlaying && _textAdherenceEnabled) {
+        // Only update highlighted word if we're playing and text adherence is enabled
+        _updateHighlightedWord(_position);
       }
     });
   }

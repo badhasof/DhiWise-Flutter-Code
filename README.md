@@ -1,4 +1,3 @@
-
 # badhaso_s_application2
 ### Table of contents
 - [System requirements](#system-requirements)
@@ -22,7 +21,7 @@ https://docs.dhiwise.com/docs/Designguidelines/intro
 
 ### Check the UI of the entire app
 
-Check the UI of all the app screens from a single place by setting up the 'initialRoute'  to AppNavigation in the AppRoutes.dart file.
+Check the UI of all the app screens from a single place by setting up the 'initialRoute' to AppNavigation in the AppRoutes.dart file.
 
 ### Application structure
 

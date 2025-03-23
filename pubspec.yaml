@@ -24,6 +24,8 @@ dependencies:
   dotted_border: ^2.1.0
   audioplayers: ^5.1.0
   confetti: ^0.7.0
+  http: ^1.2.0
+  path: ^1.8.3
 dev_dependencies: 
   flutter_test: 
     sdk: flutter
@@ -35,6 +37,7 @@ flutter:
     - assets/images/settings_icons/
     - assets/icons/
     - assets/data/audio/
+    - assets/data/timestamps/
     - assets/svg/
     - assets/svg/play_button/
     
