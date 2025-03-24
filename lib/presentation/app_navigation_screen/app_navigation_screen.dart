@@ -89,6 +89,18 @@ class AppNavigationScreen extends StatelessWidget {
                             ),
                             _buildScreenTitle(
                               context,
+                              screenTitle: "Feedback",
+                              onTapScreenTitle: () =>
+                                  onTapScreenTitle(AppRoutes.feedbackScreen),
+                            ),
+                            _buildScreenTitle(
+                              context,
+                              screenTitle: "Subscription",
+                              onTapScreenTitle: () =>
+                                  onTapScreenTitle(AppRoutes.subscriptionScreen),
+                            ),
+                            _buildScreenTitle(
+                              context,
                               screenTitle: "Sign In",
                               onTapScreenTitle: () =>
                                   onTapScreenTitle(AppRoutes.signInScreen),

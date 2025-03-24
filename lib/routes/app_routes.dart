@@ -25,6 +25,8 @@ import '../presentation/leaderboards_settings_screen/leaderboards_settings_scree
 import '../presentation/announcements_settings_screen/announcements_settings_screen.dart';
 import '../presentation/new_stories_completion_screen/new_stories_completion_screen.dart';
 import '../presentation/demo_time_screen/demo_time_screen.dart';
+import '../presentation/feedback_screen/feedback_screen.dart';
+import '../presentation/subscription_screen/subscription_screen.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -81,6 +83,10 @@ class AppRoutes {
   
   static const String demoTimeScreen = '/demo_time_screen';
 
+  static const String feedbackScreen = '/feedback_screen';
+
+  static const String subscriptionScreen = '/subscription_screen';
+
   static Map<String, WidgetBuilder> get routes => {
         onboardimgScreen: OnboardimgScreen.builder,
         quizScreen: QuizScreen.builder,
@@ -94,7 +100,7 @@ class AppRoutes {
         signInScreen: SignInScreen.builder,
         signUpScreen: SignUpScreen.builder,
         appNavigationScreen: AppNavigationScreen.builder,
-        initialRoute: DemoTimeScreen.builder,
+        initialRoute: AppNavigationScreen.builder,
         homeInitialPage: HomeInitialPage.builder,
         vocabularyPage: VocabularyPage.builder,
         learningPage: LearningPage.builder,
@@ -108,6 +114,8 @@ class AppRoutes {
         leaderboardsSettingsScreen: LeaderboardsSettingsScreen.builder,
         announcementsSettingsScreen: AnnouncementsSettingsScreen.builder,
         newStoriesCompletionScreen: NewStoriesCompletionScreen.builder,
-        demoTimeScreen: DemoTimeScreen.builder
+        demoTimeScreen: DemoTimeScreen.builder,
+        feedbackScreen: FeedbackScreen.builder,
+        subscriptionScreen: SubscriptionScreen.builder
       };
 }

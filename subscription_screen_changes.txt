@@ -1,0 +1,37 @@
+Based on the Figma design, the _buildHeaderText() method in subscription_screen.dart should be updated to:
+
+```dart
+Widget _buildHeaderText() {
+  return Column(
+    children: [
+      Text(
+        "Support LinguaX & Start Your Arabic Learning Today",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Lato',
+          fontWeight: FontWeight.w800,
+          fontSize: 24.fSize,
+          color: Color(0xFF37251F),
+        ),
+      ),
+      SizedBox(height: 16.h),
+      Text(
+        "LinguaX is designed to help you master Arabic faster through immersive reading and listening.\n\nBy subscribing, you're not just unlocking the app—you're supporting its growth and helping us build the best language learning experience.",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Lato',
+          fontWeight: FontWeight.w500,
+          fontSize: 14.fSize,
+          color: Color(0xFF80706B),
+        ),
+      ),
+    ],
+  );
+}
+```
+
+The changes include:
+1. Update the main heading font size to 24 (from 22)
+2. Combine the two explanatory paragraphs into one text widget with a line break
+3. Update the font size to 14 (from 15)
+4. Text content is exactly as shown in the Figma design 

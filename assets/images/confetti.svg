@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Confetti Pieces in Various Colors -->
+  <!-- Orange Confetti -->
+  <path d="M120 80L140 90L130 110L110 100L120 80Z" fill="#FF9E71" />
+  <path d="M350 120L370 130L360 150L340 140L350 120Z" fill="#FF9E71" />
+  <path d="M480 220L500 230L490 250L470 240L480 220Z" fill="#FF9E71" />
+  <path d="M150 380L170 390L160 410L140 400L150 380Z" fill="#FF9E71" />
+  <path d="M430 450L450 460L440 480L420 470L430 450Z" fill="#FF9E71" />
+  
+  <!-- Red Confetti -->
+  <path d="M200 50L215 55L210 70L195 65L200 50Z" fill="#FF6F3E" />
+  <path d="M380 70L395 75L390 90L375 85L380 70Z" fill="#FF6F3E" />
+  <path d="M520 170L535 175L530 190L515 185L520 170Z" fill="#FF6F3E" />
+  <path d="M180 290L195 295L190 310L175 305L180 290Z" fill="#FF6F3E" />
+  <path d="M490 390L505 395L500 410L485 405L490 390Z" fill="#FF6F3E" />
+  
+  <!-- Yellow Confetti -->
+  <circle cx="230" cy="130" r="10" fill="#FFD27A" />
+  <circle cx="420" cy="180" r="10" fill="#FFD27A" />
+  <circle cx="90" cy="220" r="10" fill="#FFD27A" />
+  <circle cx="320" cy="390" r="10" fill="#FFD27A" />
+  <circle cx="540" cy="310" r="10" fill="#FFD27A" />
+  
+  <!-- Blue Confetti -->
+  <rect x="260" y="60" width="20" height="8" transform="rotate(30 260 60)" fill="#729BD7" />
+  <rect x="460" y="110" width="20" height="8" transform="rotate(30 460 110)" fill="#729BD7" />
+  <rect x="130" y="170" width="20" height="8" transform="rotate(30 130 170)" fill="#729BD7" />
+  <rect x="280" y="340" width="20" height="8" transform="rotate(30 280 340)" fill="#729BD7" />
+  <rect x="510" y="420" width="20" height="8" transform="rotate(30 510 420)" fill="#729BD7" />
+  
+  <!-- Green Confetti -->
+  <rect x="300" y="90" width="15" height="15" transform="rotate(45 300 90)" fill="#80C67B" />
+  <rect x="50" y="150" width="15" height="15" transform="rotate(45 50 150)" fill="#80C67B" />
+  <rect x="410" y="250" width="15" height="15" transform="rotate(45 410 250)" fill="#80C67B" />
+  <rect x="250" y="430" width="15" height="15" transform="rotate(45 250 430)" fill="#80C67B" />
+  <rect x="550" y="350" width="15" height="15" transform="rotate(45 550 350)" fill="#80C67B" />
+  
+  <!-- Purple Confetti -->
+  <path d="M80 320L100 305L115 325L95 340L80 320Z" fill="#9A7BDB" />
+  <path d="M370 40L390 25L405 45L385 60L370 40Z" fill="#9A7BDB" />
+  <path d="M530 130L550 115L565 135L545 150L530 130Z" fill="#9A7BDB" />
+  <path d="M230 210L250 195L265 215L245 230L230 210Z" fill="#9A7BDB" />
+  <path d="M380 480L400 465L415 485L395 500L380 480Z" fill="#9A7BDB" />
+  
+  <!-- Tiny white sparkles -->
+  <circle cx="150" cy="50" r="3" fill="white" />
+  <circle cx="330" cy="80" r="3" fill="white" />
+  <circle cx="520" cy="80" r="3" fill="white" />
+  <circle cx="80" cy="250" r="3" fill="white" />
+  <circle cx="290" cy="270" r="3" fill="white" />
+  <circle cx="460" cy="320" r="3" fill="white" />
+  <circle cx="200" cy="370" r="3" fill="white" />
+  <circle cx="390" cy="410" r="3" fill="white" />
+  <circle cx="540" cy="470" r="3" fill="white" />
+  <circle cx="120" cy="450" r="3" fill="white" />
+</svg> 

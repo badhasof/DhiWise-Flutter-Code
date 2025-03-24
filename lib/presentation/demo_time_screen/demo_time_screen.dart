@@ -317,7 +317,7 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
         ),
         child: TextButton(
           onPressed: () {
-            Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+            Navigator.pushReplacementNamed(context, AppRoutes.feedbackScreen);
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
