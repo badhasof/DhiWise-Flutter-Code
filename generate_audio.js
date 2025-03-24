@@ -9,8 +9,12 @@ const readFileAsync = util.promisify(fs.readFile);
 
 /**
  * This script generates audio files for Arabic text content from story JSON files
- * using the PlayHT API. It processes the first two stories and adds paths to the audio files
+ * using the PlayHT API. It processes stories and adds paths to the audio files
  * in the JSON data structure.
+ * 
+ * Usage:
+ * - node generate_audio.js             # Processes fiction stories (default)
+ * - node generate_audio.js nonfiction  # Processes non-fiction stories
  * 
  * Prerequisites:
  * 1. PlayHT API credentials (userId and apiKey)
@@ -24,11 +28,27 @@ PlayHT.init({
   apiKey: 'ak-4c0056e0f44d47d88244294e68dded22',  // Replace with your actual API key
 });
 
+// Determine the story type from command line arguments
+const storyType = process.argv[2] === 'nonfiction' ? 'nonfiction' : 'fiction';
+
 // Path to the stories JSON file
-const storiesFilePath = path.join(__dirname, 'assets', 'msa_stories.json');
+const storiesFilePath = path.join(
+  __dirname, 
+  'assets', 
+  storyType === 'nonfiction' ? 'msa_stories_nonfiction.json' : 'msa_stories.json'
+);
 
 // Directory to save audio files
-const audioDir = path.join(__dirname, 'assets', 'data', 'audio');
+const audioDir = path.join(
+  __dirname, 
+  'assets', 
+  'data', 
+  'audio', 
+  storyType === 'nonfiction' ? 'nonfiction' : ''
+);
+
+console.log(`Processing ${storyType} stories from: ${storiesFilePath}`);
+console.log(`Saving audio files to: ${audioDir}`);
 
 // Define voice IDs for male and female voices
 const VOICE_IDS = {
@@ -136,36 +156,66 @@ async function processStories() {
     // Store failed generations to report at the end
     const failedGenerations = [];
     
+    // Handle different JSON structures for fiction vs non-fiction
+    const stories = storiesData.stories || storiesData;
+    const totalStories = stories.length;
+    
+    console.log(`Found ${totalStories} stories to process`);
+    
     // Process all stories and check which ones need audio
-    for (let i = 0; i < storiesData.stories.length; i++) {
-      const story = storiesData.stories[i];
+    for (let i = 0; i < totalStories; i++) {
+      const story = stories[i];
+      const contentAr = story.content_ar || story.contentAr;
+      const titleAr = story.title_ar || story.titleAr || '';
+      const titleEn = story.title_en || story.titleEn || '';
+      const displayTitle = titleAr || titleEn || `Story ${i+1}`;
       
       // Skip if story has no valid Arabic content or if both male and female audio files already exist
-      if (!validateArabicContent(story.content_ar) || (story.audio_ar_male && story.audio_ar_female)) {
-        console.log(`Skipping story ${i + 1}/${storiesData.stories.length}: ${story.title_ar || story.title_en} (already has audio or invalid content)`);
+      if (!validateArabicContent(contentAr) || 
+          (story.audio_ar_male && story.audio_ar_female) || 
+          (story.audioArMale && story.audioArFemale)) {
+        console.log(`Skipping story ${i + 1}/${totalStories}: ${displayTitle} (already has audio or invalid content)`);
         continue;
       }
       
-      console.log(`Processing story ${i + 1}/${storiesData.stories.length}: ${story.title_ar || story.title_en}`);
+      console.log(`Processing story ${i + 1}/${totalStories}: ${displayTitle}`);
       
       try {
+        const filePrefix = storyType === 'nonfiction' ? 'nonfiction_' : '';
+        const storyId = story.id || `story${i+1}`;
+        const relativePath = storyType === 'nonfiction' ? 'data/audio/nonfiction/' : 'data/audio/';
+        
         // Generate Arabic audio with male voice if needed
-        if (!story.audio_ar_male) {
-          const maleAudioFileName = `${story.id}_ar_male.mp3`;
-          await generateAudio(story.content_ar, maleAudioFileName, 'male');
-          story.audio_ar_male = `data/audio/${maleAudioFileName}`;
-          console.log(`Generated male audio for story: ${story.title_ar || story.title_en}`);
+        if (!story.audio_ar_male && !story.audioArMale) {
+          const maleAudioFileName = `${filePrefix}${storyId}_ar_male.mp3`;
+          await generateAudio(contentAr, maleAudioFileName, 'male');
+          
+          // Update appropriate field based on JSON structure
+          if (storyType === 'nonfiction') {
+            story.audioArMale = `${relativePath}${maleAudioFileName}`;
+          } else {
+            story.audio_ar_male = `${relativePath}${maleAudioFileName}`;
+          }
+          
+          console.log(`Generated male audio for story: ${displayTitle}`);
           
           // Add a small delay between requests to avoid API rate limits
           await sleep(2000);
         }
         
         // Generate Arabic audio with female voice if needed
-        if (!story.audio_ar_female) {
-          const femaleAudioFileName = `${story.id}_ar_female.mp3`;
-          await generateAudio(story.content_ar, femaleAudioFileName, 'female');
-          story.audio_ar_female = `data/audio/${femaleAudioFileName}`;
-          console.log(`Generated female audio for story: ${story.title_ar || story.title_en}`);
+        if (!story.audio_ar_female && !story.audioArFemale) {
+          const femaleAudioFileName = `${filePrefix}${storyId}_ar_female.mp3`;
+          await generateAudio(contentAr, femaleAudioFileName, 'female');
+          
+          // Update appropriate field based on JSON structure
+          if (storyType === 'nonfiction') {
+            story.audioArFemale = `${relativePath}${femaleAudioFileName}`;
+          } else {
+            story.audio_ar_female = `${relativePath}${femaleAudioFileName}`;
+          }
+          
+          console.log(`Generated female audio for story: ${displayTitle}`);
           
           // Add a small delay between story processing
           await sleep(2000);
@@ -175,19 +225,26 @@ async function processStories() {
         if (story.audio_ar) {
           delete story.audio_ar;
         }
+        if (story.audioAr) {
+          delete story.audioAr;
+        }
         
         // Update the story in the original data
-        storiesData.stories[i] = story;
+        if (storiesData.stories) {
+          storiesData.stories[i] = story;
+        } else {
+          storiesData[i] = story;
+        }
         
         // Write the updated JSON back to the file after each story
         // This ensures we don't lose progress if the script is interrupted
         await writeFileAsync(storiesFilePath, JSON.stringify(storiesData, null, 2), 'utf8');
-        console.log(`Updated stories JSON for: ${story.title_ar || story.title_en}`);
+        console.log(`Updated stories JSON for: ${displayTitle}`);
       } catch (error) {
-        console.error(`Failed to process story ${story.title_ar || story.title_en}: ${error.message}`);
+        console.error(`Failed to process story ${displayTitle}: ${error.message}`);
         failedGenerations.push({
-          id: story.id,
-          title: story.title_ar || story.title_en,
+          id: story.id || `story${i+1}`,
+          title: displayTitle,
           error: error.message
         });
         
@@ -196,7 +253,7 @@ async function processStories() {
       }
     }
     
-    console.log('All stories processed. Stories JSON updated with Arabic audio file paths for male and female voices');
+    console.log(`All ${storyType} stories processed. Stories JSON updated with Arabic audio file paths for male and female voices`);
     
     // Report any failed generations
     if (failedGenerations.length > 0) {
@@ -219,19 +276,20 @@ if (!fs.existsSync(audioDir)) {
 
 // Run the script
 processStories()
-  .then(() => console.log('Arabic audio generation complete for both male and female voices'))
+  .then(() => console.log(`Arabic audio generation complete for ${storyType} stories (both male and female voices)`))
   .catch(err => console.error('Error:', err.message || err));
 
 /**
  * Note: To run this script, you need to:
  * 1. Sign up for a PlayHT account and get your API credentials
- * 2. Replace the API credentials if needed
- * 3. Run the script with: node generate_audio.js
+ * 2. Run the script with:
+ *    - node generate_audio.js              # For fiction stories (default)
+ *    - node generate_audio.js nonfiction   # For non-fiction stories
  * 
  * The script will:
- * - Check all stories and identify which ones need audio generation
+ * - Check all stories in the selected JSON file and identify which ones need audio generation
  * - Generate Arabic audio files (male and female voices) only for stories that don't have them
- * - Save the files to the assets/data/audio directory
+ * - Save the files to the appropriate audio directory based on story type
  * - Update the JSON file with paths to these audio files
- * - Skip stories that already have both male and female audio or don't have Arabic content
+ * - Skip stories that already have both male and female audio or don't have valid Arabic content
  */

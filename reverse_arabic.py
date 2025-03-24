@@ -14,8 +14,8 @@ def reverse_word_order(text):
     
     return '\n'.join(reversed_line_words)
 
-# Path to the JSON file
-json_file_path = 'assets/msa_stories.json'
+# Path to the JSON file - updated to use the nonfiction stories
+json_file_path = 'assets/msa_stories_nonfiction.json'
 
 # Read the JSON file
 with open(json_file_path, 'r', encoding='utf-8') as f:

@@ -70,11 +70,16 @@ class _StoryAudioPlayerState extends State<StoryAudioPlayer> {
   // Load the stories from the JSON file
   Future<void> _loadStories() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/msa_stories.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      // Load both fiction and nonfiction stories
+      final String fictionJsonString = await rootBundle.loadString('assets/msa_stories.json');
+      final String nonfictionJsonString = await rootBundle.loadString('assets/msa_stories_nonfiction.json');
+      
+      final Map<String, dynamic> fictionJsonData = json.decode(fictionJsonString);
+      final Map<String, dynamic> nonfictionJsonData = json.decode(nonfictionJsonString);
       
       setState(() {
-        stories = jsonData['stories'];
+        // Combine both story lists
+        stories = [...fictionJsonData['stories'], ...nonfictionJsonData['stories']];
       });
     } catch (e) {
       print('Error loading stories: $e');

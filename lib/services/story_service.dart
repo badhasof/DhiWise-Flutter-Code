@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import '../domain/story/story_model.dart';
 
 class StoryService {
-  static const String _jsonPath = 'assets/msa_stories.json';
+  static const String _fictionJsonPath = 'assets/msa_stories.json';
+  static const String _nonfictionJsonPath = 'assets/msa_stories_nonfiction.json';
   
   // Singleton instance
   static final StoryService _instance = StoryService._internal();
@@ -19,7 +20,7 @@ class StoryService {
   // List to cache the stories
   List<Story>? _stories;
   
-  // Load stories from the JSON file
+  // Load stories from the JSON files
   Future<List<Story>> getStories() async {
     // Return cached stories if available
     if (_stories != null) {
@@ -27,13 +28,22 @@ class StoryService {
     }
     
     try {
-      // Load the JSON file
-      final String jsonString = await rootBundle.loadString(_jsonPath);
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      // Load both JSON files
+      final String fictionJsonString = await rootBundle.loadString(_fictionJsonPath);
+      final String nonfictionJsonString = await rootBundle.loadString(_nonfictionJsonPath);
       
-      // Parse the stories
-      final List<dynamic> storiesJson = jsonData['stories'];
-      _stories = storiesJson.map((json) => Story.fromJson(json)).toList();
+      final Map<String, dynamic> fictionJsonData = json.decode(fictionJsonString);
+      final Map<String, dynamic> nonfictionJsonData = json.decode(nonfictionJsonString);
+      
+      // Parse the stories from both files
+      final List<dynamic> fictionStoriesJson = fictionJsonData['stories'];
+      final List<dynamic> nonfictionStoriesJson = nonfictionJsonData['stories'];
+      
+      // Combine the stories from both sources
+      final List<Story> fictionStories = fictionStoriesJson.map((json) => Story.fromJson(json)).toList();
+      final List<Story> nonfictionStories = nonfictionStoriesJson.map((json) => Story.fromJson(json)).toList();
+      
+      _stories = [...fictionStories, ...nonfictionStories];
       
       return _stories!;
     } catch (e) {
@@ -63,7 +73,6 @@ class StoryService {
     
     return stories.where((story) {
       // Check if the story's genre matches the requested Fiction/Non-Fiction category
-      // Fiction is when genre field contains "Fiction", Non-Fiction is when it doesn't
       final isStoryFiction = story.genre == "Fiction";
       return isStoryFiction == isFiction;
     }).toList();
