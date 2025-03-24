@@ -45,6 +45,27 @@ class Story extends Equatable {
 
   // Factory constructor to create a Story from JSON
   factory Story.fromJson(Map<String, dynamic> json) {
+    // Handle both fiction and nonfiction audio path formats
+    String? audioArMale;
+    String? audioArFemale;
+    
+    // Check for fiction-style audio paths (using snake_case)
+    if (json['audio_ar_male'] != null) {
+      audioArMale = json['audio_ar_male'] as String?;
+    } 
+    // Check for nonfiction-style audio paths (using camelCase)
+    else if (json['audioArMale'] != null) {
+      audioArMale = json['audioArMale'] as String?;
+    }
+    
+    // Same for female audio
+    if (json['audio_ar_female'] != null) {
+      audioArFemale = json['audio_ar_female'] as String?;
+    } 
+    else if (json['audioArFemale'] != null) {
+      audioArFemale = json['audioArFemale'] as String?;
+    }
+    
     return Story(
       id: json['id'] as String,
       titleEn: json['title_en'] as String,
@@ -58,8 +79,8 @@ class Story extends Equatable {
       contentEn: json['content_en'] as String,
       audioAr: json['audio_ar'] as String?,
       audioEn: json['audio_en'] as String?,
-      audioArMale: json['audio_ar_male'] as String?,
-      audioArFemale: json['audio_ar_female'] as String?,
+      audioArMale: audioArMale,
+      audioArFemale: audioArFemale,
     );
   }
 

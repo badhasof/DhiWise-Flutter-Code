@@ -209,6 +209,11 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       // Load audio source
       try {
         if (audioPath != null && audioPath.isNotEmpty) {
+          // Make sure the path doesn't start with 'assets/' to avoid duplication
+          if (audioPath.startsWith('assets/')) {
+            audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+          }
+          
           await _audioPlayer.setSource(AssetSource(audioPath));
           await _audioPlayer.setPlaybackRate(_playbackSpeed);
           
@@ -236,6 +241,10 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         }
       } catch (e) {
         // Handle error
+        print("Error loading audio: $e");
+        setState(() {
+          _isAudioLoaded = false;
+        });
       }
     } else if (_currentLanguage == 'en' && widget.story.audioEn != null && widget.story.audioEn!.isNotEmpty) {
       audioPath = widget.story.audioEn;
@@ -246,13 +255,28 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       }
       
       try {
-        await _audioPlayer.setSource(AssetSource(widget.story.audioEn!));
-        await _audioPlayer.setPlaybackRate(_playbackSpeed);
-        setState(() {
-          _isAudioLoaded = true;
-        });
+        // Make sure the path doesn't start with 'assets/' to avoid duplication
+        if (audioPath != null && audioPath.startsWith('assets/')) {
+          audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+        }
+        
+        if (audioPath != null) {
+          await _audioPlayer.setSource(AssetSource(audioPath));
+          await _audioPlayer.setPlaybackRate(_playbackSpeed);
+          setState(() {
+            _isAudioLoaded = true;
+          });
+        } else {
+          setState(() {
+            _isAudioLoaded = false;
+          });
+        }
       } catch (e) {
         // Handle error
+        print("Error loading English audio: $e");
+        setState(() {
+          _isAudioLoaded = false;
+        });
       }
     } else {
       setState(() {
@@ -463,7 +487,14 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
   void _toggleLanguage() async {
     if (_currentLanguage == 'ar' && widget.story.audioEn != null && widget.story.audioEn!.isNotEmpty) {
       await _audioPlayer.stop();
-      await _audioPlayer.setSource(AssetSource(widget.story.audioEn!));
+      String audioPath = widget.story.audioEn!;
+      
+      // Make sure the path doesn't start with 'assets/' to avoid duplication
+      if (audioPath.startsWith('assets/')) {
+        audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+      }
+      
+      await _audioPlayer.setSource(AssetSource(audioPath));
       setState(() {
         _currentLanguage = 'en';
         _position = Duration.zero;
@@ -476,7 +507,15 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       });
     } else if (_currentLanguage == 'en' && widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
       await _audioPlayer.stop();
-      await _audioPlayer.setSource(AssetSource(widget.story.audioAr!));
+      
+      String audioPath = widget.story.audioAr!;
+      
+      // Make sure the path doesn't start with 'assets/' to avoid duplication
+      if (audioPath.startsWith('assets/')) {
+        audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+      }
+      
+      await _audioPlayer.setSource(AssetSource(audioPath));
       setState(() {
         _currentLanguage = 'ar';
         _position = Duration.zero;
