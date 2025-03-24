@@ -1038,7 +1038,8 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                     _highlightedArabicWord = word;
                     _highlightedEnglishWord = '';
                   });
-                }
+                },
+                currentWordPosition: _currentLanguage == 'ar' ? _currentWordIndex : -1
               ),
             ),
           ),
@@ -1093,7 +1094,8 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                     _highlightedEnglishWord = word;
                     _highlightedArabicWord = '';
                   });
-                }
+                },
+                currentWordPosition: _currentLanguage == 'en' ? _currentWordIndex : -1
               ),
             ),
           ),

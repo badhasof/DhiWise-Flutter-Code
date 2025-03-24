@@ -41,16 +41,29 @@ class TextHighlightingService {
     _currentHighlightIndex = 0;
   }
   
+  /// Check if a string contains only punctuation
+  bool _isOnlyPunctuation(String text) {
+    if (text.isEmpty) return false;
+    
+    // Define punctuation characters
+    final punctuationRegex = RegExp(r'^[.،!?,;:"()،\-]+$');
+    return punctuationRegex.hasMatch(text.trim());
+  }
+  
   /// Build highlighted text paragraphs with rich text formatting
   List<Widget> buildHighlightedTextParagraphs(
     String content, 
     TextDirection direction, 
     String? highlightedWord,
     bool isArabic, 
-    Function(String) onWordTap
+    Function(String) onWordTap,
+    {int currentWordPosition = -1} // Add parameter for current word position
   ) {
     // Split content into paragraphs
     final paragraphs = content.split('\n');
+    
+    // Track the current position in full text
+    int wordPositionCounter = 0;
     
     return paragraphs.map((paragraph) {
       if (paragraph.trim().isEmpty) {
@@ -75,14 +88,21 @@ class TextHighlightingService {
                 color: Color(0xFF37251F),
               ),
               children: words.map((word) {
-                // Check if this word should be highlighted using improved word matching logic
-                final isHighlighted = highlightedWord != null && 
-                                     _wordsMatch(word, highlightedWord);
+                // Check if this is the exact instance of the word to highlight
+                // based on its position in the full text
+                final bool shouldHighlight = highlightedWord != null && 
+                                          !_isOnlyPunctuation(word) &&
+                                          _wordsMatch(word, highlightedWord) && 
+                                          wordPositionCounter == currentWordPosition;
+                
+                // Increment the word position counter for the next word
+                wordPositionCounter++;
                 
                 // Add debug logging for near-misses that might be helpful
                 if (highlightedWord != null && 
                     word.length > 2 && 
-                    !isHighlighted && 
+                    !shouldHighlight && 
+                    !_isOnlyPunctuation(word) &&
                     _calculateWordSimilarity(_normalizeWord(word), _normalizeWord(highlightedWord)) > 0.6) {
                   debugPrint('Near miss highlighting: "$word" vs "$highlightedWord", '
                       'similarity: ${_calculateWordSimilarity(_normalizeWord(word), _normalizeWord(highlightedWord))}');
@@ -91,10 +111,10 @@ class TextHighlightingService {
                 return TextSpan(
                   text: '$word ',
                   style: TextStyle(
-                    color: isHighlighted
+                    color: shouldHighlight
                         ? Color(0xFFFF6F3E)
                         : Color(0xFF37251F),
-                    backgroundColor: isHighlighted
+                    backgroundColor: shouldHighlight
                         ? Color(0xFFFFEBE5)
                         : null,
                   ),
