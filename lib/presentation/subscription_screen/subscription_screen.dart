@@ -33,33 +33,38 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         title: null,
         centerTitle: false,
       ),
-      body: Stack(
-        children: [
-          // Background wave SVG positioned at the top
-          Positioned(
-            top: -1, // Negative value to ensure it covers the top edge
-            left: -200, // Move SVG 200px to the left
-            right: 0,
-            child: SvgPicture.asset(
-              'assets/images/background_wave.svg',
-              width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
-              fit: BoxFit.fitWidth,
+      body: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            // Background wave SVG positioned at the top
+            Positioned(
+              top: -1, // Negative value to ensure it covers the top edge
+              left: -200, // Move SVG 200px to the left
+              right: 0,
+              child: SvgPicture.asset(
+                'assets/images/background_wave.svg',
+                width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
+                fit: BoxFit.fitWidth,
+              ),
             ),
-          ),
-          // Confetti decoration
-          Positioned(
-            top: 100,
-            right: 0,
-            child: SvgPicture.asset(
-              'assets/images/confetti.svg',
-              width: 200.h,
-              height: 200.h,
+            // Confetti decoration
+            Positioned(
+              top: 20,
+              right: 0,
+              left: 0,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/confetti.svg',
+                  width: 500.h,
+                  height: 500.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
-          ),
-          // Main content
-          SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
-            child: Padding(
+            // Main content
+            Padding(
               padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 32.h),
               child: Column(
                 children: [
@@ -76,8 +81,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
