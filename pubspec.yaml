@@ -37,6 +37,7 @@ flutter:
     - assets/images/settings_icons/
     - assets/icons/
     - assets/data/audio/
+    - assets/data/audio/nonfiction/
     - assets/data/timestamps/
     - assets/svg/
     - assets/svg/play_button/

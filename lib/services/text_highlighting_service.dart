@@ -57,13 +57,13 @@ class TextHighlightingService {
     String? highlightedWord,
     bool isArabic, 
     Function(String) onWordTap,
-    {int currentWordPosition = -1} // Add parameter for current word position
+    {int currentWordPosition = -1} // This parameter is now optional and not used for highlighting
   ) {
     // Split content into paragraphs
     final paragraphs = content.split('\n');
     
-    // Track the current position in full text
-    int wordPositionCounter = 0;
+    // Flag to track if we've already highlighted a word - we'll still only highlight one instance
+    bool hasHighlightedWord = false;
     
     return paragraphs.map((paragraph) {
       if (paragraph.trim().isEmpty) {
@@ -88,15 +88,17 @@ class TextHighlightingService {
                 color: Color(0xFF37251F),
               ),
               children: words.map((word) {
-                // Check if this is the exact instance of the word to highlight
-                // based on its position in the full text
+                // Check if this word should be highlighted - matching content not position
+                // We'll still only highlight the first matching instance
                 final bool shouldHighlight = highlightedWord != null && 
+                                          !hasHighlightedWord &&
                                           !_isOnlyPunctuation(word) &&
-                                          _wordsMatch(word, highlightedWord) && 
-                                          wordPositionCounter == currentWordPosition;
+                                          _wordsMatch(word, highlightedWord);
                 
-                // Increment the word position counter for the next word
-                wordPositionCounter++;
+                // If this word should be highlighted, update the flag
+                if (shouldHighlight) {
+                  hasHighlightedWord = true;
+                }
                 
                 // Add debug logging for near-misses that might be helpful
                 if (highlightedWord != null && 

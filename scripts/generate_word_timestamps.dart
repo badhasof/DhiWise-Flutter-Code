@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
-const String OPENAI_API_KEY = ''; // Replace with your actual API key
+const String OPENAI_API_KEY = '';
 const String AUDIO_DIR = 'assets/data/audio';
 const String TIMESTAMPS_DIR = 'assets/data/timestamps';
+const String STORIES_JSON_PATH = 'assets/msa_stories.json';
 
 void main() async {
   // Create the timestamps directory if it doesn't exist
@@ -14,11 +15,101 @@ void main() async {
     await timestampsDir.create(recursive: true);
   }
 
-  // Process the Tiny Dragon audio files for testing
-  await processAudio('the-tiny-dragon_ar_male.mp3');
-  await processAudio('the-tiny-dragon_ar_female.mp3');
+  // Read the stories JSON file
+  final File storiesFile = File(STORIES_JSON_PATH);
+  if (!await storiesFile.exists()) {
+    print('Stories JSON file not found: ${storiesFile.path}');
+    return;
+  }
+
+  final String storiesJson = await storiesFile.readAsString();
+  final Map<String, dynamic> storiesData = jsonDecode(storiesJson);
   
-  print('Timestamp generation completed!');
+  if (!storiesData.containsKey('stories') || storiesData['stories'].isEmpty) {
+    print('No stories found in the JSON file');
+    return;
+  }
+  
+  final List<dynamic> stories = storiesData['stories'];
+  print('Found ${stories.length} stories in the JSON file');
+  
+  // Process each story
+  int processed = 0;
+  for (int i = 0; i < stories.length; i++) {
+    final story = stories[i];
+    final String storyId = story['id'];
+    
+    // Skip if story has no audio
+    if (!story.containsKey('audio_ar_male') || !story.containsKey('audio_ar_female')) {
+      print('Skipping story $storyId: No audio files');
+      continue;
+    }
+    
+    // Skip if story already has timestamps
+    if (story.containsKey('timestamps_ar_male') && story.containsKey('timestamps_ar_female')) {
+      print('Skipping story $storyId: Already has timestamps');
+      continue;
+    }
+    
+    print('\nProcessing story [${i + 1}/${stories.length}]: ${story['title_en']} (${storyId})');
+    
+    // Process male audio if needed
+    if (story.containsKey('audio_ar_male') && !story.containsKey('timestamps_ar_male')) {
+      final String audioPath = story['audio_ar_male'];
+      final String audioFilename = path.basename(audioPath);
+      
+      final String timestampFilename = '${path.basenameWithoutExtension(audioFilename)}_timestamps.json';
+      final String timestampPath = 'data/timestamps/$timestampFilename';
+      
+      if (!await File(path.join('assets', timestampPath)).exists()) {
+        print('Generating male timestamps for $storyId');
+        await processAudio(audioFilename);
+        processed++;
+        
+        // Add a delay to avoid rate limiting
+        print('Waiting 5 seconds...');
+        await Future.delayed(Duration(seconds: 5));
+      }
+      
+      // Update the story with the timestamp path
+      story['timestamps_ar_male'] = timestampPath;
+      print('Updated story with male timestamp path: $timestampPath');
+    }
+    
+    // Process female audio if needed
+    if (story.containsKey('audio_ar_female') && !story.containsKey('timestamps_ar_female')) {
+      final String audioPath = story['audio_ar_female'];
+      final String audioFilename = path.basename(audioPath);
+      
+      final String timestampFilename = '${path.basenameWithoutExtension(audioFilename)}_timestamps.json';
+      final String timestampPath = 'data/timestamps/$timestampFilename';
+      
+      if (!await File(path.join('assets', timestampPath)).exists()) {
+        print('Generating female timestamps for $storyId');
+        await processAudio(audioFilename);
+        processed++;
+        
+        // Add a delay to avoid rate limiting
+        if (i < stories.length - 1) {
+          print('Waiting 10 seconds before next file...');
+          await Future.delayed(Duration(seconds: 10));
+        }
+      }
+      
+      // Update the story with the timestamp path
+      story['timestamps_ar_female'] = timestampPath;
+      print('Updated story with female timestamp path: $timestampPath');
+    }
+    
+    // Update the story in the stories array
+    stories[i] = story;
+    
+    // Save the updated JSON after each story to avoid losing progress
+    await storiesFile.writeAsString(jsonEncode(storiesData));
+    print('Updated and saved stories JSON file');
+  }
+  
+  print('\nTimestamp generation completed! Processed $processed new audio files.');
 }
 
 Future<void> processAudio(String audioFilename) async {
@@ -35,12 +126,6 @@ Future<void> processAudio(String audioFilename) async {
   final File outputFile = File(path.join(TIMESTAMPS_DIR, outputFilename));
   
   try {
-    // Check if the file already exists to avoid unnecessary API calls
-    if (await outputFile.exists()) {
-      print('Timestamps already exist: ${outputFile.path}');
-      return;
-    }
-    
     // Read the audio file as bytes
     final List<int> audioBytes = await audioFile.readAsBytes();
     
@@ -71,6 +156,7 @@ Future<Map<String, dynamic>> getWordTimestamps(List<int> audioBytes, String file
     'model': 'whisper-1',
     'response_format': 'verbose_json',
     'timestamp_granularities[]': 'word',
+    'language': 'ar', // Specify Arabic language for better results
   });
   
   // Add the audio file
