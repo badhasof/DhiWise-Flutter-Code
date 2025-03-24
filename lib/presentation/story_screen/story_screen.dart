@@ -1058,12 +1058,12 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       children: [
         // Arabic content
         Container(
+          height: MediaQuery.of(context).size.height * 0.25, // Fixed height - 25% of screen height
           decoration: BoxDecoration(
             color: Color(0xFFFFEBE5),
             borderRadius: BorderRadius.circular(12.h),
           ),
           child: Container(
-            padding: EdgeInsets.all(16.h),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.h),
@@ -1072,19 +1072,22 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                   width: 1.5,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
-              children: _textHighlightingService.buildHighlightedTextParagraphs(
-                widget.story.contentAr,
-                TextDirection.rtl,
-                _highlightedArabicWord,
-                true,
-                (word) {
-                  setState(() {
-                    _highlightedArabicWord = word;
-                    _highlightedEnglishWord = '';
-                  });
-                }
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end, // Right-to-left for Arabic
+                children: _textHighlightingService.buildHighlightedTextParagraphs(
+                  widget.story.contentAr,
+                  TextDirection.rtl,
+                  _highlightedArabicWord,
+                  true,
+                  (word) {
+                    setState(() {
+                      _highlightedArabicWord = word;
+                      _highlightedEnglishWord = '';
+                    });
+                  }
+                ),
               ),
             ),
           ),
@@ -1113,12 +1116,12 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         
         // English content
         Container(
+          height: MediaQuery.of(context).size.height * 0.25, // Fixed height - 25% of screen height
           decoration: BoxDecoration(
             color: Color(0xFFEFECEB),
             borderRadius: BorderRadius.circular(12.h),
           ),
           child: Container(
-            padding: EdgeInsets.all(16.h),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.h),
@@ -1127,25 +1130,28 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
                   width: 1.5,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: _textHighlightingService.buildHighlightedTextParagraphs(
-                widget.story.contentEn,
-                TextDirection.ltr,
-                _highlightedEnglishWord,
-                false,
-                (word) {
-                  setState(() {
-                    _highlightedEnglishWord = word;
-                    _highlightedArabicWord = '';
-                  });
-                }
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _textHighlightingService.buildHighlightedTextParagraphs(
+                  widget.story.contentEn,
+                  TextDirection.ltr,
+                  _highlightedEnglishWord,
+                  false,
+                  (word) {
+                    setState(() {
+                      _highlightedEnglishWord = word;
+                      _highlightedArabicWord = '';
+                    });
+                  }
+                ),
               ),
             ),
           ),
         ),
-        // Add extra padding at the bottom to ensure content is not cut off by audio player
-        SizedBox(height: 120.h),
+        // Reduced bottom padding since containers are now fixed height
+        SizedBox(height: 80.h),
       ],
     );
   }

@@ -35,6 +35,7 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/settings_icons/
+    - assets/images/difficulty/
     - assets/icons/
     - assets/data/audio/
     - assets/data/audio/nonfiction/

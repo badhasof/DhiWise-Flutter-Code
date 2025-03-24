@@ -24,6 +24,24 @@ class HomeSixItemWidget extends StatelessWidget {
   
   // Add onButtonTap callback for the Read Now button
   final VoidCallback? onButtonTap;
+  
+  // Get the difficulty indicator image based on the story level
+  String _getDifficultyIndicatorImage() {
+    if (story == null) {
+      return ImageConstant.imgDifficultyBeginner;
+    }
+    
+    switch (story!.level) {
+      case 'Beginner':
+        return ImageConstant.imgDifficultyBeginner;
+      case 'Intermediate':
+        return ImageConstant.imgDifficultyIntermediate;
+      case 'Advanced':
+        return ImageConstant.imgDifficultyAdvanced;
+      default:
+        return ImageConstant.imgDifficultyBeginner;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,8 +116,9 @@ class HomeSixItemWidget extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Use the difficulty indicator based on story level
                         CustomImageView(
-                          imagePath: ImageConstant.imgFrame1686560216,
+                          imagePath: _getDifficultyIndicatorImage(),
                           height: 24.h,
                           width: 26.h,
                         ),

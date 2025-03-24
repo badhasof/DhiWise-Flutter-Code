@@ -106,6 +106,13 @@ class ImageConstant {
   
   static String imgNavProfile = '$imagePath/img_nav_profile.png';
   
+  // Difficulty indicator images
+  static String imgDifficultyBeginner = '$imagePath/difficulty/difficulty_beginner.svg';
+  
+  static String imgDifficultyIntermediate = '$imagePath/difficulty/difficulty_intermediate.svg';
+  
+  static String imgDifficultyAdvanced = '$imagePath/difficulty/difficulty_advanced.svg';
+  
   // Additional missing constants
   static String imgClock = '$imagePath/img_clock.svg';
   
