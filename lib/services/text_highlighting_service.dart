@@ -50,6 +50,13 @@ class TextHighlightingService {
     return punctuationRegex.hasMatch(text.trim());
   }
   
+  /// Check if two words match even if potentially null
+  bool _wordsMatchNullable(String? word1, String? word2) {
+    // If either is null, no match
+    if (word1 == null || word2 == null) return false;
+    return _wordsMatch(word1, word2);
+  }
+  
   /// Build highlighted text paragraphs with rich text formatting
   List<Widget> buildHighlightedTextParagraphs(
     String content, 
@@ -57,13 +64,16 @@ class TextHighlightingService {
     String? highlightedWord,
     bool isArabic, 
     Function(String) onWordTap,
-    {int currentWordPosition = -1} // This parameter is now optional and not used for highlighting
+    {int currentWordPosition = -1}
   ) {
     // Split content into paragraphs
     final paragraphs = content.split('\n');
     
-    // Flag to track if we've already highlighted a word - we'll still only highlight one instance
-    bool hasHighlightedWord = false;
+    // For tracking all word positions across paragraphs
+    int globalWordPosition = 0;
+    
+    // Get the current highlight index from the service
+    int targetPosition = _currentHighlightIndex;
     
     return paragraphs.map((paragraph) {
       if (paragraph.trim().isEmpty) {
@@ -72,7 +82,7 @@ class TextHighlightingService {
       
       // Split paragraph into normalized words for better matching
       final String normalizedParagraph = _normalizeFullText(paragraph);
-      final words = normalizedParagraph.split(' ');
+      final List<String> words = normalizedParagraph.split(' ');
       
       return Padding(
         padding: EdgeInsets.only(bottom: 16.h),
@@ -87,27 +97,28 @@ class TextHighlightingService {
                 height: 1.5,
                 color: Color(0xFF37251F),
               ),
-              children: words.map((word) {
-                // Check if this word should be highlighted - matching content not position
-                // We'll still only highlight the first matching instance
-                final bool shouldHighlight = highlightedWord != null && 
-                                          !hasHighlightedWord &&
-                                          !_isOnlyPunctuation(word) &&
-                                          _wordsMatch(word, highlightedWord);
+              children: words.asMap().entries.map((entry) {
+                int localWordIndex = entry.key;
+                String word = entry.value;
                 
-                // If this word should be highlighted, update the flag
-                if (shouldHighlight) {
-                  hasHighlightedWord = true;
-                }
+                // Initialize highlight state
+                bool shouldHighlight = false;
                 
-                // Add debug logging for near-misses that might be helpful
-                if (highlightedWord != null && 
-                    word.length > 2 && 
-                    !shouldHighlight && 
-                    !_isOnlyPunctuation(word) &&
-                    _calculateWordSimilarity(_normalizeWord(word), _normalizeWord(highlightedWord)) > 0.6) {
-                  debugPrint('Near miss highlighting: "$word" vs "$highlightedWord", '
-                      'similarity: ${_calculateWordSimilarity(_normalizeWord(word), _normalizeWord(highlightedWord))}');
+                // Check if this is a word that should be counted in our tracking
+                bool isCountableWord = word.trim().isNotEmpty;
+                
+                // Only count real words (not just punctuation) for position tracking
+                if (isCountableWord) {
+                  // POSITION MATCHING: Only highlight if this word is at the target position
+                  // AND its content matches the word to highlight (if provided)
+                  if (globalWordPosition == targetPosition) {
+                    if (highlightedWord == null || _wordsMatch(word, highlightedWord)) {
+                      shouldHighlight = true;
+                    }
+                  }
+                  
+                  // Increment the global position for the next word
+                  globalWordPosition++;
                 }
                 
                 return TextSpan(
@@ -149,6 +160,7 @@ class TextHighlightingService {
     String normalized = text
         .replaceAll('\n', ' ')  // Replace newlines with spaces
         .replaceAll('.', ' . ') // Add spaces around periods
+        .replaceAll(',', ' , ') // Add spaces around English commas too
         .replaceAll('،', ' ، ') // Add spaces around Arabic commas
         .replaceAll('!', ' ! ') // Add spaces around exclamation marks
         .replaceAll('?', ' ? ') // Add spaces around question marks
@@ -359,6 +371,8 @@ class TextHighlightingService {
           'start': startTime,
           'end': endTime,
           'visualStart': i == 0 ? 0.0 : startTime - 0.1,
+          'prevWord': i > 0 ? contentWords[i - 1] : null,
+          'nextWord': i < contentWords.length - 1 ? contentWords[i + 1] : null,
         });
         startTime = endTime;
       }
@@ -416,6 +430,8 @@ class TextHighlightingService {
                 'end': wordEnd,
                 'matched': false,  // Mark as estimated
                 'visualization': 'skipped',  // Mark why it was included
+                'prevWord': j > 0 ? contentWords[j - 1] : null,
+                'nextWord': j < contentWords.length - 1 ? contentWords[j + 1] : null,
               });
               
               currentTime = wordEnd;
@@ -436,6 +452,8 @@ class TextHighlightingService {
                 'end': wordEnd,
                 'matched': false,
                 'visualization': 'skipped-small',
+                'prevWord': j > 0 ? contentWords[j - 1] : null,
+                'nextWord': j < contentWords.length - 1 ? contentWords[j + 1] : null,
               });
               
               currentTime = wordEnd;
@@ -457,6 +475,8 @@ class TextHighlightingService {
           'matched': true,
           'originalTimestampWord': timestampWord.word, // Store original for debugging
           'similarity': similarity,  // Store similarity score for debugging
+          'prevWord': matchIndex > 0 ? contentWords[matchIndex - 1] : null,
+          'nextWord': matchIndex < contentWords.length - 1 ? contentWords[matchIndex + 1] : null,
         });
         
         // Log matching details for debugging
@@ -494,6 +514,8 @@ class TextHighlightingService {
                     'end': currentTime + timePerWord,
                     'matched': false,
                     'visualization': 'low-match-skip',
+                    'prevWord': k > 0 ? contentWords[k - 1] : null,
+                    'nextWord': k < contentWords.length - 1 ? contentWords[k + 1] : null,
                   });
                   currentTime += timePerWord;
                 }
@@ -508,6 +530,8 @@ class TextHighlightingService {
                 'originalTimestampWord': timestampWord.word,
                 'similarity': similarity,
                 'visualization': 'fuzzy-match',
+                'prevWord': j > 0 ? contentWords[j - 1] : null,
+                'nextWord': j < contentWords.length - 1 ? contentWords[j + 1] : null,
               });
               
               debugPrint('Fuzzy match: "${timestampWord.word}" -> "${contentWords[j]}", '
@@ -529,6 +553,8 @@ class TextHighlightingService {
               'matched': false,
               'originalTimestampWord': timestampWord.word,
               'visualization': 'sequential-fallback',
+              'prevWord': contentIndex > 0 ? contentWords[contentIndex - 1] : null,
+              'nextWord': contentIndex < contentWords.length - 1 ? contentWords[contentIndex + 1] : null,
             });
             
             contentIndex++;
@@ -573,6 +599,8 @@ class TextHighlightingService {
           'end': wordEnd,
           'matched': false,
           'visualization': 'remaining-words',
+          'prevWord': i > 0 ? contentWords[i - 1] : null,
+          'nextWord': i < contentWords.length - 1 ? contentWords[i + 1] : null,
         });
         
         startTime = wordEnd;
@@ -672,11 +700,12 @@ class TextHighlightingService {
     double msPerWord
   ) {
     // Convert position to seconds for precise time comparison
-    // Use gender-aware timing - faster transitions for female voices
-    // Check if any timestamp words have female-specific metadata or timing
-    final bool isFemaleVoice = currentLanguage == 'en' && msPerWord < 300; // Female typically has shorter words
-    final lookAheadOffset = isFemaleVoice ? 0.45 : 0.3; // Increased offset for female audio
-    final positionInSeconds = position.inMilliseconds / 1000.0 + lookAheadOffset;
+    final positionInSeconds = position.inMilliseconds / 1000.0;
+    
+    // Log position for debugging
+    if (position.inMilliseconds % 1000 == 0) {  // Only log every second to avoid spam
+      debugPrint("Audio position: ${position.inMilliseconds}ms, ${positionInSeconds}s");
+    }
     
     // Get the current word list based on language
     final List<String> currentWords = currentLanguage == 'ar' ? arabicWords : englishWords;
@@ -687,7 +716,6 @@ class TextHighlightingService {
     }
     
     // At beginning of playback, always highlight first word
-    // Increase this threshold to ensure the first word is highlighted for longer
     if (position.inMilliseconds < 200) {
       _currentHighlightIndex = 0;
       final firstWord = getWordAtIndex(currentWords, 0);
@@ -698,131 +726,83 @@ class TextHighlightingService {
     
     // Use timestamp data to determine which word to highlight
     if (wordTimestamps != null && wordTimestamps.words.isNotEmpty) {
-      // Create a map between indices and timestamps - this only needs to be done once
+      // Create a map between indices and timestamps
       final indexMap = createWordIndexMap(wordTimestamps, currentWords);
       
       // Store the index map for direct position lookup
       setWordIndexMap(indexMap);
       
-      // DIRECT APPROACH: Find exactly which word should be highlighted at this specific time
-      // This ensures we always highlight the correct word regardless of our current index
+      // DIRECT APPROACH: Find exactly which word should be highlighted at this time
       for (int i = 0; i < indexMap.length; i++) {
         final wordData = indexMap[i];
         final start = wordData['start'] as double;
         final end = wordData['end'] as double;
         
-        // Special case for the second word transition - ensure it's visible
-        if (i == 1 && _currentHighlightIndex == 0) {
-          // If we're near the end of the first word, prepare to transition to second
-          // Check if likely female voice based on word duration
-          final bool likelyFemaleVoice = indexMap.length > 3 && 
-              ((indexMap[0]['end'] as double) - (indexMap[0]['start'] as double)) < 0.25;
-          
-          // Use more aggressive timing for female voice
-          final transitionOffset = likelyFemaleVoice ? 0.25 : 0.2;
-          if (positionInSeconds >= (indexMap[0]['end'] as double) - transitionOffset) {
-            _currentHighlightIndex = 1;
-            return wordData['word'] as String;
-          }
-        }
-        
-        // If position is exactly within this word's time range
+        // If position is within this word's time range
         if (positionInSeconds >= start && positionInSeconds < end) {
-          // Only update index if changed
-          if (_currentHighlightIndex != i) {
-            _currentHighlightIndex = i;
-          }
-          
+          // Update the highlight index and return the word
+          _currentHighlightIndex = i;
           final word = wordData['word'] as String;
           return word;
         }
       }
       
-      // If we didn't find a match, check if we should anticipate the next word
+      // If no exact match found, check transitions
       if (_currentHighlightIndex < indexMap.length - 1) {
         final currentWordData = indexMap[_currentHighlightIndex];
         final nextWordData = indexMap[_currentHighlightIndex + 1];
         
-        // Use safer conversion for timestamp values
-        final currentEnd = currentWordData['end'] is int ? 
-            (currentWordData['end'] as int).toDouble() : currentWordData['end'] as double;
-        final nextStart = nextWordData['start'] is int ? 
-            (nextWordData['start'] as int).toDouble() : nextWordData['start'] as double;
+        final currentEnd = (currentWordData['end'] as num).toDouble();
+        final nextStart = (nextWordData['start'] as num).toDouble();
         
-        // Very aggressively anticipate the next word - reduce look-ahead to slow down transitions
-        // Use voice-specific timing
-        final bool likelyFemaleVoice = indexMap.length > 3 && 
-            ((currentEnd - (currentWordData['start'] as double)) < 0.25);
-        
-        // More aggressive timing for female voice
-        final transitionOffset = likelyFemaleVoice ? 0.2 : 0.15;
-        
-        if (positionInSeconds >= currentEnd - transitionOffset) {
-          // Special case for second word - extend its display time
-          if (_currentHighlightIndex == 1) {
-            // For second word, wait until we're much closer to the end
-            if (positionInSeconds >= currentEnd - 0.1) {
-              _currentHighlightIndex++;
-              final word = indexMap[_currentHighlightIndex]['word'] as String;
-              return word;
-            } else {
-              // Keep showing the second word
-              final word = indexMap[_currentHighlightIndex]['word'] as String;
-              return word;
-            }
-          } else {
-            // Normal transition for other words
+        // Check if we're in transition between words
+        if (positionInSeconds >= currentEnd && positionInSeconds < nextStart) {
+          // We're between words, prepare to transition
+          if (positionInSeconds >= currentEnd + (nextStart - currentEnd) * 0.5) {
+            // Past halfway point between words, move to next word
             _currentHighlightIndex++;
-            final word = indexMap[_currentHighlightIndex]['word'] as String;
-            return word;
+            return nextWordData['word'] as String;
+          } else {
+            // Still in first half of gap, keep current word
+            return currentWordData['word'] as String;
           }
         }
       }
       
-      // If we're past the last word's end time, use the last word
+      // Handle case where we're past the last word
       if (indexMap.isNotEmpty) {
-        final lastEndRaw = indexMap.last['end'];
-        final lastEnd = lastEndRaw is int ? (lastEndRaw as int).toDouble() : lastEndRaw as double;
+        final lastWord = indexMap.last;
+        final lastEnd = (lastWord['end'] as num).toDouble();
         
         if (positionInSeconds >= lastEnd) {
           _currentHighlightIndex = indexMap.length - 1;
-          final lastWord = indexMap.last['word'] as String;
-          return lastWord;
+          return lastWord['word'] as String;
         }
       }
       
-      // If we're before the first word's start time, use the first word
+      // Handle case where we're before the first word
       if (indexMap.isNotEmpty) {
-        final firstStartRaw = indexMap.first['start'];
-        final firstStart = firstStartRaw is int ? (firstStartRaw as int).toDouble() : firstStartRaw as double;
+        final firstWord = indexMap.first;
+        final firstStart = (firstWord['start'] as num).toDouble();
         
         if (positionInSeconds < firstStart) {
           _currentHighlightIndex = 0;
-          final firstWord = indexMap.first['word'] as String;
-          return firstWord;
+          return firstWord['word'] as String;
         }
       }
       
-      // If nothing else matched, return the word at current index
+      // Fallback: return word at current index
       if (_currentHighlightIndex >= 0 && _currentHighlightIndex < indexMap.length) {
-        final wordData = indexMap[_currentHighlightIndex];
-        final word = wordData['word'] as String;
+        final word = indexMap[_currentHighlightIndex]['word'] as String;
         return word;
       }
-      
-      // If the current index is somehow invalid but we have words,
-      // return the first word to ensure something is highlighted
-      if (indexMap.isNotEmpty) {
-        _currentHighlightIndex = 0;
-        return indexMap.first['word'] as String;
-      }
     } else {
-      // Fallback to the time-based estimation method if no timestamps
+      // Fallback to time-based estimation if no timestamps
       if (msPerWord <= 0) {
         return null;
       }
       
-      // Calculate which word should be highlighted based on elapsed time
+      // Calculate which word should be highlighted based on time
       int wordIndex = (position.inMilliseconds / msPerWord).floor();
       
       // Ensure index is valid
@@ -830,11 +810,10 @@ class TextHighlightingService {
       if (wordIndex >= currentWords.length) wordIndex = currentWords.length - 1;
       
       _currentHighlightIndex = wordIndex;
-      final word = currentWords[wordIndex];
-      return word;
+      return currentWords[wordIndex];
     }
     
-    // If all else fails (should never happen), return the word at the current index if valid
+    // Safe fallback
     if (_currentHighlightIndex >= 0 && _currentHighlightIndex < currentWords.length) {
       return currentWords[_currentHighlightIndex];
     }

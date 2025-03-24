@@ -409,6 +409,13 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
           // Update current word index to match the service's tracking
           _currentWordIndex = _textHighlightingService.getCurrentIndex();
         });
+        
+        // Print some debug info for tracking
+        if (_textHighlightingService.wordIndexMap.isNotEmpty && 
+            _currentWordIndex < _textHighlightingService.wordIndexMap.length) {
+          final wordData = _textHighlightingService.wordIndexMap[_currentWordIndex];
+          debugPrint('Highlighted word: $wordToHighlight at index: $_currentWordIndex');
+        }
       }
     }
   }
