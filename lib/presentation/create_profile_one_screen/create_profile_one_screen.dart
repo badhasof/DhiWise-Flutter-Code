@@ -5,8 +5,11 @@ import '../../widgets/custom_outlined_button.dart';
 import '../../widgets/custom_elevated_button.dart';
 import 'bloc/create_profile_one_bloc.dart';
 import 'models/create_profile_one_model.dart';
+import 'package:lottie/lottie.dart';
+import 'dart:math' as math;
+import 'dart:ui';
 
-class CreateProfileOneScreen extends StatelessWidget {
+class CreateProfileOneScreen extends StatefulWidget {
   final String? userName;
 
   const CreateProfileOneScreen({Key? key, this.userName})
@@ -25,6 +28,35 @@ class CreateProfileOneScreen extends StatelessWidget {
         ..add(CreateProfileOneInitialEvent()),
       child: CreateProfileOneScreen(userName: userName),
     );
+  }
+
+  @override
+  State<CreateProfileOneScreen> createState() => _CreateProfileOneScreenState();
+}
+
+class _CreateProfileOneScreenState extends State<CreateProfileOneScreen> with TickerProviderStateMixin {
+  late final AnimationController _lottieController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _lottieController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000), // Duration for HDFC Success animation
+    );
+    
+    // Add a small delay before playing the animation
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        _lottieController.forward();
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _lottieController.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,11 +84,7 @@ class CreateProfileOneScreen extends StatelessWidget {
                         spacing: 16,
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          CustomImageView(
-                            imagePath: ImageConstant.imgIllustrationWellDone,
-                            height: 270.h,
-                            width: 270.h,
-                          ),
+                          _buildSuccessAnimation(),
                           Container(
                             width: double.maxFinite,
                             margin: EdgeInsets.symmetric(horizontal: 4.h),
@@ -120,6 +148,61 @@ class CreateProfileOneScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+
+  // Method for success animation with proper centering
+  Widget _buildSuccessAnimation() {
+    return Container(
+      width: 300.h,
+      height: 300.h,
+      decoration: BoxDecoration(
+        color: appTheme.gray50, // Match app background
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Transform.scale(
+          scale: 1.42, // Fine-tuned scale factor
+          alignment: Alignment.center,
+          child: Transform.translate(
+            offset: Offset(0, -6.h), // Slight vertical adjustment to center the checkmark
+            child: Lottie.asset(
+              'assets/lottie/success_animation.json',
+              controller: _lottieController,
+              fit: BoxFit.contain,
+              onLoaded: (composition) {
+                _lottieController.duration = Duration(milliseconds: (composition.duration.inMilliseconds * 0.8).round());
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Custom blend mask widget to apply blend modes
+class BlendMask extends StatelessWidget {
+  final BlendMode blendMode;
+  final Widget child;
+  final double opacity;
+
+  const BlendMask({
+    Key? key,
+    required this.blendMode,
+    required this.child,
+    this.opacity = 1.0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: blendMode,
+      shaderCallback: (bounds) => LinearGradient(
+        colors: [Colors.transparent, Colors.transparent],
+        stops: [0.0, 1.0],
+      ).createShader(bounds),
+      child: child,
     );
   }
 }
