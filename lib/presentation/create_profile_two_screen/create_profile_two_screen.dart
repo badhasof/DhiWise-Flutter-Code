@@ -117,6 +117,9 @@ class CreateProfileTwoScreen extends StatelessWidget {
                     controller: ageFieldController,
                     hintText: "Age",
                     hintStyle: CustomTextStyles.titleMediumGray500Medium,
+                    textStyle: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                      color: age.isEmpty ? appTheme.gray500 : Colors.black,
+                    ),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 16.h,
                       vertical: 20.h,
@@ -225,6 +228,9 @@ class CreateProfileTwoScreen extends StatelessWidget {
                     controller: nameFieldController,
                     hintText: "Name",
                     hintStyle: CustomTextStyles.titleMediumGray500Medium,
+                    textStyle: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                      color: name.isEmpty ? appTheme.gray500 : Colors.black,
+                    ),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 16.h,
                       vertical: 20.h,
@@ -311,36 +317,44 @@ class CreateProfileTwoScreen extends StatelessWidget {
               color: theme.colorScheme.onPrimaryContainer,
               borderRadius: BorderRadius.circular(8.h),
             ),
-            child: ButtonTheme(
-              alignedDropdown: true,
-              child: DropdownButtonFormField<String>(
-                value: state.genderValue,
-                isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down),
-                decoration: InputDecoration(
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.h),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.h,
-                    vertical: 20.h,
-                  ),
-                  hintText: "Gender",
-                  hintStyle: CustomTextStyles.titleMediumGray500Medium,
-                  filled: true,
-                  fillColor: theme.colorScheme.onPrimaryContainer,
+            child: DropdownButtonFormField<String>(
+              value: state.genderValue,
+              isExpanded: true,
+              icon: Padding(
+                padding: EdgeInsets.only(right: 12.h),
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: appTheme.gray500,
                 ),
-                style: CustomTextStyles.titleMediumGray500Medium.copyWith(
-                  color: Colors.black,
+              ),
+              decoration: InputDecoration(
+                isDense: false,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.h),
+                  borderSide: BorderSide.none,
                 ),
-                dropdownColor: theme.colorScheme.onPrimaryContainer,
-                menuMaxHeight: 300.h,
-                borderRadius: BorderRadius.circular(8.h),
-                items: [
-                  DropdownMenuItem<String>(
-                    value: "male",
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.h,
+                  vertical: 20.h,
+                ),
+                hintText: "Gender",
+                hintStyle: CustomTextStyles.titleMediumGray500Medium,
+                filled: true,
+                fillColor: theme.colorScheme.onPrimaryContainer,
+              ),
+              style: CustomTextStyles.titleMediumGray500Medium.copyWith(
+                color: state.genderValue == null ? appTheme.gray500 : Colors.black,
+              ),
+              dropdownColor: theme.colorScheme.onPrimaryContainer,
+              menuMaxHeight: 300.h,
+              borderRadius: BorderRadius.circular(8.h),
+              alignment: AlignmentDirectional.centerStart,
+              itemHeight: 64.h,
+              items: [
+                DropdownMenuItem<String>(
+                  value: "male",
+                  child: Align(
+                    alignment: Alignment.centerLeft,
                     child: Text(
                       "Male",
                       style: CustomTextStyles.titleMediumGray500Medium.copyWith(
@@ -348,39 +362,34 @@ class CreateProfileTwoScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  DropdownMenuItem<String>(
-                    value: "female",
+                ),
+                DropdownMenuItem<String>(
+                  value: "female",
+                  child: Align(
+                    alignment: Alignment.centerLeft,
                     child: Text(
-                      "Female",
+                      "Female", 
                       style: CustomTextStyles.titleMediumGray500Medium.copyWith(
                         color: Colors.black,
                       ),
                     ),
                   ),
-                  DropdownMenuItem<String>(
-                    value: "other",
-                    child: Text(
-                      "Other",
-                      style: CustomTextStyles.titleMediumGray500Medium.copyWith(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    context.read<CreateProfileTwoBloc>().add(
-                      ChangeGenderEvent(value: value),
-                    );
-                  }
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please select your gender";
-                  }
-                  return null;
-                },
-              ),
+                ),
+                
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  context.read<CreateProfileTwoBloc>().add(
+                    ChangeGenderEvent(value: value),
+                  );
+                }
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Please select your gender";
+                }
+                return null;
+              },
             ),
           );
         },
