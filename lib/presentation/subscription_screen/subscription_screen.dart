@@ -185,7 +185,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 100.h,
+        height: 90.h,
         padding: EdgeInsets.symmetric(horizontal: 22.h, vertical: 15.h),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -223,21 +223,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 8.h),
-                  Container(
-                    height: 30.h,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      price,
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20.fSize,
-                        color: Color(0xFFFF6F3E),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.visible,
+                  SizedBox(height: 5.h),
+                  Text(
+                    price,
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18.fSize,
+                      color: Color(0xFFFF6F3E),
+                      height: 1.0,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
                   ),
                 ],
               ),
