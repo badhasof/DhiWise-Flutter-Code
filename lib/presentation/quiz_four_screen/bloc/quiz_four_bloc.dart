@@ -59,12 +59,12 @@ class QuizFourBloc extends Bloc<QuizFourEvent, QuizFourState> {
           tf: "lbl2".tr,
           id: "2"),
       OptionsgridItemModel(
-          msa: "lbl_iraqi".tr,
-          tf: "lbl5".tr,
+          msa: "lbl_jordanian".tr,
+          tf: "lbl_jordanian_ar".tr,
           id: "3"),
       OptionsgridItemModel(
-          msa: "lbl_sudanese".tr,
-          tf: "msg".tr,
+          msa: "lbl_moroccan".tr,
+          tf: "lbl_moroccan_ar".tr,
           id: "4"),
       OptionsgridItemModel(
           msa: "lbl_yemeni".tr,

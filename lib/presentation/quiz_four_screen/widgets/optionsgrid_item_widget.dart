@@ -28,10 +28,10 @@ class OptionsgridItemWidget extends StatelessWidget {
         return Color.fromARGB(255, 55, 31, 44); // Dark brown
       case "2": // Egyptian
         return Color(0xFFFFC75B); // Amber/yellow
-      case "3": // Iraqi
+      case "3": // Jordanian
         return Color(0xFF3BAFAF); // Teal
-      case "4": // Sudanese
-        return Color(0xFFFF9361); // Coral/orange
+      case "4": // Moroccan
+        return Color(0xFFE53935); // Red
       case "5": // Yemeni
         return Color(0xFFF86A6A); // Red
       case "6": // Maghrebi
@@ -64,7 +64,7 @@ class OptionsgridItemWidget extends StatelessWidget {
         color: optionColor,
         borderRadius: BorderRadiusStyle.roundedBorder12,
         border: Border.all(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.white,
           width: 1.5.h,
         ),
       );
@@ -94,32 +94,34 @@ class OptionsgridItemWidget extends StatelessWidget {
       },
       child: Container(
         width: double.maxFinite,
+        height: double.maxFinite,
         decoration: _getDecoration(),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: double.maxFinite,
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              decoration: _getInnerDecoration(),
-              child: Column(
-                spacing: 6,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    optionsgridItemModelObj.msa!,
-                    style: _getTextStyle(false),
-                  ),
-                  Text(
-                    optionsgridItemModelObj.tf!,
-                    style: _getTextStyle(true),
-                  )
-                ],
+            Expanded(
+              child: Container(
+                width: double.maxFinite,
+                margin: EdgeInsets.only(bottom: 8.h),
+                decoration: _getInnerDecoration(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      optionsgridItemModelObj.msa!,
+                      style: _getTextStyle(false).copyWith(fontSize: 18.fSize),
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      optionsgridItemModelObj.tf!,
+                      style: _getTextStyle(true).copyWith(fontSize: 22.fSize),
+                    )
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: 4.h)
           ],
         ),
       ),

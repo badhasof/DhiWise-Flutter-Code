@@ -140,12 +140,20 @@ class QuizFourScreen extends StatelessWidget {
                    current.quizFourModelObj?.optionsgridItemList;
           },
           builder: (context, state) {
+            // Calculate item height - double height + gap size
+            final double itemHeight = 160.h; // Double the original height plus spacing
+            final double horizontalSpacing = 12.h;
+            final double verticalSpacing = 12.h;
+            
+            // Only take the first 4 options
+            final displayItems = state.quizFourModelObj?.optionsgridItemList.take(4).toList() ?? [];
+            
             return ResponsiveGridListBuilder(
               minItemWidth: 1,
               minItemsPerRow: 2,
               maxItemsPerRow: 2,
-              horizontalGridSpacing: 12.h,
-              verticalGridSpacing: 12.h,
+              horizontalGridSpacing: horizontalSpacing,
+              verticalGridSpacing: verticalSpacing,
               builder: (context, items) => ListView(
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
@@ -153,16 +161,17 @@ class QuizFourScreen extends StatelessWidget {
                 children: items,
               ),
               gridItems: List.generate(
-                state.quizFourModelObj?.optionsgridItemList.length ?? 0,
+                displayItems.length,
                 (index) {
-                  OptionsgridItemModel model =
-                      state.quizFourModelObj?.optionsgridItemList[index] ??
-                          OptionsgridItemModel();
-                  return OptionsgridItemWidget(
-                    model,
-                    onTapOption: (option) {
-                      context.read<QuizFourBloc>().add(SelectOptionEvent(option));
-                    },
+                  OptionsgridItemModel model = displayItems[index];
+                  return SizedBox(
+                    height: itemHeight,
+                    child: OptionsgridItemWidget(
+                      model,
+                      onTapOption: (option) {
+                        context.read<QuizFourBloc>().add(SelectOptionEvent(option));
+                      },
+                    ),
                   );
                 },
               ),
