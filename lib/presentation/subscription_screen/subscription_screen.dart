@@ -35,53 +35,66 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       ),
       body: SingleChildScrollView(
         physics: ClampingScrollPhysics(),
-        child: Stack(
-          alignment: Alignment.topCenter,
-          children: [
-            // Background wave SVG positioned at the top
-            Positioned(
-              top: -1, // Negative value to ensure it covers the top edge
-              left: -200, // Move SVG 200px to the left
-              right: 0,
-              child: SvgPicture.asset(
-                'assets/images/background_wave.svg',
-                width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
-                fit: BoxFit.fitWidth,
-              ),
-            ),
-            // Confetti decoration
-            Positioned(
-              top: 20,
-              right: 0,
-              left: 0,
-              child: Center(
-                child: SvgPicture.asset(
-                  'assets/images/confetti.svg',
-                  width: 500.h,
-                  height: 500.h,
-                  fit: BoxFit.contain,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate spacing based on available height
+            final availableHeight = MediaQuery.of(context).size.height;
+            final topPadding = MediaQuery.of(context).padding.top;
+            final effectiveHeight = availableHeight - topPadding - 8.h;
+            
+            // Adjust spacing based on screen height
+            final initialSpacing = effectiveHeight > 700 ? 60.h : 52.h;
+            final standardSpacing = effectiveHeight > 700 ? 18.h : 14.h;
+            
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                // Background wave SVG positioned at the top
+                Positioned(
+                  top: -1, // Negative value to ensure it covers the top edge
+                  left: -200, // Move SVG 200px to the left
+                  right: 0,
+                  child: SvgPicture.asset(
+                    'assets/images/background_wave.svg',
+                    width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
+                    fit: BoxFit.fitWidth,
+                  ),
                 ),
-              ),
-            ),
-            // Main content
-            Padding(
-              padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 32.h),
-              child: Column(
-                children: [
-                  SizedBox(height: 85.h), // Reduced by 25 pixels from 110.h
-                  _buildHeaderText(),
-                  SizedBox(height: 24.h),
-                  _buildSubscriptionOptions(),
-                  SizedBox(height: 24.h),
-                  _buildSubscriptionNotice(),
-                  SizedBox(height: 24.h),
-                  _buildSubscribeButton(),
-                  SizedBox(height: 16.h),
-                  _buildSecurityNote(),
-                ],
-              ),
-            ),
-          ],
+                // Confetti decoration
+                Positioned(
+                  top: 20,
+                  right: 0,
+                  left: 0,
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/images/confetti.svg',
+                      width: 500.h,
+                      height: 500.h,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                // Main content
+                Padding(
+                  padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
+                  child: Column(
+                    children: [
+                      SizedBox(height: initialSpacing),
+                      _buildHeaderText(),
+                      SizedBox(height: standardSpacing),
+                      _buildSubscriptionOptions(),
+                      SizedBox(height: standardSpacing),
+                      _buildSubscriptionNotice(),
+                      SizedBox(height: standardSpacing),
+                      _buildSubscribeButton(),
+                      SizedBox(height: 12.h),
+                      _buildSecurityNote(),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
         ),
       ),
     );
@@ -92,32 +105,41 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       children: [
         SvgPicture.asset(
           'assets/images/gift_box.svg',
-          height: 120.h,
-          width: 120.h,
+          height: 115.h,
+          width: 115.h,
         ),
-        SizedBox(height: 24.h),
-        Text(
-          "Support LinguaX & Start Your Arabic Learning Today",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w800,
-            fontSize: 24.fSize,
-            color: Color(0xFF37251F),
+        SizedBox(height: 20.h),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: 330.h),
+            child: Text(
+              "Support LinguaX & Start Your Arabic Learning Today",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w800,
+                fontSize: 24.fSize,
+                color: Color(0xFF37251F),
+              ),
+              softWrap: true,
+            ),
           ),
-          softWrap: true,
         ),
         SizedBox(height: 16.h),
-        Text(
-          "LinguaX is designed to help you master Arabic faster through immersive reading and listening.\n\nBy subscribing, you're not just unlocking the app—you're supporting its growth and helping us build the best language learning experience.",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w500,
-            fontSize: 14.fSize,
-            color: Color(0xFF80706B),
+        Container(
+          constraints: BoxConstraints(maxWidth: 330.h),
+          child: Text(
+            "LinguaX is designed to help you master Arabic faster through immersive reading and listening.\n\nBy subscribing, you're supporting its growth and helping us build the best language learning experience.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w500,
+              fontSize: 15.fSize,
+              color: Color(0xFF80706B),
+            ),
+            softWrap: true,
           ),
-          softWrap: true,
         ),
       ],
     );
@@ -136,9 +158,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _isMonthlySelected = false;
             });
           },
-          height: 88.h,
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 18.h),
         // Monthly option
         _buildSubscriptionOption(
           title: "Monthly",
@@ -149,7 +170,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _isMonthlySelected = true;
             });
           },
-          height: 88.h,
         ),
       ],
     );
@@ -160,14 +180,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     required String price,
     required bool isSelected,
     required VoidCallback onTap,
-    required double height,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: height,
-        padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 12.h),
+        height: 100.h,
+        padding: EdgeInsets.symmetric(horizontal: 22.h, vertical: 15.h),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.h),
@@ -186,6 +205,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Column(
@@ -196,32 +216,36 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     title,
                     style: TextStyle(
                       fontFamily: 'Lato',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16.fSize,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18.fSize,
                       color: Color(0xFF37251F),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    price,
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18.fSize,
-                      color: Color(0xFFFF6F3E),
+                  SizedBox(height: 8.h),
+                  Container(
+                    height: 30.h,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      price,
+                      style: TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20.fSize,
+                        color: Color(0xFFFF6F3E),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.visible,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            SizedBox(width: 12.h),
+            SizedBox(width: 16.h),
             Container(
-              width: 26.h,
-              height: 26.h,
+              width: 30.h,
+              height: 30.h,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -234,7 +258,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ? Icon(
                       Icons.check,
                       color: Colors.white,
-                      size: 16.h,
+                      size: 17.h,
                     )
                   : null,
             ),
@@ -260,16 +284,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget _buildSubscribeButton() {
     return Container(
       width: double.maxFinite,
-      height: 55.h,
-      padding: EdgeInsets.only(bottom: 4.h),
+      height: 48.h,
+      padding: EdgeInsets.only(bottom: 3.h),
       decoration: BoxDecoration(
-        color: Color(0xFFD84918), // Deep orange outer frame
-        borderRadius: BorderRadius.circular(12.h),
+        color: Color(0xFFD84918),
+        borderRadius: BorderRadius.circular(10.h),
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xFFFF6F3E), // Inner orange content wrapper
-          borderRadius: BorderRadius.circular(12.h),
+          color: Color(0xFFFF6F3E),
+          borderRadius: BorderRadius.circular(10.h),
         ),
         child: TextButton(
           onPressed: () {
@@ -280,10 +304,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             Navigator.pop(context);
           },
           style: TextButton.styleFrom(
-            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
             backgroundColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.h),
+              borderRadius: BorderRadius.circular(10.h),
             ),
             minimumSize: Size(double.infinity, 0),
           ),
@@ -294,7 +318,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               style: TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w700,
-                fontSize: 16.fSize,
+                fontSize: 15.fSize,
                 color: Colors.white,
               ),
             ),
@@ -319,7 +343,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           style: TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w500,
-            fontSize: 14.fSize,
+            fontSize: 15.fSize,
             color: Color(0xFF80706B),
           ),
         ),
