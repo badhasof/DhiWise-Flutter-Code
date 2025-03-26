@@ -9,3 +9,4 @@
 /ios/Podfile
 /pubspec.lock
 /ios/Runner.ipa
+ios/Runner.app.dSYM.zip
