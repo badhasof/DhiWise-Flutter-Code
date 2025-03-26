@@ -34,7 +34,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         centerTitle: false,
       ),
       body: SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
+        physics: NeverScrollableScrollPhysics(),
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Calculate spacing based on available height

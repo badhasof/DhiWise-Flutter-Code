@@ -76,37 +76,27 @@ class QuizOneScreen extends StatelessWidget {
       title: Container(
         width: double.maxFinite,
         margin: EdgeInsets.symmetric(horizontal: 16.h),
-        decoration: AppDecoration.fillPrimary.copyWith(
-          borderRadius: BorderRadiusStyle.circleBorder8,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              margin: EdgeInsets.only(right: 282.h),
-              decoration: AppDecoration.fillLightGreenA,
-              child: Column(
-                children: [
-                  SizedBox(height: 6.h),
-                  Container(
-                    height: 4.h,
-                    width: 4.h,
-                    margin: EdgeInsets.symmetric(horizontal: 8.h),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.onPrimaryContainer.withValues(
-                        alpha: 0.3,
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        2.h,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 6.h)
-                ],
+        child: Container(
+          height: 16.h,
+          width: 302.h,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(
+              8.h,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(
+              8.h,
+            ),
+            child: LinearProgressIndicator(
+              value: 0.1,
+              backgroundColor: theme.colorScheme.primary,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                appTheme.lightGreenA700,
               ),
-            )
-          ],
+            ),
+          ),
         ),
       ),
       styleType: Style.bgFillPrimary,
