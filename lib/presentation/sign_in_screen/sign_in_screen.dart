@@ -82,30 +82,49 @@ class SignInScreen extends StatelessWidget {
                     SizedBox(height: 12.h),
                     _buildAppleSignInButton(context),
                     SizedBox(height: 24.h),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "By signing in to LinguaX, you agree to our ",
-                            style: CustomTextStyles.bodyMediumGray700,
-                          ),
-                          TextSpan(
-                            text: "Terms of Service",
-                            style: CustomTextStyles.titleSmallBold,
-                          ),
-                          TextSpan(
-                            text: " and ",
-                            style: CustomTextStyles.bodyMediumGray700,
-                          ),
-                          TextSpan(
-                            text: "Privacy Policy",
-                            style: CustomTextStyles.titleSmallBold,
-                          )
-                        ],
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.h),
+                      child: Text(
+                        "By signing in to LinguaX, you agree to our",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 14.fSize,
+                          color: appTheme.gray700,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Terms",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14.fSize,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          " and ",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14.fSize,
+                            color: appTheme.gray700,
+                          ),
+                        ),
+                        Text(
+                          "Privacy Policy",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14.fSize,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
@@ -226,78 +245,219 @@ class SignInScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildSignInButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign In",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      buttonStyle: CustomButtonStyles.fillDeepOrange,
-      onPressed: () {
-        _signInWithEmailPassword(context);
-      },
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFD84918), // Deep orange outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFFFF6F3E), // Inner orange content wrapper
+          borderRadius: BorderRadius.circular(12.h),
+        ),
+        child: TextButton(
+          onPressed: () {
+            _signInWithEmailPassword(context);
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Text(
+            "Sign In",
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+              fontSize: 16.fSize,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   /// Section Widget
   Widget _buildGoogleSignInButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign in with Google",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 8.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgGoogle,
-          height: 24.h,
-          width: 24.h,
-          fit: BoxFit.contain,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFF0F0F0), // Light gray outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(
+            color: Color(0xFFEFECEB),
+            width: 1.5,
+          ),
+        ),
+        child: TextButton(
+          onPressed: () {
+            _signInWithGoogle(context);
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 8.h),
+                child: CustomImageView(
+                  imagePath: ImageConstant.imgGoogle,
+                  height: 24.h,
+                  width: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text(
+                "Sign in with Google",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.fSize,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
-      onPressed: () {
-        // Use the direct Google Sign-In method
-        _signInWithGoogle(context);
-      },
     );
   }
 
   /// Section Widget
   Widget _buildFacebookSignInButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign in with Facebook",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 8.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgFacebook,
-          height: 24.h,
-          width: 24.h,
-          fit: BoxFit.contain,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFF0F0F0), // Light gray outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(
+            color: Color(0xFFEFECEB),
+            width: 1.5,
+          ),
+        ),
+        child: TextButton(
+          onPressed: () {
+            _signInWithFacebook(context);
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 8.h),
+                child: CustomImageView(
+                  imagePath: ImageConstant.imgFacebook,
+                  height: 24.h,
+                  width: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text(
+                "Sign in with Facebook",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.fSize,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
-      onPressed: () {
-        _signInWithFacebook(context);
-      },
     );
   }
 
   /// Section Widget
   Widget _buildAppleSignInButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign in with Apple",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 8.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgApple,
-          height: 24.h,
-          width: 24.h,
-          fit: BoxFit.contain,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFF0F0F0), // Light gray outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(
+            color: Color(0xFFEFECEB),
+            width: 1.5,
+          ),
+        ),
+        child: TextButton(
+          onPressed: () {
+            // Apple sign in logic would go here
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 8.h),
+                child: CustomImageView(
+                  imagePath: ImageConstant.imgApple,
+                  height: 24.h,
+                  width: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text(
+                "Sign in with Apple",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.fSize,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
     );
   }
 

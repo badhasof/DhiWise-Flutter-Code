@@ -72,21 +72,30 @@ class CreateProfileScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildHeaderSection(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.maxFinite,
       child: Column(
-        spacing: 8,
         children: [
           Text(
-            "lbl_awesome".tr,
-            style: theme.textTheme.titleLarge,
-          ),
-          Text(
-            "msg_let_s_study_together".tr,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            "Awesome!",
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontSize: 20.fSize,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF37251F),
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleSmall!.copyWith(
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            "Let's study together! Create your profile to save your\nprogress and keep learning seamlessly",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontSize: 13.fSize,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF63514B),
               height: 1.43,
             ),
           )
@@ -99,29 +108,54 @@ class CreateProfileScreen extends StatelessWidget {
   Widget _buildBottomBarSection(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.all(16.h),
+      padding: EdgeInsets.only(
+        left: 16.h,
+        right: 16.h,
+        top: 14.h,
+        bottom: 51.5.h,
+      ),
       decoration: AppDecoration.outlinePrimary,
       child: Column(
-        spacing: 22,
+        spacing: 10,
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CustomElevatedButton(
-            height: 48.h,
-            text: "lbl_create_profile".tr,
-            buttonStyle: CustomButtonStyles.fillDeepOrange,
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.signUpScreen);
-            },
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.signInScreen);
-            },
-            child: Text(
-              "msg_i_ll_do_it_later".tr,
-              style: CustomTextStyles.titleMediumDeeporangeA200,
+          Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.only(bottom: 4.h),
+            decoration: BoxDecoration(
+              color: Color(0xFFD84918), // Deep orange outer frame
+              borderRadius: BorderRadius.circular(12.h),
             ),
-          )
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFFFF6F3E), // Inner orange content wrapper
+                borderRadius: BorderRadius.circular(12.h),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.signUpScreen);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  minimumSize: Size(double.infinity, 0),
+                ),
+                child: Text(
+                  "Create Profile",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16.fSize,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

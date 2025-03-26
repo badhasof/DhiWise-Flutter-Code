@@ -87,22 +87,37 @@ class _CreateProfileOneScreenState extends State<CreateProfileOneScreen> with Ti
                           _buildSuccessAnimation(),
                           Container(
                             width: double.maxFinite,
-                            margin: EdgeInsets.symmetric(horizontal: 4.h),
+                            margin: EdgeInsets.symmetric(horizontal: 0),
                             child: Column(
                               spacing: 8,
                               children: [
                                 Text(
                                   "Welcome ${state.createProfileOneModelObj?.userName ?? 'User'}",
-                                  style: theme.textTheme.titleLarge,
-                                ),
-                                Text(
-                                  "Your profile has been successfully created.\nLet's start your learning journey",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.titleSmall!.copyWith(
-                                    height: 1.43,
+                                  style: theme.textTheme.titleLarge!.copyWith(
+                                    fontSize: 28.fSize,
+                                    fontWeight: FontWeight.w900,
                                   ),
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Your profile has been successfully created.",
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.titleSmall!.copyWith(
+                                        height: 1.43,
+                                        color: appTheme.gray700,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      "Let's start your learning journey",
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.titleSmall!.copyWith(
+                                        height: 1.43,
+                                        color: appTheme.gray700,
+                                      ),
+                                    ),
+                                  ],
                                 )
                               ],
                             ),
@@ -137,14 +152,42 @@ class _CreateProfileOneScreenState extends State<CreateProfileOneScreen> with Ti
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CustomElevatedButton(
-            height: 48.h,
-            text: "Continue",
-            buttonStyle: CustomButtonStyles.fillDeepOrange,
-            onPressed: () {
-              // Navigate to the next screen
-              Navigator.pushNamed(context, AppRoutes.homeScreen);
-            },
+          Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.only(bottom: 4.h),
+            decoration: BoxDecoration(
+              color: Color(0xFFD84918), // Deep orange outer frame
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFFFF6F3E), // Inner orange content wrapper
+                borderRadius: BorderRadius.circular(12.h),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  // Navigate to the next screen
+                  Navigator.pushNamed(context, AppRoutes.homeScreen);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  minimumSize: Size(double.infinity, 0),
+                ),
+                child: Text(
+                  "Continue",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16.fSize,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           )
         ],
       ),

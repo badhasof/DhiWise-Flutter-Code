@@ -1,0 +1,22 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build and distribute app to Firebase App Distribution"
+  lane :firebase do
+    # Build your Android app
+    gradle(
+      task: "assemble",
+      build_type: "Release"
+    )
+    
+    # Upload to Firebase App Distribution
+    firebase_app_distribution(
+      app: "1:861015223952:android:8f19174c4bd6a72870b215",
+      groups: "testers",
+      release_notes: ENV["RELEASE_NOTES"] || "Test build for LinguaX app",
+      apk_path: ENV["WORKSPACE_DIR"] + "/build/app/outputs/flutter-apk/app-release.apk",
+      firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"],
+      debug: true
+    )
+  end
+end 

@@ -77,30 +77,49 @@ class SignUpScreen extends StatelessWidget {
                     SizedBox(height: 12.h),
                     _buildAppleSignUpButton(context),
                     SizedBox(height: 24.h),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "By signing up to LinguaX, you agree to our ",
-                            style: CustomTextStyles.bodyMediumGray700,
-                          ),
-                          TextSpan(
-                            text: "Terms of Service",
-                            style: CustomTextStyles.titleSmallBold,
-                          ),
-                          TextSpan(
-                            text: " and ",
-                            style: CustomTextStyles.bodyMediumGray700,
-                          ),
-                          TextSpan(
-                            text: "Privacy Policy",
-                            style: CustomTextStyles.titleSmallBold,
-                          )
-                        ],
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.h),
+                      child: Text(
+                        "By signing up to LinguaX, you agree to our",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 14.fSize,
+                          color: appTheme.gray700,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Terms",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14.fSize,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          " and ",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14.fSize,
+                            color: appTheme.gray700,
+                          ),
+                        ),
+                        Text(
+                          "Privacy Policy",
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 14.fSize,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
@@ -400,79 +419,221 @@ class SignUpScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildSignUpButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign Up",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      buttonStyle: CustomButtonStyles.fillDeepOrange,
-      onPressed: () {
-        if (_formKey.currentState?.validate() ?? false) {
-          _signUpWithEmailPassword(context);
-        }
-      },
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFD84918), // Deep orange outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFFFF6F3E), // Inner orange content wrapper
+          borderRadius: BorderRadius.circular(12.h),
+        ),
+        child: TextButton(
+          onPressed: () {
+            if (_formKey.currentState?.validate() ?? false) {
+              _signUpWithEmailPassword(context);
+            }
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Text(
+            "Sign Up",
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+              fontSize: 16.fSize,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   /// Section Widget
   Widget _buildGoogleSignUpButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign up with Google",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 8.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgGoogle,
-          height: 24.h,
-          width: 24.h,
-          fit: BoxFit.contain,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFF0F0F0), // Light gray outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(
+            color: Color(0xFFEFECEB),
+            width: 1.5,
+          ),
+        ),
+        child: TextButton(
+          onPressed: () {
+            _signUpWithGoogle(context);
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 8.h),
+                child: CustomImageView(
+                  imagePath: ImageConstant.imgGoogle,
+                  height: 24.h,
+                  width: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text(
+                "Sign up with Google",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.fSize,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
-      onPressed: () {
-        _signUpWithGoogle(context);
-      },
     );
   }
 
   /// Section Widget
   Widget _buildFacebookSignUpButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign up with Facebook",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 8.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgFacebook,
-          height: 24.h,
-          width: 24.h,
-          fit: BoxFit.contain,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFF0F0F0), // Light gray outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(
+            color: Color(0xFFEFECEB),
+            width: 1.5,
+          ),
+        ),
+        child: TextButton(
+          onPressed: () {
+            _signUpWithFacebook(context);
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 8.h),
+                child: CustomImageView(
+                  imagePath: ImageConstant.imgFacebook,
+                  height: 24.h,
+                  width: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text(
+                "Sign up with Facebook",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.fSize,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
-      onPressed: () {
-        _signUpWithFacebook(context);
-      },
     );
   }
 
   /// Section Widget
   Widget _buildAppleSignUpButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Sign up with Apple",
+    return Container(
+      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16.h),
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 8.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgApple,
-          height: 24.h,
-          width: 24.h,
-          fit: BoxFit.contain,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFF0F0F0), // Light gray outer frame
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.h),
+          border: Border.all(
+            color: Color(0xFFEFECEB),
+            width: 1.5,
+          ),
+        ),
+        child: TextButton(
+          onPressed: () {
+            // Apple sign up logic would go here
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 8.h),
+                child: CustomImageView(
+                  imagePath: ImageConstant.imgApple,
+                  height: 24.h,
+                  width: 24.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Text(
+                "Sign up with Apple",
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.fSize,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      buttonTextStyle: CustomTextStyles.titleMediumOnPrimary_1,
     );
   }
 

@@ -1,0 +1,22 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and distribute app to Firebase App Distribution"
+  lane :firebase do
+    # Build your iOS app
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "development"
+    )
+    
+    # Upload to Firebase App Distribution
+    firebase_app_distribution(
+      app: "1:861015223952:ios:1cc6655b81382d9470b215",
+      groups: "testers",
+      release_notes: ENV["RELEASE_NOTES"] || "Test build for LinguaX app",
+      firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"],
+      debug: true
+    )
+  end
+end 

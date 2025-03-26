@@ -177,30 +177,60 @@ class QuizFourScreen extends StatelessWidget {
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.all(16.h),
+      padding: EdgeInsets.only(
+        left: 16.h,
+        right: 16.h,
+        top: 14.h,
+        bottom: 51.5.h,
+      ),
       decoration: AppDecoration.outlinePrimary,
       child: Column(
+        spacing: 10,
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           BlocBuilder<QuizFourBloc, QuizFourState>(
             buildWhen: (previous, current) {
               return previous.hasSelection != current.hasSelection;
             },
             builder: (context, state) {
-              return CustomElevatedButton(
-                height: 44.h,
-                text: "lbl_continue".tr,
-                buttonStyle: state.hasSelection 
-                    ? CustomButtonStyles.fillDeepOrange 
-                    : null,
-                buttonTextStyle: state.hasSelection 
-                    ? CustomTextStyles.titleMediumOnPrimaryContainer 
-                    : CustomTextStyles.titleMediumGray500,
-                onPressed: state.hasSelection 
-                    ? () {
-                        Navigator.pushNamed(context, AppRoutes.createProfileScreen);
-                      } 
-                    : null,
+              return Container(
+                width: double.maxFinite,
+                padding: EdgeInsets.only(bottom: 4.h),
+                decoration: BoxDecoration(
+                  color: state.hasSelection ? Color(0xFFD84918) : Color(0xFFEFECEB),
+                  borderRadius: BorderRadius.circular(12.h),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: state.hasSelection ? Color(0xFFFF6F3E) : Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  child: TextButton(
+                    onPressed: state.hasSelection 
+                        ? () {
+                            Navigator.pushNamed(context, AppRoutes.createProfileScreen);
+                          } 
+                        : null,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                      backgroundColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.h),
+                      ),
+                      minimumSize: Size(double.infinity, 0),
+                    ),
+                    child: Text(
+                      "lbl_continue".tr,
+                      style: TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16.fSize,
+                        color: state.hasSelection ? Colors.white : appTheme.gray500,
+                      ),
+                    ),
+                  ),
+                ),
               );
             },
           )

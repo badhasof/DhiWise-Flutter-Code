@@ -68,27 +68,87 @@ class OnboardimgScreen extends StatelessWidget {
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.all(16.h),
+      padding: EdgeInsets.only(left: 16.h, right: 16.h, top: 16.h, bottom: 36.h),
       decoration: AppDecoration.outlinePrimary,
       child: Column(
         spacing: 12,
         mainAxisSize: MainAxisSize.min,
         children: [
-          CustomElevatedButton(
-            height: 48.h,
-            text: "lbl_get_started".tr,
-            buttonStyle: CustomButtonStyles.fillDeepOrange,
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.quizScreen);
-            },
+          Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.only(bottom: 4.h),
+            decoration: BoxDecoration(
+              color: Color(0xFFD84918), // Deep orange outer frame
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFFFF6F3E), // Inner orange content wrapper
+                borderRadius: BorderRadius.circular(12.h),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.quizScreen);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  minimumSize: Size(double.infinity, 0),
+                ),
+                child: Text(
+                  "lbl_get_started".tr,
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16.fSize,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
-          CustomElevatedButton(
-            height: 48.h,
-            text: "msg_i_already_have_an".tr,
-            buttonTextStyle: CustomTextStyles.titleMediumDeeporangeA200,
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.signInScreen);
-            },
+          Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.only(bottom: 4.h),
+            decoration: BoxDecoration(
+              color: Color(0xFFF0F0F0), // Light gray outer frame
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.h),
+                border: Border.all(
+                  color: Color(0xFFEFECEB),
+                  width: 1.5,
+                ),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.signInScreen);
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  minimumSize: Size(double.infinity, 0),
+                ),
+                child: Text(
+                  "msg_i_already_have_an".tr,
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16.fSize,
+                    color: Color(0xFFFF6F3E),
+                  ),
+                ),
+              ),
+            ),
           )
         ],
       ),
