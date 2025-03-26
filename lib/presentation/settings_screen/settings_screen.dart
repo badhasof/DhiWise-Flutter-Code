@@ -352,7 +352,9 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 icon: ImageConstant.imgFeedbackIcon,
                 title: "Feedback",
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.feedbackScreen);
+                },
                 isLast: true,
               ),
             ],

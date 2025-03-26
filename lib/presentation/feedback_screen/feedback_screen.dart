@@ -50,19 +50,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               SizedBox(height: 32.h),
               _buildQuestionField(
                 1,
-                "What was the most valuable or enjoyable feature you discovered",
+                "What was the most valuable or enjoyable feature you discovered?",
                 _answer1Controller,
               ),
               SizedBox(height: 24.h),
               _buildQuestionField(
                 2,
-                "From the self demo, what is there that you didn't like, enjoy, or any complaints you may have",
+                "From the self demo, what didn't you like or enjoy? Please share any complaints you may have.",
                 _answer2Controller,
               ),
               SizedBox(height: 24.h),
               _buildQuestionField(
                 3,
-                "As a valuable user and customer, provide everything you would love to see in an app like this. Don't hold back.",
+                "As a valuable user and customer, what would you love to see in an app like this? Don't hold back.",
                 _answer3Controller,
               ),
               SizedBox(height: 32.h),
@@ -89,7 +89,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         ),
         SizedBox(height: 8.h),
         Text(
-          "The app is in beta and that we are in early stages\nlooking for valuable feedback",
+          "The app is in beta stage and we are looking\nfor your valuable feedback",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Lato',

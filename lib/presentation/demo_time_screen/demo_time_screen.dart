@@ -24,7 +24,7 @@ class DemoTimeScreen extends StatefulWidget {
 }
 
 class _DemoTimeScreenState extends State<DemoTimeScreen> {
-  double _sliderValue = 0.67; // Initial slider value for 30 minutes (30/45)
+  double _sliderValue = 0.33; // Initial slider value for 15 minutes (15/45)
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +286,7 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
               SizedBox(width: 8.h),
               Expanded(
                 child: Text(
-                  "Try about 30 mins to know best about our features!",
+                  "Try about 15 mins to know best about our features!",
                   style: TextStyle(
                     fontFamily: 'Lato',
                     fontWeight: FontWeight.w500,

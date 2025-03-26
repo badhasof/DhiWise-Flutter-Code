@@ -129,7 +129,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // Lifetime option
         _buildSubscriptionOption(
           title: "Lifetime Access",
-          price: "\$ 49.99",
+          price: "\$ 29.99",
           isSelected: !_isMonthlySelected,
           onTap: () {
             setState(() {
@@ -142,7 +142,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // Monthly option
         _buildSubscriptionOption(
           title: "Monthly",
-          price: "\$ 4.99/month",
+          price: "\$ 2.99/month",
           isSelected: _isMonthlySelected,
           onTap: () {
             setState(() {
@@ -246,7 +246,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildSubscriptionNotice() {
     return Text(
-      "Subscribe today and you'll be charged\n\$${_isMonthlySelected ? '4.99' : '49.99'} ${_isMonthlySelected ? 'per month' : ''}. ${_isMonthlySelected ? 'Cancel anytime.' : ''}",
+      "Subscribe today and you'll be charged\n\$${_isMonthlySelected ? '2.99' : '29.99'} ${_isMonthlySelected ? 'per month' : ''}. ${_isMonthlySelected ? 'Cancel anytime.' : ''}",
       textAlign: TextAlign.center,
       style: TextStyle(
         fontFamily: 'Lato',
