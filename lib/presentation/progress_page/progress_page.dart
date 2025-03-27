@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:async';
 import '../../core/app_export.dart';
 import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_elevated_button.dart';
+import '../../core/utils/pref_utils.dart';
 import 'bloc/progress_bloc.dart';
 import 'models/progress_model.dart'; // ignore_for_file: must_be_immutable
 
-class ProgressPage extends StatelessWidget {
+class ProgressPage extends StatefulWidget {
   const ProgressPage({Key? key})
       : super(
           key: key,
@@ -20,6 +22,68 @@ class ProgressPage extends StatelessWidget {
         ..add(ProgressInitialEvent()),
       child: ProgressPage(),
     );
+  }
+
+  @override
+  State<ProgressPage> createState() => _ProgressPageState();
+}
+
+class _ProgressPageState extends State<ProgressPage> {
+  Timer? _timer;
+  int _remainingSeconds = 0; // Initialize to 0, will be updated in initState
+  late PrefUtils _prefUtils;
+  
+  @override
+  void initState() {
+    super.initState();
+    _prefUtils = PrefUtils();
+    _initializeTimer();
+  }
+  
+  Future<void> _initializeTimer() async {
+    // Initialize the timer if it hasn't been started yet
+    await _prefUtils.initializeTimerIfNeeded();
+    
+    // Get current remaining time
+    _remainingSeconds = _prefUtils.calculateRemainingTime();
+    if (mounted) setState(() {}); // Update UI with current time
+    
+    // Start the countdown timer
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          // Get the most up-to-date remaining time
+          _remainingSeconds = _prefUtils.calculateRemainingTime();
+          
+          if (_remainingSeconds <= 0) {
+            _timer?.cancel();
+            // Handle timer expiration if needed
+          }
+        });
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+  
+  // Get the individual digits for the time display
+  List<String> _getTimeDigits() {
+    int minutes = _remainingSeconds ~/ 60;
+    int seconds = _remainingSeconds % 60;
+    
+    String minutesStr = minutes.toString().padLeft(2, '0');
+    String secondsStr = seconds.toString().padLeft(2, '0');
+    
+    return [
+      minutesStr[0],
+      minutesStr[1],
+      secondsStr[0],
+      secondsStr[1],
+    ];
   }
 
   @override
@@ -59,6 +123,9 @@ class ProgressPage extends StatelessWidget {
 
   /// Section Widget
   Widget _buildTopBar(BuildContext context) {
+    // Get the time digits for the display
+    List<String> timeDigits = _getTimeDigits();
+    
     return SizedBox(
       width: double.maxFinite,
       child: Column(
@@ -93,8 +160,8 @@ class ProgressPage extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    _buildTimeBox("2"),
-                    _buildTimeBox("9"),
+                    _buildTimeBox(timeDigits[0]),
+                    _buildTimeBox(timeDigits[1]),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4.h),
                       child: Text(
@@ -102,8 +169,8 @@ class ProgressPage extends StatelessWidget {
                         style: CustomTextStyles.titleMediumOnPrimaryContainer,
                       ),
                     ),
-                    _buildTimeBox("5"),
-                    _buildTimeBox("9"),
+                    _buildTimeBox(timeDigits[2]),
+                    _buildTimeBox(timeDigits[3]),
                   ],
                 ),
               ],

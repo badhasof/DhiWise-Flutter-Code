@@ -4,6 +4,7 @@ import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_floating_text_field.dart';
 import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/countdown_timer_widget.dart';
 import 'bloc/profile_bloc.dart';
 import 'models/profile_model.dart'; // ignore_for_file: must_be_immutable
 import 'package:firebase_auth/firebase_auth.dart';
@@ -131,22 +132,7 @@ class _ProfilePageContent extends StatelessWidget {
 
   /// Section Widget
   Widget _buildTrialButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 22.h,
-      width: 122.h,
-      text: "Trial time 12:00",
-      leftIcon: Container(
-        margin: EdgeInsets.only(right: 4.h),
-        child: CustomImageView(
-          imagePath: ImageConstant.imgClock,
-          height: 16.h,
-          width: 16.h,
-          fit: BoxFit.contain,
-        ),
-      ),
-      buttonStyle: CustomButtonStyles.fillDeepOrangeA,
-      buttonTextStyle: CustomTextStyles.labelLargeDeeporangeA200_1,
-    );
+    return CountdownTimerWidget();
   }
 
   /// Section Widget

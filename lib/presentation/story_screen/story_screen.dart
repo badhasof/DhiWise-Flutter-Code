@@ -10,6 +10,7 @@ import '../../domain/story/word_timestamp.dart';
 import '../../services/timestamp_service.dart';
 import '../../services/text_highlighting_service.dart';
 import '../../widgets/audio_control_overlay.dart';
+import '../../widgets/countdown_timer_widget.dart';
 import '../story_completion_screen/story_completion_screen.dart';
 
 class StoryScreen extends StatefulWidget {
@@ -897,31 +898,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             alignment: Alignment.center,
             child: Container(
               margin: EdgeInsets.only(top: 4.h),
-              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
-            decoration: BoxDecoration(
-                color: Color(0xFFFF6F3E).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.h),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.access_time,
-                  size: 16.h,
-                    color: Color(0xFFFF6F3E),
-                  ),
-                  SizedBox(width: 4.h),
-                  Text(
-                    "Trail time: 30:00",
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 12.fSize,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFFFF6F3E),
-                    ),
-                  ),
-                ],
-              ),
+              child: CountdownTimerWidget(),
             ),
           ),
           

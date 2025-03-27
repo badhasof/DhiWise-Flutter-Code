@@ -6,6 +6,7 @@ import 'bloc/demo_time_event.dart';
 import 'models/demo_time_model.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/utils/pref_utils.dart';
 
 class DemoTimeScreen extends StatefulWidget {
   const DemoTimeScreen({Key? key}) : super(key: key);
@@ -339,7 +340,20 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
         ),
         child: TextButton(
           onPressed: () {
-            Navigator.pushReplacementNamed(context, AppRoutes.feedbackScreen);
+            // Store the selected demo time in minutes
+            int selectedMinutes = (_sliderValue * 45).round();
+            // Save to SharedPreferences
+            PrefUtils().setDemoTime(selectedMinutes);
+            
+            // Reset the timer to start fresh with the selected duration
+            PrefUtils().resetTimer();
+            
+            // Navigate to home screen and clear the navigation stack
+            Navigator.pushNamedAndRemoveUntil(
+              context, 
+              AppRoutes.homeScreen, 
+              (route) => false
+            );
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
