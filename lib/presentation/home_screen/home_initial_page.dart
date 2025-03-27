@@ -287,6 +287,34 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 buttonTextStyle:
                                     CustomTextStyles.titleSmallDeeporangeA200Bold,
                               ),
+                              Container(
+                                height: 28.h, // Match the fire button height
+                                width: 50.h, // Slightly smaller width than the fire button
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(28.h), // Make completely round
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                margin: EdgeInsets.only(
+                                  left: 8.h,
+                                ),
+                                alignment: Alignment.center,
+                                child: Center(
+                                  child: Text(
+                                    "🇺🇸",
+                                    style: TextStyle(
+                                      fontSize: 28.h,
+                                      height: 1.0, // Set line height to 1.0 for vertical centering
+                                    ),
+                                  ),
+                                ),
+                              ),
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(

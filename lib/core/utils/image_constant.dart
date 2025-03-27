@@ -151,4 +151,7 @@ class ImageConstant {
   static String imgFeedbackIcon = '$imagePath/settings_icons/feedback_icon.svg';
   static String imgChooseAPlanIcon = '$imagePath/settings_icons/choose_a_plan_icon.svg';
   static String imgSignOutIcon = '$imagePath/settings_icons/signout_icon.svg';
+  
+  // Flag icons
+  static String imgAmericanFlag = '$imagePath/img_american_flag.png';
 }
