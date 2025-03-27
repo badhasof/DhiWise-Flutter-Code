@@ -15,6 +15,7 @@ import 'widgets/home_six_item_widget.dart';
 import '../story_screen/story_screen.dart';
 import '../progress_page/progress_page.dart';
 import '../settings_screen/settings_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -38,6 +39,7 @@ class HomeInitialPage extends StatefulWidget {
 class HomeInitialPageState extends State<HomeInitialPage> {
   // Flag emoji container state
   bool _isFlagPressed = false;
+  String _selectedFlag = "🇺🇸"; // Add variable to track selected flag
   
   // Story service instance
   final StoryService _storyService = StoryService();
@@ -52,10 +54,31 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   // List to store available sub-genres
   List<String> _availableSubGenres = ["All Stories"];
   
+  // Variable to store user's name
+  String _userName = "User";
+  
   @override
   void initState() {
     super.initState();
     _loadStories();
+    _loadUserData();
+  }
+  
+  // Load user data from Firebase
+  Future<void> _loadUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        setState(() {
+          if (user.displayName != null && user.displayName!.isNotEmpty) {
+            // Get the first name only (split at first space)
+            _userName = user.displayName!.split(' ')[0];
+          }
+        });
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
   }
   
   // Load stories from the service
@@ -290,100 +313,157 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 buttonTextStyle:
                                     CustomTextStyles.titleSmallDeeporangeA200Bold,
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _isFlagPressed = !_isFlagPressed; // Toggle the state
-                                  });
-                                  print("Flag tapped - toggled state!");
-                                },
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    // The fixed-size container for alignment
-                                    Container(
-                                      height: 28.h,
-                                      width: 50.h,
-                                      margin: EdgeInsets.only(left: 8.h),
+                              Container(
+                                margin: EdgeInsets.only(left: 8.h),
+                                child: PopupMenuButton<String>(
+                                  offset: Offset(0, 0),
+                                  position: PopupMenuPosition.over,
+                                  constraints: BoxConstraints(
+                                    maxWidth: 50.h,
+                                    minWidth: 50.h,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16.h),
+                                  ),
+                                  color: Color(0xFFF9F9F9),
+                                  elevation: 8,
+                                  child: Container(
+                                    height: 28.h,
+                                    width: 50.h,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(28.h),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
-                                    // The animated container that grows downward
-                                    Positioned(
-                                      top: 0,
-                                      left: 8.h, // Include the margin in the positioning
-                                      width: 50.h,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      _selectedFlag,
+                                      style: TextStyle(
+                                        fontSize: 28.h,
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem<String>(
+                                      height: 24.h,
+                                      padding: EdgeInsets.zero,
+                                      value: "🇺🇸",
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(_isFlagPressed ? 16.h : 28.h), // Less rounded when elongated
-                                        child: AnimatedContainer(
-                                          duration: Duration(milliseconds: 150),
-                                          height: _isFlagPressed ? 115.h : 28.h,
-                                          width: 50.h,
-                                          decoration: BoxDecoration(
-                                            color: _isFlagPressed ? Color(0xFFF9F9F9) : Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: _isFlagPressed 
-                                                    ? Colors.black.withOpacity(0.2) 
-                                                    : Colors.black.withOpacity(0.1),
-                                                blurRadius: _isFlagPressed ? 2 : 4,
-                                                offset: _isFlagPressed ? Offset(0, 1) : Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Container(
-                                                height: 28.h,
-                                                width: 50.h,
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  "🇺🇸",
-                                                  style: TextStyle(
-                                                    fontSize: 28.h,
-                                                    height: 1.0,
-                                                  ),
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(16.h)),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  color: Colors.grey.withOpacity(0.2),
+                                                  width: 1,
                                                 ),
                                               ),
-                                              // Show additional flags only when expanded
-                                              if (_isFlagPressed) 
-                                                Expanded(
-                                                  child: Container(
-                                                    width: 50.h,
-                                                    child: Column(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                      children: [
-                                                        Text(
-                                                          "🇪🇬", // Egyptian flag
-                                                          style: TextStyle(
-                                                            fontSize: 28.h,
-                                                            height: 1.0,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "🇯🇴", // Jordanian flag
-                                                          style: TextStyle(
-                                                            fontSize: 28.h,
-                                                            height: 1.0,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          "🇲🇦", // Moroccan flag
-                                                          style: TextStyle(
-                                                            fontSize: 28.h,
-                                                            height: 1.0,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                )
-                                              else 
-                                                SizedBox(),
-                                            ],
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "🇺🇸",
+                                                style: TextStyle(
+                                                  fontSize: 24.h,
+                                                  height: 1.0,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      height: 24.h,
+                                      padding: EdgeInsets.zero,
+                                      value: "🇪🇬",
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey.withOpacity(0.2),
+                                                width: 1,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "🇪🇬",
+                                              style: TextStyle(
+                                                fontSize: 24.h,
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      height: 24.h,
+                                      padding: EdgeInsets.zero,
+                                      value: "🇯🇴",
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey.withOpacity(0.2),
+                                                width: 1,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "🇯🇴",
+                                              style: TextStyle(
+                                                fontSize: 24.h,
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      height: 24.h,
+                                      padding: EdgeInsets.zero,
+                                      value: "🇲🇦",
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.h)),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: Container(
+                                            child: Center(
+                                              child: Text(
+                                                "🇲🇦",
+                                                style: TextStyle(
+                                                  fontSize: 24.h,
+                                                  height: 1.0,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ],
+                                  onSelected: (String value) {
+                                    setState(() {
+                                      _selectedFlag = value;
+                                    });
+                                    print("${value} flag selected!");
+                                  },
                                 ),
                               ),
                               GestureDetector(
@@ -412,7 +492,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                         Padding(
                           padding: EdgeInsets.only(left: 16.h),
                           child: Text(
-                            "Hi Evelyn",
+                            "Hi $_userName",
                             style: theme.textTheme.titleSmall,
                           ),
                         ),

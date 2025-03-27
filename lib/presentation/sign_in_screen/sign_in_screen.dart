@@ -144,6 +144,13 @@ class SignInScreen extends StatelessWidget {
       leading: AppbarLeadingImage(
         imagePath: ImageConstant.imgArrowDown,
         margin: EdgeInsets.only(left: 14.h),
+        onTap: () {
+          // Navigate back to onboarding screen
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutes.onboardimgScreen,
+            (route) => false,
+          );
+        },
       ),
       centerTitle: true,
       title: AppbarTitle(
@@ -464,6 +471,19 @@ class SignInScreen extends StatelessWidget {
   // Firebase Authentication Methods
   void _signInWithEmailPassword(BuildContext context) async {
     try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: appTheme.deepOrangeA200,
+            ),
+          );
+        },
+      );
+      
       final bloc = context.read<SignInBloc>();
       final state = bloc.state;
       final email = state.usernameFieldController?.text ?? '';
@@ -471,6 +491,8 @@ class SignInScreen extends StatelessWidget {
       
       // Validate email and password
       if (email.isEmpty || password.isEmpty) {
+        // Dismiss loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
         throw Exception('Email and password cannot be empty');
       }
       
@@ -480,21 +502,54 @@ class SignInScreen extends StatelessWidget {
         password: password,
       );
       
-      // Navigate to home screen or next screen
-      // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      // Dismiss loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully signed in with email')),
+        SnackBar(
+          content: Text('Successfully signed in'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      // Navigate to home screen with a clear navigation stack
+      NavigatorService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+        AppRoutes.homeScreen,
+        (route) => false,
       );
     } catch (e) {
+      // Dismiss loading dialog if it's showing
+      try {
+        Navigator.of(context, rootNavigator: true).pop();
+      } catch (_) {}
+      
+      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
   void _signInWithGoogle(BuildContext context) async {
     try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: appTheme.deepOrangeA200,
+            ),
+          );
+        },
+      );
+      
       // Use the iOS client ID from firebase_options.dart
       final clientId = '861015223952-bp6a6en3rtf4d2jrvk1l1jf2765q47et.apps.googleusercontent.com';
       
@@ -507,8 +562,11 @@ class SignInScreen extends StatelessWidget {
       // Start the sign-in process
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       
-      // If the user canceled the sign-in, return
-      if (googleUser == null) return;
+      // If the user canceled the sign-in, dismiss the dialog and return
+      if (googleUser == null) {
+        Navigator.of(context, rootNavigator: true).pop();
+        return;
+      }
       
       // Get the authentication details from the request
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -522,22 +580,54 @@ class SignInScreen extends StatelessWidget {
       // Sign in to Firebase with the Google credential
       await FirebaseAuth.instance.signInWithCredential(credential);
       
-      // Navigate to home screen or next screen
-      // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+      // Dismiss loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully signed in with Google')),
+        SnackBar(
+          content: Text('Successfully signed in with Google'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      // Navigate to home screen with a clear navigation stack
+      NavigatorService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+        AppRoutes.homeScreen,
+        (route) => false,
       );
     } catch (e) {
+      // Dismiss loading dialog if it's showing
+      try {
+        Navigator.of(context, rootNavigator: true).pop();
+      } catch (_) {}
+      
       print("Google Sign-In Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
   void _signInWithFacebook(BuildContext context) async {
     try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: appTheme.deepOrangeA200,
+            ),
+          );
+        },
+      );
+      
       // Import the flutter_facebook_auth package
       final LoginResult result = await FacebookAuth.instance.login();
       
@@ -554,19 +644,41 @@ class SignInScreen extends StatelessWidget {
         // Sign in to Firebase with the Facebook credential
         await FirebaseAuth.instance.signInWithCredential(credential);
         
-        // Navigate to home screen or next screen
-        // Navigator.pushReplacementNamed(context, AppRoutes.homeScreen);
+        // Dismiss loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
         
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Successfully signed in with Facebook')),
+          SnackBar(
+            content: Text('Successfully signed in with Facebook'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        // Navigate to home screen with a clear navigation stack
+        NavigatorService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+          AppRoutes.homeScreen,
+          (route) => false,
         );
       } else {
+        // Dismiss loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
+        
         throw Exception('Facebook login failed: ${result.message}');
       }
     } catch (e) {
+      // Dismiss loading dialog if it's showing
+      try {
+        Navigator.of(context, rootNavigator: true).pop();
+      } catch (_) {}
+      
       print("Facebook Sign-In Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

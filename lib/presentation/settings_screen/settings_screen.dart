@@ -3,8 +3,10 @@ import '../../core/app_export.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../theme/custom_button_style.dart';
 import '../notification_settings_screen/notification_settings_screen.dart';
+import '../sign_in_screen/sign_in_screen.dart';
 import 'bloc/settings_bloc.dart';
 import 'models/settings_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -379,7 +381,7 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
       child: TextButton(
-        onPressed: () {},
+        onPressed: () => _signOut(context),
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.h),
           shape: RoundedRectangleBorder(
@@ -409,6 +411,59 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Sign out method
+  void _signOut(BuildContext context) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: appTheme.deepOrangeA200,
+            ),
+          );
+        },
+      );
+
+      // Sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+      
+      // Dismiss loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Successfully signed out"),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      // Use NavigatorService to reset navigation and go to onboarding screen
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      // Reset navigation stack and go to onboarding screen
+      NavigatorService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+        AppRoutes.onboardimgScreen, 
+        (route) => false
+      );
+    } catch (e) {
+      // Dismiss loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to sign out: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   /// Section Widget

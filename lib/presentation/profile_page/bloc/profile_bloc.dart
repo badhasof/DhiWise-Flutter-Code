@@ -9,6 +9,8 @@ part 'profile_state.dart';
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc(ProfileState initialState) : super(initialState) {
     on<ProfileInitialEvent>(_onInitialize);
+    on<UpdateUserDataEvent>(_onUpdateUserData);
+    on<ToggleEditModeEvent>(_onToggleEditMode);
   }
 
   _onInitialize(
@@ -21,7 +23,42 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         usernameFieldController: TextEditingController(),
         passwordFieldController: TextEditingController(),
         emailFieldController: TextEditingController(),
+        isEditing: false,
       ),
     );
+  }
+
+  _onUpdateUserData(
+    UpdateUserDataEvent event,
+    Emitter<ProfileState> emit,
+  ) {
+    final nameController = state.nameFieldController ?? TextEditingController();
+    final emailController = state.emailFieldController ?? TextEditingController();
+    final usernameController = state.usernameFieldController ?? TextEditingController();
+
+    if (event.displayName != null) {
+      nameController.text = event.displayName!;
+      // Use displayName as username if username is not set
+      usernameController.text = event.displayName!.toLowerCase().replaceAll(' ', '_');
+    }
+
+    if (event.email != null) {
+      emailController.text = event.email!;
+    }
+
+    emit(state.copyWith(
+      nameFieldController: nameController,
+      emailFieldController: emailController,
+      usernameFieldController: usernameController,
+    ));
+  }
+  
+  _onToggleEditMode(
+    ToggleEditModeEvent event,
+    Emitter<ProfileState> emit,
+  ) {
+    emit(state.copyWith(
+      isEditing: !state.isEditing,
+    ));
   }
 }

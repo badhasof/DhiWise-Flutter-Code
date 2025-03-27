@@ -4,12 +4,14 @@ part of 'profile_bloc.dart';
 
 // ignore_for_file: must_be_immutable
 class ProfileState extends Equatable {
-  ProfileState(
-      {this.nameFieldController,
-      this.usernameFieldController,
-      this.passwordFieldController,
-      this.emailFieldController,
-      this.profileModelObj});
+  ProfileState({
+    this.nameFieldController,
+    this.usernameFieldController,
+    this.passwordFieldController,
+    this.emailFieldController,
+    this.profileModelObj,
+    this.isEditing = false,
+  });
 
   TextEditingController? nameFieldController;
 
@@ -20,6 +22,8 @@ class ProfileState extends Equatable {
   TextEditingController? emailFieldController;
 
   ProfileModel? profileModelObj;
+  
+  final bool isEditing;
 
   @override
   List<Object?> get props => [
@@ -27,7 +31,8 @@ class ProfileState extends Equatable {
         usernameFieldController,
         passwordFieldController,
         emailFieldController,
-        profileModelObj
+        profileModelObj,
+        isEditing,
       ];
   ProfileState copyWith({
     TextEditingController? nameFieldController,
@@ -35,6 +40,7 @@ class ProfileState extends Equatable {
     TextEditingController? passwordFieldController,
     TextEditingController? emailFieldController,
     ProfileModel? profileModelObj,
+    bool? isEditing,
   }) {
     return ProfileState(
       nameFieldController: nameFieldController ?? this.nameFieldController,
@@ -44,6 +50,7 @@ class ProfileState extends Equatable {
           passwordFieldController ?? this.passwordFieldController,
       emailFieldController: emailFieldController ?? this.emailFieldController,
       profileModelObj: profileModelObj ?? this.profileModelObj,
+      isEditing: isEditing ?? this.isEditing,
     );
   }
 }
