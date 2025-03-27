@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/app_export.dart';
 
-enum BottomBarEnum { Home, Vocabulary, Learning, Progress, Profile }
+enum BottomBarEnum { Home, Vocabulary, Progress, Profile }
 
 // ignore_for_file: must_be_immutable
 class CustomBottomBar extends StatefulWidget {
@@ -29,12 +29,6 @@ class CustomBottomBarState extends State<CustomBottomBar> {
       activeIcon: ImageConstant.imgNavVocabularyGray600,
       title: "Vocabulary",
       type: BottomBarEnum.Vocabulary,
-    ),
-    BottomMenuModel(
-      icon: ImageConstant.imgNavLearning,
-      activeIcon: ImageConstant.imgNavLearning,
-      title: "Learning",
-      type: BottomBarEnum.Learning,
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavProgress,

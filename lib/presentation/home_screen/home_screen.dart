@@ -4,7 +4,6 @@ import '../../core/app_export.dart';
 import '../../widgets/custom_bottom_bar.dart';
 import '../profile_page/profile_page.dart';
 import '../vocabulary_page/vocabulary_page.dart';
-import '../learning_page/learning_page.dart';
 import '../progress_page/progress_page.dart';
 import 'bloc/home_bloc.dart';
 import 'home_initial_page.dart';
@@ -77,8 +76,6 @@ class HomeScreen extends StatelessWidget {
         return AppRoutes.homeInitialPage;
       case BottomBarEnum.Vocabulary:
         return AppRoutes.vocabularyPage;
-      case BottomBarEnum.Learning:
-        return AppRoutes.learningPage;
       case BottomBarEnum.Progress:
         return AppRoutes.progressPage;
       case BottomBarEnum.Profile:
@@ -98,8 +95,6 @@ class HomeScreen extends StatelessWidget {
         return HomeInitialPage.builder(context);
       case AppRoutes.vocabularyPage:
         return VocabularyPage.builder(context);
-      case AppRoutes.learningPage:
-        return LearningPage.builder(context);
       case AppRoutes.progressPage:
         return ProgressPage.builder(context);
       case AppRoutes.profilePage:
