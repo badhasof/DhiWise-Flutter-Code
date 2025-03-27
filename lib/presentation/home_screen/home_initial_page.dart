@@ -36,6 +36,9 @@ class HomeInitialPage extends StatefulWidget {
 }
 
 class HomeInitialPageState extends State<HomeInitialPage> {
+  // Flag emoji container state
+  bool _isFlagPressed = false;
+  
   // Story service instance
   final StoryService _storyService = StoryService();
   
@@ -287,32 +290,100 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 buttonTextStyle:
                                     CustomTextStyles.titleSmallDeeporangeA200Bold,
                               ),
-                              Container(
-                                height: 28.h, // Match the fire button height
-                                width: 50.h, // Slightly smaller width than the fire button
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(28.h), // Make completely round
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isFlagPressed = !_isFlagPressed; // Toggle the state
+                                  });
+                                  print("Flag tapped - toggled state!");
+                                },
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    // The fixed-size container for alignment
+                                    Container(
+                                      height: 28.h,
+                                      width: 50.h,
+                                      margin: EdgeInsets.only(left: 8.h),
+                                    ),
+                                    // The animated container that grows downward
+                                    Positioned(
+                                      top: 0,
+                                      left: 8.h, // Include the margin in the positioning
+                                      width: 50.h,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(_isFlagPressed ? 16.h : 28.h), // Less rounded when elongated
+                                        child: AnimatedContainer(
+                                          duration: Duration(milliseconds: 150),
+                                          height: _isFlagPressed ? 115.h : 28.h,
+                                          width: 50.h,
+                                          decoration: BoxDecoration(
+                                            color: _isFlagPressed ? Color(0xFFF9F9F9) : Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: _isFlagPressed 
+                                                    ? Colors.black.withOpacity(0.2) 
+                                                    : Colors.black.withOpacity(0.1),
+                                                blurRadius: _isFlagPressed ? 2 : 4,
+                                                offset: _isFlagPressed ? Offset(0, 1) : Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                height: 28.h,
+                                                width: 50.h,
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  "🇺🇸",
+                                                  style: TextStyle(
+                                                    fontSize: 28.h,
+                                                    height: 1.0,
+                                                  ),
+                                                ),
+                                              ),
+                                              // Show additional flags only when expanded
+                                              if (_isFlagPressed) 
+                                                Expanded(
+                                                  child: Container(
+                                                    width: 50.h,
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                      children: [
+                                                        Text(
+                                                          "🇪🇬", // Egyptian flag
+                                                          style: TextStyle(
+                                                            fontSize: 28.h,
+                                                            height: 1.0,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          "🇯🇴", // Jordanian flag
+                                                          style: TextStyle(
+                                                            fontSize: 28.h,
+                                                            height: 1.0,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          "🇲🇦", // Moroccan flag
+                                                          style: TextStyle(
+                                                            fontSize: 28.h,
+                                                            height: 1.0,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              else 
+                                                SizedBox(),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ],
-                                ),
-                                margin: EdgeInsets.only(
-                                  left: 8.h,
-                                ),
-                                alignment: Alignment.center,
-                                child: Center(
-                                  child: Text(
-                                    "🇺🇸",
-                                    style: TextStyle(
-                                      fontSize: 28.h,
-                                      height: 1.0, // Set line height to 1.0 for vertical centering
-                                    ),
-                                  ),
                                 ),
                               ),
                               GestureDetector(
