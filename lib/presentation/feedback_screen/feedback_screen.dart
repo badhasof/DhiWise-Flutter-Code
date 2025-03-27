@@ -279,7 +279,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Feedback submitted. Thank you!')),
             );
-            Navigator.pop(context);
+            
+            // Navigate to subscription/pricing screen
+            Future.delayed(Duration(milliseconds: 1500), () {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.subscriptionScreen,
+                (route) => false,
+              );
+            });
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
