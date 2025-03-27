@@ -32,6 +32,7 @@ class _ProgressPageState extends State<ProgressPage> {
   Timer? _timer;
   int _remainingSeconds = 0; // Initialize to 0, will be updated in initState
   late PrefUtils _prefUtils;
+  bool _hasNavigatedToFeedback = false;
   
   @override
   void initState() {
@@ -57,11 +58,25 @@ class _ProgressPageState extends State<ProgressPage> {
           
           if (_remainingSeconds <= 0) {
             _timer?.cancel();
-            // Handle timer expiration if needed
+            // Handle timer expiration - navigate to feedback page
+            _navigateToFeedbackIfNeeded();
           }
         });
       }
     });
+  }
+  
+  void _navigateToFeedbackIfNeeded() {
+    if (!_hasNavigatedToFeedback && mounted) {
+      _hasNavigatedToFeedback = true;
+      // Delay navigation slightly to prevent multiple navigations
+      Future.delayed(Duration(milliseconds: 500), () {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutes.feedbackScreen,
+          (route) => false,
+        );
+      });
+    }
   }
   
   @override

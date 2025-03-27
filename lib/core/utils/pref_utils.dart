@@ -99,6 +99,11 @@ class PrefUtils {
     return remaining > 0 ? remaining : 0;
   }
   
+  // Check if the timer has expired
+  bool hasTimerExpired() {
+    return calculateRemainingTime() <= 0;
+  }
+  
   // Reset the timer using the currently selected demo time
   Future<void> resetTimer() async {
     // Get the selected demo time in minutes

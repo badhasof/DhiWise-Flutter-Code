@@ -17,6 +17,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   Timer? _timer;
   int _remainingSeconds = 0; // Initialize to 0, will be updated in initState
   late PrefUtils _prefUtils;
+  bool _hasNavigatedToFeedback = false;
   
   @override
   void initState() {
@@ -42,11 +43,25 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
           
           if (_remainingSeconds <= 0) {
             _timer?.cancel();
-            // Handle timer expiration
+            // Handle timer expiration - navigate to feedback page
+            _navigateToFeedbackIfNeeded();
           }
         });
       }
     });
+  }
+  
+  void _navigateToFeedbackIfNeeded() {
+    if (!_hasNavigatedToFeedback && mounted) {
+      _hasNavigatedToFeedback = true;
+      // Delay navigation slightly to prevent multiple navigations
+      Future.delayed(Duration(milliseconds: 500), () {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutes.feedbackScreen,
+          (route) => false,
+        );
+      });
+    }
   }
   
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/custom_elevated_button.dart';
+import '../../widgets/countdown_timer_widget.dart';
 import '../../theme/custom_button_style.dart';
 import '../notification_settings_screen/notification_settings_screen.dart';
 import '../sign_in_screen/sign_in_screen.dart';
@@ -77,32 +78,7 @@ class SettingsScreen extends StatelessWidget {
         Center(
           child: Container(
             margin: EdgeInsets.symmetric(vertical: 8.h),
-            padding: EdgeInsets.symmetric(horizontal: 4.h, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: appTheme.deepOrangeA200.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8.h),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CustomImageView(
-                  imagePath: ImageConstant.imgClock,
-                  height: 20.h,
-                  width: 20.h,
-                  color: appTheme.deepOrangeA200,
-                ),
-                SizedBox(width: 4.h),
-                Text(
-                  "Trial time: 30:00",
-                  style: TextStyle(
-                    color: appTheme.deepOrangeA200,
-                    fontSize: 12.fSize,
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+            child: CountdownTimerWidget(),
           ),
         ),
         // Settings header
