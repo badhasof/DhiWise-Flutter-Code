@@ -7,6 +7,7 @@ import '../../widgets/custom_text_form_field.dart';
 import 'bloc/profile_bloc.dart';
 import 'models/profile_model.dart'; // ignore_for_file: must_be_immutable
 import 'package:firebase_auth/firebase_auth.dart';
+import '../settings_screen/settings_screen.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key})
@@ -206,7 +207,12 @@ class _ProfilePageContent extends StatelessWidget {
                   // Settings button
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.settingsScreen);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SettingsScreen.builder(context),
+                        ),
+                      );
                     },
                     child: Padding(
                       padding: EdgeInsets.only(right: 16.h),
