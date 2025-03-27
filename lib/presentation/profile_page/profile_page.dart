@@ -173,12 +173,12 @@ class _ProfilePageContent extends StatelessWidget {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.only(left: 40.h),
-                child: Text(
-                  "Profile",
-                  style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
-                ),
+              child: Text(
+                "Profile",
+                style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
               ),
             ),
+          ),
           ),
           BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
@@ -205,23 +205,23 @@ class _ProfilePageContent extends StatelessWidget {
                     ),
                   ),
                   // Settings button
-                  GestureDetector(
-                    onTap: () {
+          GestureDetector(
+            onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => SettingsScreen.builder(context),
                         ),
                       );
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 16.h),
-                      child: Icon(
-                        Icons.settings,
-                        color: appTheme.deepOrangeA200,
-                        size: 24.h,
-                      ),
-                    ),
+            },
+            child: Padding(
+              padding: EdgeInsets.only(right: 16.h),
+              child: Icon(
+                Icons.settings,
+                color: appTheme.deepOrangeA200,
+                size: 24.h,
+              ),
+            ),
                   ),
                 ],
               );
@@ -295,14 +295,14 @@ class _ProfilePageContent extends StatelessWidget {
                 Opacity(
                   opacity: isEditing ? 1.0 : 0.7,
                   child: CustomFloatingTextField(
-                    width: double.infinity,
-                    controller: nameFieldController,
-                    labelText: "Name",
-                    labelStyle: CustomTextStyles.titleMediumOnPrimary,
-                    hintText: "Name",
-                    contentPadding: EdgeInsets.all(12.h),
-                    borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-                    filled: false,
+          width: double.infinity,
+          controller: nameFieldController,
+          labelText: "Name",
+          labelStyle: CustomTextStyles.titleMediumOnPrimary,
+          hintText: "Name",
+          contentPadding: EdgeInsets.all(12.h),
+          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+          filled: false,
                     readOnly: !isEditing,
                   ),
                 ),
@@ -353,14 +353,14 @@ class _ProfilePageContent extends StatelessWidget {
                 Opacity(
                   opacity: isEditing ? 1.0 : 0.7,
                   child: CustomFloatingTextField(
-                    width: double.infinity,
-                    controller: usernameFieldController,
-                    labelText: "Username",
-                    labelStyle: CustomTextStyles.titleMediumOnPrimary,
-                    hintText: "Username",
-                    contentPadding: EdgeInsets.all(12.h),
-                    borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-                    filled: false,
+          width: double.infinity,
+          controller: usernameFieldController,
+          labelText: "Username",
+          labelStyle: CustomTextStyles.titleMediumOnPrimary,
+          hintText: "Username",
+          contentPadding: EdgeInsets.all(12.h),
+          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+          filled: false,
                     readOnly: !isEditing,
                   ),
                 ),
@@ -422,16 +422,16 @@ class _ProfilePageContent extends StatelessWidget {
                       Opacity(
                         opacity: isEditing ? 1.0 : 0.7,
                         child: CustomFloatingTextField(
-                          width: double.infinity,
-                          controller: passwordFieldController,
-                          labelText: "Password",
-                          labelStyle: CustomTextStyles.titleMediumOnPrimary,
-                          hintText: "Password",
-                          textInputType: TextInputType.visiblePassword,
-                          obscureText: true,
-                          contentPadding: EdgeInsets.all(12.h),
-                          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-                          filled: false,
+                width: double.infinity,
+                controller: passwordFieldController,
+                labelText: "Password",
+                labelStyle: CustomTextStyles.titleMediumOnPrimary,
+                hintText: "Password",
+                textInputType: TextInputType.visiblePassword,
+                obscureText: true,
+                contentPadding: EdgeInsets.all(12.h),
+                borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+                filled: false,
                           readOnly: !isEditing,
                         ),
                       ),
@@ -468,16 +468,16 @@ class _ProfilePageContent extends StatelessWidget {
                 Opacity(
                   opacity: isEditing ? 1.0 : 0.7,
                   child: CustomFloatingTextField(
-                    width: double.infinity,
-                    controller: emailFieldController,
-                    labelText: "Email",
-                    labelStyle: CustomTextStyles.titleMediumOnPrimary,
-                    hintText: "Email",
-                    textInputAction: TextInputAction.done,
-                    textInputType: TextInputType.emailAddress,
-                    contentPadding: EdgeInsets.all(12.h),
-                    borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-                    filled: false,
+          width: double.infinity,
+          controller: emailFieldController,
+          labelText: "Email",
+          labelStyle: CustomTextStyles.titleMediumOnPrimary,
+          hintText: "Email",
+          textInputAction: TextInputAction.done,
+          textInputType: TextInputType.emailAddress,
+          contentPadding: EdgeInsets.all(12.h),
+          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+          filled: false,
                     readOnly: !isEditing,
                   ),
                 ),
@@ -520,11 +520,11 @@ class _ProfilePageContent extends StatelessWidget {
     return BlocSelector<ProfileBloc, ProfileState, bool>(
       selector: (state) => state.isEditing,
       builder: (context, isEditing) {
-        return CustomElevatedButton(
-          height: 48.h,
-          text: "DELETE ACCOUNT",
-          margin: EdgeInsets.symmetric(horizontal: 14.h),
-          buttonTextStyle: CustomTextStyles.titleMediumRedA200,
+    return CustomElevatedButton(
+      height: 48.h,
+      text: "DELETE ACCOUNT",
+      margin: EdgeInsets.symmetric(horizontal: 14.h),
+      buttonTextStyle: CustomTextStyles.titleMediumRedA200,
           onPressed: isEditing ? () => _showDeleteAccountDialog(context) : null,
           buttonStyle: isEditing 
               ? null 

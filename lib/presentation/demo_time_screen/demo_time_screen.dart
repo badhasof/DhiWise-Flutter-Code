@@ -43,6 +43,7 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
             ),
           ),
           body: _buildBody(context),
+          resizeToAvoidBottomInset: false,
         );
       },
     );
@@ -52,30 +53,51 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final imageWidth = screenWidth - 32.h; // Accounting for horizontal padding
     
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.h),
-        child: Column(
-          children: [
-            SizedBox(height: 24.h),
-            SvgPicture.asset(
-              'assets/images/hourglass.svg',
-              width: imageWidth,
-              height: imageWidth * 0.7,
-              fit: BoxFit.contain,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
             ),
-            SizedBox(height: 16.h), // 16px gap before header
-            _buildHeader(),
-            SizedBox(height: 16.h), // 16px gap before slider
-            _buildSliderSection(),
-            SizedBox(height: 16.h), // 16px gap before tip section
-            _buildTipSection(),
-            SizedBox(height: 116.h), // 116px gap before button
-            _buildBottomSection(context),
-            SizedBox(height: 24.h), // Bottom padding
-          ],
-        ),
-      ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top content
+                  Column(
+                    children: [
+                      SizedBox(height: 24.h),
+                      SvgPicture.asset(
+                        'assets/images/hourglass.svg',
+                        width: imageWidth,
+                        height: imageWidth * 0.7,
+                        fit: BoxFit.contain,
+                      ),
+                      SizedBox(height: 16.h), // 16px gap before header
+                      _buildHeader(),
+                      SizedBox(height: 16.h), // 16px gap before slider
+                      _buildSliderSection(),
+                      SizedBox(height: 16.h), // 16px gap before tip section
+                      _buildTipSection(),
+                    ],
+                  ),
+                  
+                  // Spacer to push the button to the bottom
+                  SizedBox(height: 90.h),
+                  
+                  // Bottom content with button
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 40.h), // 40px from bottom of screen
+                    child: _buildBottomSection(context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
