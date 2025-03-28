@@ -13,9 +13,10 @@ const readFileAsync = util.promisify(fs.readFile);
  * in the JSON data structure.
  * 
  * Usage:
- * - node generate_audio.js             # Processes MSA fiction stories (default)
- * - node generate_audio.js nonfiction  # Processes MSA non-fiction stories
- * - node generate_audio.js egyptian    # Processes Egyptian dialect stories
+ * - node generate_audio.js                    # Processes MSA fiction stories (default)
+ * - node generate_audio.js nonfiction         # Processes MSA non-fiction stories
+ * - node generate_audio.js egyptian           # Processes Egyptian dialect fiction stories
+ * - node generate_audio.js egyptian-nonfiction # Processes Egyptian dialect non-fiction stories
  * 
  * Prerequisites:
  * 1. PlayHT API credentials (userId and apiKey)
@@ -30,13 +31,19 @@ PlayHT.init({
 });
 
 // Determine the story type and dialect from command line arguments
-const isEgyptian = process.argv[2] === 'egyptian';
-const storyType = process.argv[2] === 'nonfiction' ? 'nonfiction' : 'fiction';
+const arg = process.argv[2] || '';
+const isEgyptian = arg === 'egyptian' || arg === 'egyptian-nonfiction';
+const isNonfiction = arg === 'nonfiction' || arg === 'egyptian-nonfiction';
+const storyType = isNonfiction ? 'nonfiction' : 'fiction';
 
 // Path to the stories JSON file
 let storiesFilePath;
 if (isEgyptian) {
-  storiesFilePath = path.join(__dirname, 'assets', 'stories_json/egyptian/egyptian_stories.json');
+  storiesFilePath = path.join(
+    __dirname, 
+    'assets', 
+    isNonfiction ? 'stories_json/egyptian/egyptian_stories_nonfiction.json' : 'stories_json/egyptian/egyptian_stories.json'
+  );
 } else {
   storiesFilePath = path.join(
     __dirname, 
@@ -48,7 +55,14 @@ if (isEgyptian) {
 // Directory to save audio files
 let audioDir;
 if (isEgyptian) {
-  audioDir = path.join(__dirname, 'assets', 'data', 'audio', 'egyptian');
+  audioDir = path.join(
+    __dirname, 
+    'assets', 
+    'data', 
+    'audio', 
+    'egyptian', 
+    isNonfiction ? 'nonfiction' : ''
+  );
 } else {
   audioDir = path.join(
     __dirname, 
@@ -64,7 +78,7 @@ if (!fs.existsSync(audioDir)) {
   fs.mkdirSync(audioDir, { recursive: true });
 }
 
-console.log(`Processing ${isEgyptian ? 'Egyptian' : storyType} stories from: ${storiesFilePath}`);
+console.log(`Processing ${isEgyptian ? 'Egyptian' : 'MSA'} ${storyType} stories from: ${storiesFilePath}`);
 console.log(`Saving audio files to: ${audioDir}`);
 
 // Define voice IDs for male and female voices 
@@ -196,9 +210,26 @@ async function processStories() {
       titleEn = story.title_en || story.titleEn || '';
       displayTitle = titleAr || titleEn || `Story ${i+1}`;
       
-      // Set up the audio file field names based on dialect
-      const maleAudioField = isEgyptian ? 'audio_egyptian_male' : (storyType === 'nonfiction' ? 'audioArMale' : 'audio_ar_male');
-      const femaleAudioField = isEgyptian ? 'audio_egyptian_female' : (storyType === 'nonfiction' ? 'audioArFemale' : 'audio_ar_female');
+      // Set up the audio file field names based on dialect and type
+      let maleAudioField, femaleAudioField;
+      
+      if (isEgyptian) {
+        if (isNonfiction) {
+          maleAudioField = 'audio_egyptian_nonfiction_male';
+          femaleAudioField = 'audio_egyptian_nonfiction_female';
+        } else {
+          maleAudioField = 'audio_egyptian_male';
+          femaleAudioField = 'audio_egyptian_female';
+        }
+      } else {
+        if (isNonfiction) {
+          maleAudioField = 'audioArMale';
+          femaleAudioField = 'audioArFemale';
+        } else {
+          maleAudioField = 'audio_ar_male';
+          femaleAudioField = 'audio_ar_female';
+        }
+      }
       
       // Skip if story has no valid Arabic content or if both male and female audio files already exist
       if (!validateArabicContent(contentAr) || (story[maleAudioField] && story[femaleAudioField])) {
@@ -215,14 +246,19 @@ async function processStories() {
         // Set appropriate relative path for audio files
         let relativePath;
         if (isEgyptian) {
-          relativePath = 'data/audio/egyptian/';
+          relativePath = isNonfiction ? 'data/audio/egyptian/nonfiction/' : 'data/audio/egyptian/';
         } else {
           relativePath = storyType === 'nonfiction' ? 'data/audio/nonfiction/' : 'data/audio/';
         }
         
         // Generate audio with male voice if needed
         if (!story[maleAudioField]) {
-          const suffix = isEgyptian ? '_egyptian_male.mp3' : '_ar_male.mp3';
+          let suffix;
+          if (isEgyptian) {
+            suffix = isNonfiction ? '_egyptian_nonfiction_male.mp3' : '_egyptian_male.mp3';
+          } else {
+            suffix = isNonfiction ? '_ar_nonfiction_male.mp3' : '_ar_male.mp3';
+          }
           const maleAudioFileName = `${filePrefix}${storyId}${suffix}`;
           
           await generateAudio(contentAr, maleAudioFileName, 'male');
@@ -235,7 +271,12 @@ async function processStories() {
         
         // Generate audio with female voice if needed
         if (!story[femaleAudioField]) {
-          const suffix = isEgyptian ? '_egyptian_female.mp3' : '_ar_female.mp3';
+          let suffix;
+          if (isEgyptian) {
+            suffix = isNonfiction ? '_egyptian_nonfiction_female.mp3' : '_egyptian_female.mp3';
+          } else {
+            suffix = isNonfiction ? '_ar_nonfiction_female.mp3' : '_ar_female.mp3';
+          }
           const femaleAudioFileName = `${filePrefix}${storyId}${suffix}`;
           
           await generateAudio(contentAr, femaleAudioFileName, 'female');
@@ -262,7 +303,7 @@ async function processStories() {
     // Final save of the JSON file
     await writeFileAsync(storiesFilePath, JSON.stringify(storiesData, null, 2), 'utf8');
     
-    const dialectText = isEgyptian ? 'Egyptian' : storyType;
+    const dialectText = isEgyptian ? `Egyptian ${storyType}` : storyType;
     console.log(`All ${dialectText} stories processed. Stories JSON updated with audio file paths.`);
     
     // Report any failed generations
@@ -281,7 +322,7 @@ async function processStories() {
 // Run the main function
 processStories()
   .then(() => {
-    const dialectText = isEgyptian ? 'Egyptian' : storyType;
+    const dialectText = isEgyptian ? `Egyptian ${storyType}` : storyType;
     console.log(`${dialectText} audio generation complete`);
   })
   .catch(err => console.error('Fatal error:', err.message || err));
