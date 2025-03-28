@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'core/app_export.dart';
+import 'services/subscription_service.dart';
+import 'services/user_service.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() async {
@@ -14,12 +16,28 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
+  // Initialize services
+  await _initializeServices();
+  
   Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
   ]).then((value) {
     PrefUtils().init();
     runApp(MyApp());
   });
+}
+
+/// Initialize all services needed at app startup
+Future<void> _initializeServices() async {
+  // Initialize subscription service
+  final subscriptionService = SubscriptionService();
+  await subscriptionService.initialize();
+  
+  // Initialize user service and check for existing user data
+  final userService = UserService();
+  if (userService.isLoggedIn) {
+    await userService.initializeUserDataIfNeeded();
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -37,7 +55,7 @@ class MyApp extends StatelessWidget {
             builder: (context, state) {
               return MaterialApp(
                 theme: theme,
-                title: 'badhaso_s_application2',
+                title: 'LinguaX',
                 builder: (context, child) {
                   return MediaQuery(
                     data: MediaQuery.of(context).copyWith(

@@ -35,6 +35,7 @@ class CreateProfileTwoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appTheme.gray50,
+      extendBody: true,
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -399,31 +400,57 @@ class CreateProfileTwoScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildCreateProfileButton(BuildContext context) {
-    return CustomElevatedButton(
-      height: 48.h,
-      text: "Create Profile",
-      buttonStyle: CustomButtonStyles.fillDeepOrange,
-      onPressed: () {
-        if (_formKey.currentState!.validate()) {
-          // Get the user's name from the controller
-          final bloc = context.read<CreateProfileTwoBloc>();
-          final state = bloc.state;
-          final userName = state.nameFieldController?.text ?? '';
-          final age = state.ageFieldController?.text ?? '';
-          final gender = state.genderValue ?? '';
-          
-          // Navigate to the create profile one screen
-          Navigator.pushNamed(
-            context, 
-            AppRoutes.createProfileOneScreen,
-            arguments: {
-              'userName': userName,
-              'age': age,
-              'gender': gender,
+    return Container(
+      width: double.maxFinite,
+      padding: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Color(0xFFD84918),
+        borderRadius: BorderRadius.circular(12.h),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFFFF6F3E),
+          borderRadius: BorderRadius.circular(12.h),
+        ),
+        child: TextButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              final bloc = context.read<CreateProfileTwoBloc>();
+              final state = bloc.state;
+              final userName = state.nameFieldController?.text ?? '';
+              final age = state.ageFieldController?.text ?? '';
+              final gender = state.genderValue ?? '';
+
+              Navigator.pushNamed(
+                context,
+                AppRoutes.createProfileOneScreen,
+                arguments: {
+                  'userName': userName,
+                  'age': age,
+                  'gender': gender,
+                },
+              );
             }
-          );
-        }
-      },
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            minimumSize: Size(double.infinity, 0),
+          ),
+          child: Text(
+            "Continue",
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+              fontSize: 16.fSize,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -431,11 +458,13 @@ class CreateProfileTwoScreen extends StatelessWidget {
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.symmetric(
-        horizontal: 16.h,
-        vertical: 14.h,
+      padding: EdgeInsets.only(
+        left: 16.h,
+        right: 16.h,
+        top: 14.h,
+        bottom: 30.h,
       ),
-      decoration: AppDecoration.outlinePrimary,
+      color: appTheme.gray50,
       child: Column(
         spacing: 10,
         mainAxisSize: MainAxisSize.min,
@@ -446,27 +475,27 @@ class CreateProfileTwoScreen extends StatelessWidget {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: "By signing in to LinguaX, you agree to our ",
+                  text: "By signing up to LinguaX, you agree to our ",
                   style: CustomTextStyles.bodyMediumGray700.copyWith(
-                    fontSize: 12.fSize,
+                    fontSize: 10.fSize,
                   ),
                 ),
                 TextSpan(
                   text: "Terms",
                   style: CustomTextStyles.titleSmallBold.copyWith(
-                    fontSize: 12.fSize,
+                    fontSize: 10.fSize,
                   ),
                 ),
                 TextSpan(
                   text: " and ",
                   style: CustomTextStyles.bodyMediumGray700.copyWith(
-                    fontSize: 12.fSize,
+                    fontSize: 10.fSize,
                   ),
                 ),
                 TextSpan(
                   text: "Privacy Policy",
                   style: CustomTextStyles.titleSmallBold.copyWith(
-                    fontSize: 12.fSize,
+                    fontSize: 10.fSize,
                   ),
                 )
               ],

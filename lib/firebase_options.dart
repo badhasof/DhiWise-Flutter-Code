@@ -64,6 +64,6 @@ class DefaultFirebaseOptions {
     projectId: 'linguax-9b060',
     storageBucket: 'linguax-9b060.firebasestorage.app',
     iosClientId: '861015223952-bp6a6en3rtf4d2jrvk1l1jf2765q47et.apps.googleusercontent.com',
-    iosBundleId: 'com.linguax.app.testProject',
+    iosBundleId: 'com.linguax.app',
   );
 }

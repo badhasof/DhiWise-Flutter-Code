@@ -9,6 +9,8 @@ import 'bloc/profile_bloc.dart';
 import 'models/profile_model.dart'; // ignore_for_file: must_be_immutable
 import 'package:firebase_auth/firebase_auth.dart';
 import '../settings_screen/settings_screen.dart';
+import '../../services/user_service.dart';
+import '../subscription_screen/subscription_screen.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key})
@@ -37,7 +39,54 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class _ProfilePageContent extends StatelessWidget {
+class _ProfilePageContent extends StatefulWidget {
+  @override
+  State<_ProfilePageContent> createState() => _ProfilePageContentState();
+}
+
+class _ProfilePageContentState extends State<_ProfilePageContent> {
+  // User service instance
+  final UserService _userService = UserService();
+  bool _isPremium = false;
+  String _subscriptionType = "";
+  bool _isCheckingSubscription = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _checkSubscriptionStatus();
+  }
+  
+  Future<void> _checkSubscriptionStatus() async {
+    setState(() {
+      _isCheckingSubscription = true;
+    });
+    
+    try {
+      final userData = await _userService.getUserData();
+      final isPremium = await _userService.hasPremiumAccess();
+      
+      String subscriptionType = "";
+      if (userData != null && userData.containsKey('subscription')) {
+        final subscription = userData['subscription'];
+        if (subscription != null && subscription.containsKey('type')) {
+          subscriptionType = subscription['type'] == 'monthly' ? 'Monthly' : 'Lifetime';
+        }
+      }
+      
+      setState(() {
+        _isPremium = isPremium;
+        _subscriptionType = subscriptionType;
+        _isCheckingSubscription = false;
+      });
+    } catch (e) {
+      print('Error checking subscription: $e');
+      setState(() {
+        _isCheckingSubscription = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Attempt to get user data from Firebase
@@ -59,6 +108,11 @@ class _ProfilePageContent extends StatelessWidget {
                 SizedBox(height: 10.h),
                 _buildChangeAvatarRow(context),
                 SizedBox(height: 22.h),
+                
+                // Subscription status section
+                _buildSubscriptionStatusSection(context),
+                SizedBox(height: 22.h),
+                
                 _buildNameFieldColumn(context),
                 SizedBox(height: 14.h),
                 _buildUsernameFieldColumn(context),
@@ -719,5 +773,129 @@ class _ProfilePageContent extends StatelessWidget {
     } catch (e) {
       print('Error fetching user data: $e');
     }
+  }
+
+  /// Subscription Status Section Widget
+  Widget _buildSubscriptionStatusSection(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Subscription",
+            style: CustomTextStyles.titleMediumOnPrimary,
+          ),
+          SizedBox(height: 10.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.h),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _isPremium 
+                            ? Icons.star_rounded 
+                            : Icons.star_border_rounded,
+                          color: _isPremium 
+                            ? appTheme.deepOrangeA200 
+                            : appTheme.gray500,
+                          size: 24.h,
+                        ),
+                        SizedBox(width: 10.h),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _isCheckingSubscription
+                                ? "Checking status..."
+                                : _isPremium 
+                                  ? "Premium Access" 
+                                  : "Basic Access",
+                              style: CustomTextStyles.titleMediumOnPrimary.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: _isPremium 
+                                  ? appTheme.deepOrangeA200 
+                                  : appTheme.gray800,
+                              ),
+                            ),
+                            if (_isPremium && _subscriptionType.isNotEmpty)
+                              Text(
+                                _subscriptionType,
+                                style: CustomTextStyles.bodyMediumGray600,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    _isCheckingSubscription
+                        ? SizedBox(
+                            width: 20.h,
+                            height: 20.h,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.h,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                appTheme.deepOrangeA200,
+                              ),
+                            ),
+                          )
+                        : TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SubscriptionScreen.builder(context),
+                                ),
+                              ).then((_) {
+                                // Check subscription status again when returning from subscription screen
+                                _checkSubscriptionStatus();
+                              });
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.h,
+                                vertical: 8.h,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.h),
+                                side: BorderSide(
+                                  color: appTheme.deepOrangeA200,
+                                  width: 1.h,
+                                ),
+                              ),
+                              backgroundColor: Colors.white,
+                            ),
+                            child: Text(
+                              _isPremium ? "Manage" : "Upgrade",
+                              style: TextStyle(
+                                color: appTheme.deepOrangeA200,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14.fSize,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

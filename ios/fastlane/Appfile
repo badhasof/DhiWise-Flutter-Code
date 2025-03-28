@@ -1,4 +1,4 @@
-app_identifier("com.linguax.app.testProject1") # Bundle ID from Xcode
+app_identifier("com.linguax.app") # Bundle ID from Xcode
 apple_id("ebisofuri@gmail.com") # Replace with the Apple Developer account owner's email
 team_id("9X64HB72CD") # Apple Developer Team ID from Xcode
 

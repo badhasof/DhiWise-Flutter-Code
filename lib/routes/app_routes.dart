@@ -27,6 +27,7 @@ import '../presentation/new_stories_completion_screen/new_stories_completion_scr
 import '../presentation/demo_time_screen/demo_time_screen.dart';
 import '../presentation/feedback_screen/feedback_screen.dart';
 import '../presentation/subscription_screen/subscription_screen.dart';
+import '../presentation/product_test_screen/product_test_screen.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -86,6 +87,8 @@ class AppRoutes {
   static const String feedbackScreen = '/feedback_screen';
 
   static const String subscriptionScreen = '/subscription_screen';
+  
+  static const String productTestScreen = '/product_test_screen';
 
   static Map<String, WidgetBuilder> get routes => {
         onboardimgScreen: OnboardimgScreen.builder,
@@ -116,6 +119,7 @@ class AppRoutes {
         newStoriesCompletionScreen: NewStoriesCompletionScreen.builder,
         demoTimeScreen: DemoTimeScreen.builder,
         feedbackScreen: FeedbackScreen.builder,
-        subscriptionScreen: SubscriptionScreen.builder
+        subscriptionScreen: SubscriptionScreen.builder,
+        productTestScreen: ProductTestScreen.builder
       };
 }

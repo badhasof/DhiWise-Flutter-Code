@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/app_export.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../services/subscription_service.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({Key? key}) : super(key: key);
@@ -15,6 +19,106 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _isMonthlySelected = true;
+  bool _isProcessingPurchase = false;
+  String _purchaseStatus = '';
+  
+  // Subscription service instance
+  final SubscriptionService _subscriptionService = SubscriptionService();
+  
+  // Subscription for purchase status updates
+  StreamSubscription<PurchaseStatus>? _purchaseStatusSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSubscriptions();
+  }
+  
+  Future<void> _initializeSubscriptions() async {
+    setState(() {
+      _isProcessingPurchase = true;
+      _purchaseStatus = 'Loading products...';
+    });
+    
+    // Initialize the subscription service
+    await _subscriptionService.initialize();
+    
+    setState(() {
+      _isProcessingPurchase = false;
+      _purchaseStatus = _subscriptionService.products.isEmpty ? 
+        'No subscription products found. Pull down to refresh.' : '';
+    });
+    
+    // Listen for purchase status updates
+    _purchaseStatusSubscription = _subscriptionService.purchaseStatusStream.listen((status) {
+      setState(() {
+        _isProcessingPurchase = status == PurchaseStatus.pending;
+        
+        // Update status message
+        switch(status) {
+          case PurchaseStatus.pending:
+            _purchaseStatus = 'Processing purchase...';
+            break;
+          case PurchaseStatus.purchased:
+            _purchaseStatus = 'Purchase successful!';
+            break;
+          case PurchaseStatus.restored:
+            _purchaseStatus = 'Purchase restored!';
+            break;
+          case PurchaseStatus.error:
+            _purchaseStatus = 'Error occurred during purchase.';
+            break;
+          case PurchaseStatus.canceled:
+            _purchaseStatus = 'Purchase canceled.';
+            break;
+        }
+      });
+      
+      // Show success snackbar if purchase was successful
+      if (status == PurchaseStatus.purchased || status == PurchaseStatus.restored) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Subscription processed. Thank you!')),
+        );
+        
+        // Navigate back after successful purchase
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pop(context);
+        });
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _purchaseStatusSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refreshProducts() async {
+    setState(() {
+      _isProcessingPurchase = true;
+      _purchaseStatus = 'Refreshing products...';
+    });
+    
+    await _subscriptionService.loadProducts();
+    
+    setState(() {
+      _isProcessingPurchase = false;
+      _purchaseStatus = _subscriptionService.products.isEmpty ? 
+        'No subscription products found. Try again later.' : 'Products refreshed';
+        
+      // Clear the status message after a delay if products were found
+      if (_subscriptionService.products.isNotEmpty) {
+        Future.delayed(Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() {
+              _purchaseStatus = '';
+            });
+          }
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,71 +134,136 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: Color(0xFF37251F)),
+            onPressed: _isProcessingPurchase ? null : _refreshProducts,
+          ),
+        ],
         title: null,
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // Calculate spacing based on available height
-            final availableHeight = MediaQuery.of(context).size.height;
-            final topPadding = MediaQuery.of(context).padding.top;
-            final effectiveHeight = availableHeight - topPadding - 8.h;
-            
-            // Adjust spacing based on screen height
-            final initialSpacing = effectiveHeight > 700 ? 60.h : 52.h;
-            final standardSpacing = effectiveHeight > 700 ? 18.h : 14.h;
-            
-            return Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                // Background wave SVG positioned at the top
-                Positioned(
-                  top: -1, // Negative value to ensure it covers the top edge
-                  left: -200, // Move SVG 200px to the left
-                  right: 0,
-                  child: SvgPicture.asset(
-                    'assets/images/background_wave.svg',
-                    width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
-                    fit: BoxFit.fitWidth,
-                  ),
-                ),
-                // Confetti decoration
-                Positioned(
-                  top: 20,
-                  right: 0,
-                  left: 0,
-                  child: Center(
+      body: RefreshIndicator(
+        onRefresh: _refreshProducts,
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate spacing based on available height
+              final availableHeight = MediaQuery.of(context).size.height;
+              final topPadding = MediaQuery.of(context).padding.top;
+              final effectiveHeight = availableHeight - topPadding - 8.h;
+              
+              // Adjust spacing based on screen height
+              final initialSpacing = effectiveHeight > 700 ? 60.h : 52.h;
+              final standardSpacing = effectiveHeight > 700 ? 18.h : 14.h;
+              
+              return Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  // Background wave SVG positioned at the top
+                  Positioned(
+                    top: -1, // Negative value to ensure it covers the top edge
+                    left: -200, // Move SVG 200px to the left
+                    right: 0,
                     child: SvgPicture.asset(
-                      'assets/images/confetti.svg',
-                      width: 500.h,
-                      height: 500.h,
-                      fit: BoxFit.contain,
+                      'assets/images/background_wave.svg',
+                      width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
-                ),
-                // Main content
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
-                  child: Column(
-                    children: [
-                      SizedBox(height: initialSpacing),
-                      _buildHeaderText(),
-                      SizedBox(height: standardSpacing),
-                      _buildSubscriptionOptions(),
-                      SizedBox(height: standardSpacing),
-                      _buildSubscriptionNotice(),
-                      SizedBox(height: standardSpacing),
-                      _buildSubscribeButton(),
-                      SizedBox(height: 12.h),
-                      _buildSecurityNote(),
-                    ],
+                  // Confetti decoration
+                  Positioned(
+                    top: 20,
+                    right: 0,
+                    left: 0,
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/images/confetti.svg',
+                        width: 500.h,
+                        height: 500.h,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            );
-          }
+                  // Main content
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
+                    child: Column(
+                      children: [
+                        SizedBox(height: initialSpacing),
+                        _buildHeaderText(),
+                        SizedBox(height: standardSpacing),
+                        _buildSubscriptionOptions(),
+                        SizedBox(height: standardSpacing),
+                        _buildSubscriptionNotice(),
+                        SizedBox(height: standardSpacing),
+                        _buildSubscribeButton(),
+                        SizedBox(height: 12.h),
+                        _buildSecurityNote(),
+                        
+                        // Status message
+                        if (_purchaseStatus.isNotEmpty) ...[
+                          SizedBox(height: 12.h),
+                          Text(
+                            _purchaseStatus,
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15.fSize,
+                              color: _purchaseStatus.contains('Error') || _purchaseStatus.contains('canceled') 
+                                  ? Colors.red 
+                                  : Color(0xFF80706B),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                        
+                        // Restore purchases button
+                        SizedBox(height: 20.h),
+                        TextButton(
+                          onPressed: _isProcessingPurchase 
+                              ? null 
+                              : () => _restorePurchases(),
+                          child: Text(
+                            'Restore purchases',
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15.fSize,
+                              color: Color(0xFF80706B),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        
+                        // Debug product test button (only visible in debug mode)
+                        SizedBox(height: 10.h),
+                        if (kDebugMode) 
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, AppRoutes.productTestScreen);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[300],
+                              foregroundColor: Colors.black87,
+                            ),
+                            child: Text(
+                              'Debug: Test Products',
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14.fSize,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+          ),
         ),
       ),
     );
@@ -182,7 +351,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: _isProcessingPurchase ? null : onTap,
       child: Container(
         width: double.infinity,
         height: 90.h,
@@ -289,17 +458,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xFFFF6F3E),
+          color: _isProcessingPurchase ? Colors.grey : Color(0xFFFF6F3E),
           borderRadius: BorderRadius.circular(10.h),
         ),
         child: TextButton(
-          onPressed: () {
-            // Handle subscription
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Subscription processed. Thank you!')),
-            );
-            Navigator.pop(context);
-          },
+          onPressed: _isProcessingPurchase 
+              ? null 
+              : () => _processPurchase(),
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
             backgroundColor: Colors.transparent,
@@ -308,18 +473,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             minimumSize: Size(double.infinity, 0),
           ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              "Subscribe now",
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w700,
-                fontSize: 15.fSize,
-                color: Colors.white,
-              ),
-            ),
-          ),
+          child: _isProcessingPurchase
+              ? SizedBox(
+                  height: 20.h,
+                  width: 20.h,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2.h,
+                  ),
+                )
+              : FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    "Subscribe now",
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15.fSize,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
         ),
       ),
     );
@@ -346,5 +520,76 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
       ],
     );
+  }
+  
+  // Process subscription purchase
+  Future<void> _processPurchase() async {
+    try {
+      // Clear purchase status
+      setState(() {
+        _purchaseStatus = 'Preparing purchase...';
+        _isProcessingPurchase = true;
+      });
+      
+      // Check if products are available
+      if (_subscriptionService.products.isEmpty) {
+        setState(() {
+          _isProcessingPurchase = false;
+          _purchaseStatus = 'No products available. Try refreshing first.';
+        });
+        
+        // Show a toast or snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please refresh products before purchasing')),
+        );
+        
+        return;
+      }
+      
+      // Get the product ID based on selection
+      final String productId = _isMonthlySelected 
+          ? SubscriptionService.monthlyProductId 
+          : SubscriptionService.lifetimeProductId;
+      
+      setState(() {
+        _purchaseStatus = 'Starting purchase flow...';
+      });
+      
+      // Purchase the selected product
+      await _subscriptionService.purchaseProduct(productId);
+      
+      // We don't set _isProcessingPurchase to false here since 
+      // the purchase status listener will handle that
+    } catch (e) {
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = 'Error: ${e.toString()}';
+      });
+      
+      // Show error in snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Purchase failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  
+  // Restore previous purchases
+  Future<void> _restorePurchases() async {
+    try {
+      setState(() {
+        _purchaseStatus = 'Restoring purchases...';
+        _isProcessingPurchase = true;
+      });
+      
+      await _subscriptionService.restorePurchases();
+    } catch (e) {
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = 'Error restoring purchases: ${e.toString()}';
+      });
+    }
   }
 } 
