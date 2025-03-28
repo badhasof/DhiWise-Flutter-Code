@@ -6,7 +6,7 @@ import 'package:path/path.dart' as path;
 const String OPENAI_API_KEY = '';
 const String AUDIO_DIR = 'assets/data/audio';
 const String TIMESTAMPS_DIR = 'assets/data/timestamps';
-const String STORIES_JSON_PATH = 'assets/msa_stories.json';
+const String STORIES_JSON_PATH = 'assets/stories_json/msa/msa_stories.json';
 
 void main() async {
   // Create the timestamps directory if it doesn't exist

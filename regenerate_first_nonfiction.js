@@ -19,7 +19,7 @@ PlayHT.init({
 });
 
 // Path to the stories JSON file
-const storiesFilePath = path.join(__dirname, 'assets', 'msa_stories_nonfiction.json');
+const storiesFilePath = path.join(__dirname, 'assets', 'stories_json', 'msa', 'msa_stories_nonfiction.json');
 
 // Directory to save audio files
 const audioDir = path.join(__dirname, 'assets', 'data', 'audio', 'nonfiction');

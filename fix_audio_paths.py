@@ -1,7 +1,7 @@
 import json
 
 # Path to the JSON file
-json_file_path = 'assets/msa_stories.json'
+json_file_path = 'assets/stories_json/msa/msa_stories.json'
 
 # Read the JSON file
 with open(json_file_path, 'r', encoding='utf-8') as f:

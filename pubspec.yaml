@@ -46,6 +46,11 @@ flutter:
     - assets/svg/
     - assets/svg/play_button/
     - assets/lottie/
+    - assets/stories_json/
+    - assets/stories_json/msa/
+    - assets/stories_json/egyptian/
+    - assets/stories_json/jordanian/
+    - assets/stories_json/moroccan/
     
   fonts: 
     - family: Lato

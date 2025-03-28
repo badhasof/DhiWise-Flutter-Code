@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import '../domain/story/story_model.dart';
 
 class StoryService {
-  static const String _fictionJsonPath = 'assets/msa_stories.json';
-  static const String _nonfictionJsonPath = 'assets/msa_stories_nonfiction.json';
+  static const String _fictionJsonPath = 'assets/stories_json/msa/msa_stories.json';
+  static const String _nonfictionJsonPath = 'assets/stories_json/msa/msa_stories_nonfiction.json';
   
   // Singleton instance
   static final StoryService _instance = StoryService._internal();

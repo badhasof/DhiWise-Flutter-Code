@@ -39,7 +39,7 @@ def match_paragraphs(english_text, arabic_text):
     return '\n\n'.join(new_arabic_paragraphs)
 
 # Path to the JSON file
-json_file_path = 'assets/msa_stories_nonfiction.json'
+json_file_path = 'assets/stories_json/msa/msa_stories_nonfiction.json'
 
 # Read the JSON file
 with open(json_file_path, 'r', encoding='utf-8') as f:

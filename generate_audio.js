@@ -35,7 +35,7 @@ const storyType = process.argv[2] === 'nonfiction' ? 'nonfiction' : 'fiction';
 const storiesFilePath = path.join(
   __dirname, 
   'assets', 
-  storyType === 'nonfiction' ? 'msa_stories_nonfiction.json' : 'msa_stories.json'
+  storyType === 'nonfiction' ? 'stories_json/msa/msa_stories_nonfiction.json' : 'stories_json/msa/msa_stories.json'
 );
 
 // Directory to save audio files
