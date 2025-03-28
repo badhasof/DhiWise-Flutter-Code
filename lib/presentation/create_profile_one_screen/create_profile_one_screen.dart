@@ -166,8 +166,8 @@ class _CreateProfileOneScreenState extends State<CreateProfileOneScreen> with Ti
               ),
               child: TextButton(
                 onPressed: () {
-                  // Navigate to the next screen
-                  Navigator.pushNamed(context, AppRoutes.homeScreen);
+                  // Navigate to the demo time screen
+                  Navigator.pushNamed(context, AppRoutes.demoTimeScreen);
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),

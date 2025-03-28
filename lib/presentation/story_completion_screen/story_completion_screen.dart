@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import '../../core/app_export.dart';
 import '../new_stories_completion_screen/new_stories_completion_screen.dart';
 import '../home_screen/home_screen.dart';
+import '../../widgets/countdown_timer_widget.dart';
 
 class StoryCompletionScreen extends StatefulWidget {
   const StoryCompletionScreen({Key? key}) : super(key: key);
@@ -56,7 +57,6 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
                 Expanded(
                   child: _buildBody(),
                 ),
-                _buildBottomBar(context),
               ],
             ),
           ),
@@ -84,6 +84,7 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 
@@ -94,38 +95,7 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       child: Column(
         children: [
           // Trial time indicator
-          Container(
-            width: double.infinity,
-            alignment: Alignment.center,
-            child: Container(
-              margin: EdgeInsets.only(top: 4.h),
-              padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 3.h),
-              decoration: BoxDecoration(
-                color: Color(0xFFFF6F3E).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.h),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 16.h,
-                    color: Color(0xFFFF6F3E),
-                  ),
-                  SizedBox(width: 4.h),
-                  Text(
-                    "Trail time: 30:00",
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 12.fSize,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFFFF6F3E),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          CountdownTimerWidget(),
         ],
       ),
     );
@@ -210,124 +180,101 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
 
   Widget _buildBottomBar(BuildContext context) {
     return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Color(0xFFFFF9F4),
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFEFECEB),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildTryAnotherButton(context),
-            SizedBox(height: 12.h),
-            _buildBackToHomeButton(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTryAnotherButton(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 4.h),
-      child: GestureDetector(
-        onTap: () {
-          // Navigate to the new stories completion screen, replacing the current screen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => NewStoriesCompletionScreen.builder(context),
+      width: double.maxFinite,
+      padding: EdgeInsets.only(left: 16.h, right: 16.h, top: 16.h, bottom: 36.h),
+      decoration: AppDecoration.outlinePrimary,
+      child: Column(
+        spacing: 12,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.only(bottom: 4.h),
+            decoration: BoxDecoration(
+              color: Color(0xFFD84918), // Deep orange outer frame
+              borderRadius: BorderRadius.circular(12.h),
             ),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFFFF6F3E),
-            borderRadius: BorderRadius.circular(12.h),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFFD84918),
-                offset: Offset(0, 3),
-                blurRadius: 0,
-                spreadRadius: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFFFF6F3E), // Inner orange content wrapper
+                borderRadius: BorderRadius.circular(12.h),
               ),
-            ],
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
-            child: Center(
-              child: Text(
-                "Try another challenge",
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontSize: 16.fSize,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  height: 1.5,
+              child: TextButton(
+                onPressed: () {
+                  // Navigate to the new stories completion screen, replacing the current screen
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => NewStoriesCompletionScreen.builder(context),
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  minimumSize: Size(double.infinity, 0),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBackToHomeButton(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 4.h),
-      child: GestureDetector(
-        onTap: () {
-          // Fix: Use Navigator.pushReplacement instead of pushAndRemoveUntil
-          // This replaces the current screen while keeping the rest of the navigation stack intact
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => HomeScreen.builder(context),
-            ),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.h),
-            border: Border.all(
-              color: Color(0xFFEFECEB),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFFEFECEB),
-                offset: Offset(0, 3),
-                blurRadius: 0,
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
-            child: Center(
-              child: Text(
-                "Back to Home",
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontSize: 16.fSize,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFFF6F3E),
-                  height: 1.5,
+                child: Text(
+                  "Try another challenge",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16.fSize,
+                    color: Colors.white,
+                  ),
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
           ),
-        ),
+          Container(
+            width: double.maxFinite,
+            padding: EdgeInsets.only(bottom: 4.h),
+            decoration: BoxDecoration(
+              color: Color(0xFFF0F0F0), // Light gray outer frame
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.h),
+                border: Border.all(
+                  color: Color(0xFFEFECEB),
+                  width: 1.5,
+                ),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  // Fix: Use Navigator.pushReplacement instead of pushAndRemoveUntil
+                  // This replaces the current screen while keeping the rest of the navigation stack intact
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen.builder(context),
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  minimumSize: Size(double.infinity, 0),
+                ),
+                child: Text(
+                  "Back to Home",
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16.fSize,
+                    color: Color(0xFFFF6F3E),
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
