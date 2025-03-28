@@ -3,8 +3,24 @@ import 'package:flutter/services.dart';
 import '../domain/story/story_model.dart';
 
 class StoryService {
-  static const String _fictionJsonPath = 'assets/stories_json/msa/msa_stories.json';
-  static const String _nonfictionJsonPath = 'assets/stories_json/msa/msa_stories_nonfiction.json';
+  // Default paths (MSA)
+  static const String _msaFictionPath = 'assets/stories_json/msa/msa_stories.json';
+  static const String _msaNonfictionPath = 'assets/stories_json/msa/msa_stories_nonfiction.json';
+  
+  // Egyptian paths
+  static const String _egyptianFictionPath = 'assets/stories_json/egyptian/egyptian_stories.json';
+  static const String _egyptianNonfictionPath = 'assets/stories_json/egyptian/egyptian_stories_nonfiction.json';
+  
+  // Jordanian paths
+  static const String _jordanianFictionPath = 'assets/stories_json/jordanian/jordanian_stories.json';
+  static const String _jordanianNonfictionPath = 'assets/stories_json/jordanian/jordanian_stories_nonfiction.json';
+  
+  // Moroccan paths
+  static const String _moroccanFictionPath = 'assets/stories_json/moroccan/moroccan_stories.json';
+  static const String _moroccanNonfictionPath = 'assets/stories_json/moroccan/moroccan_stories_nonfiction.json';
+  
+  // Current dialect - default to MSA
+  String _currentDialect = 'msa';
   
   // Singleton instance
   static final StoryService _instance = StoryService._internal();
@@ -17,20 +33,62 @@ class StoryService {
     return _instance;
   }
   
-  // List to cache the stories
-  List<Story>? _stories;
+  // List to cache the stories for each dialect
+  Map<String, List<Story>> _cachedStories = {};
   
-  // Load stories from the JSON files
+  // Set the current dialect
+  void setDialect(String dialect) {
+    if (_currentDialect != dialect) {
+      _currentDialect = dialect;
+    }
+  }
+  
+  // Get the current dialect
+  String getDialect() {
+    return _currentDialect;
+  }
+  
+  // Get the file paths for the current dialect
+  Map<String, String> _getFilePathsForDialect(String dialect) {
+    switch (dialect) {
+      case 'egyptian':
+        return {
+          'fiction': _egyptianFictionPath,
+          'nonfiction': _egyptianNonfictionPath,
+        };
+      case 'jordanian':
+        return {
+          'fiction': _jordanianFictionPath,
+          'nonfiction': _jordanianNonfictionPath,
+        };
+      case 'moroccan':
+        return {
+          'fiction': _moroccanFictionPath,
+          'nonfiction': _moroccanNonfictionPath,
+        };
+      case 'msa':
+      default:
+        return {
+          'fiction': _msaFictionPath,
+          'nonfiction': _msaNonfictionPath,
+        };
+    }
+  }
+  
+  // Load stories from the JSON files for the current dialect
   Future<List<Story>> getStories() async {
-    // Return cached stories if available
-    if (_stories != null) {
-      return _stories!;
+    // Return cached stories if available for current dialect
+    if (_cachedStories.containsKey(_currentDialect)) {
+      return _cachedStories[_currentDialect]!;
     }
     
     try {
+      // Get file paths for current dialect
+      final paths = _getFilePathsForDialect(_currentDialect);
+      
       // Load both JSON files
-      final String fictionJsonString = await rootBundle.loadString(_fictionJsonPath);
-      final String nonfictionJsonString = await rootBundle.loadString(_nonfictionJsonPath);
+      final String fictionJsonString = await rootBundle.loadString(paths['fiction']!);
+      final String nonfictionJsonString = await rootBundle.loadString(paths['nonfiction']!);
       
       final Map<String, dynamic> fictionJsonData = json.decode(fictionJsonString);
       final Map<String, dynamic> nonfictionJsonData = json.decode(nonfictionJsonString);
@@ -43,11 +101,11 @@ class StoryService {
       final List<Story> fictionStories = fictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       final List<Story> nonfictionStories = nonfictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       
-      _stories = [...fictionStories, ...nonfictionStories];
+      _cachedStories[_currentDialect] = [...fictionStories, ...nonfictionStories];
       
-      return _stories!;
+      return _cachedStories[_currentDialect]!;
     } catch (e) {
-      print('Error loading stories: $e');
+      print('Error loading stories for dialect $_currentDialect: $e');
       return [];
     }
   }
@@ -62,9 +120,14 @@ class StoryService {
     }
   }
   
-  // Clear cache to force reload stories (useful for testing)
+  // Clear cache to force reload stories
   void clearCache() {
-    _stories = null;
+    _cachedStories.clear();
+  }
+  
+  // Clear cache for a specific dialect
+  void clearCacheForDialect(String dialect) {
+    _cachedStories.remove(dialect);
   }
   
   // Get stories by main category (Fiction/Non-Fiction)

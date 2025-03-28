@@ -40,6 +40,23 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   // Flag emoji container state
   bool _isFlagPressed = false;
   String _selectedFlag = "🇺🇸"; // Add variable to track selected flag
+  String _currentDialect = "msa"; // Track the current dialect
+  
+  // Map flags to dialects
+  final Map<String, String> _flagToDialect = {
+    "🇺🇸": "msa",     // MSA (Modern Standard Arabic) with US flag
+    "🇪🇬": "egyptian", // Egyptian dialect
+    "🇯🇴": "jordanian", // Jordanian dialect
+    "🇲🇦": "moroccan"  // Moroccan dialect
+  };
+  
+  // Map dialects to display names
+  final Map<String, String> _dialectToDisplayName = {
+    "msa": "MSA",
+    "egyptian": "Egyptian",
+    "jordanian": "Jordanian",
+    "moroccan": "Moroccan"
+  };
   
   // Story service instance
   final StoryService _storyService = StoryService();
@@ -62,6 +79,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     super.initState();
     _loadStories();
     _loadUserData();
+    
+    // Set the initial dialect in the story service
+    _storyService.setDialect(_currentDialect);
   }
   
   // Load user data from Firebase
@@ -126,6 +146,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     print('Sub-genre selected: $_selectedSubGenre');
     print('Number of stories: ${filteredStories.length}');
     print('Available sub-genres: $_availableSubGenres');
+    print('Current dialect: $_currentDialect');
     
     setState(() {
       _availableSubGenres = subGenres;
@@ -149,6 +170,37 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (context) => StoryScreen(story: story),
+      ),
+    );
+  }
+
+  // Switch dialect based on flag selection
+  Future<void> _switchDialect(String flag) async {
+    // Get the dialect for the selected flag
+    final newDialect = _flagToDialect[flag] ?? "msa";
+    
+    // If dialect hasn't changed, do nothing
+    if (newDialect == _currentDialect) {
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+      _selectedFlag = flag;
+      _currentDialect = newDialect;
+    });
+    
+    // Update the dialect in the story service
+    _storyService.setDialect(newDialect);
+    
+    // Reload stories with the new dialect
+    await _loadStories();
+    
+    // Show a snackbar to indicate the dialect change
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Switched to ${_dialectToDisplayName[newDialect] ?? newDialect} dialect'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -319,17 +371,18 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                   offset: Offset(0, 0),
                                   position: PopupMenuPosition.over,
                                   constraints: BoxConstraints(
-                                    maxWidth: 50.h,
-                                    minWidth: 50.h,
+                                    maxWidth: 60.h,
+                                    minWidth: 60.h,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16.h),
                                   ),
                                   color: Color(0xFFF9F9F9),
                                   elevation: 8,
+                                  tooltip: 'Current dialect: ${_dialectToDisplayName[_currentDialect] ?? _currentDialect}',
                                   child: Container(
                                     height: 28.h,
-                                    width: 50.h,
+                                    width: 60.h,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(28.h),
@@ -342,12 +395,32 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                       ],
                                     ),
                                     alignment: Alignment.center,
-                                    child: Text(
-                                      _selectedFlag,
-                                      style: TextStyle(
-                                        fontSize: 28.h,
-                                        height: 1.0,
-                                      ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 8.h),
+                                          child: Text(
+                                            _selectedFlag,
+                                            style: TextStyle(
+                                              fontSize: 28.h,
+                                              height: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(right: 8.h),
+                                          child: Text(
+                                            "▾",
+                                            style: TextStyle(
+                                              fontSize: 16.h,
+                                              fontWeight: FontWeight.bold,
+                                              height: 0.8,
+                                              color: appTheme.gray600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   itemBuilder: (context) => [
@@ -459,10 +532,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                     ),
                                   ],
                                   onSelected: (String value) {
-                                    setState(() {
-                                      _selectedFlag = value;
-                                    });
-                                    print("${value} flag selected!");
+                                    _switchDialect(value);
                                   },
                                 ),
                               ),
