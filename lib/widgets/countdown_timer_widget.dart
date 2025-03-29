@@ -5,9 +5,15 @@ import '../core/utils/pref_utils.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_image_view.dart';
 import '../theme/custom_button_style.dart';
+import '../services/user_service.dart';
 
 class CountdownTimerWidget extends StatefulWidget {
-  const CountdownTimerWidget({Key? key}) : super(key: key);
+  final bool hideIfPremium;
+  
+  const CountdownTimerWidget({
+    Key? key,
+    this.hideIfPremium = true,
+  }) : super(key: key);
 
   @override
   State<CountdownTimerWidget> createState() => _CountdownTimerWidgetState();
@@ -19,11 +25,54 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   late PrefUtils _prefUtils;
   bool _hasNavigatedToFeedback = false;
   
+  // Premium status
+  bool _isPremium = false;
+  bool _isCheckingPremium = true;
+  final UserService _userService = UserService();
+  
   @override
   void initState() {
     super.initState();
     _prefUtils = PrefUtils();
-    _initializeTimer();
+    
+    if (widget.hideIfPremium) {
+      _checkPremiumStatus();
+    } else {
+      _initializeTimer();
+    }
+  }
+  
+  Future<void> _checkPremiumStatus() async {
+    setState(() {
+      _isCheckingPremium = true;
+    });
+    
+    try {
+      // Check if user has premium access
+      bool isPremium = await _userService.hasPremiumAccess();
+      
+      setState(() {
+        _isPremium = isPremium;
+        _isCheckingPremium = false;
+      });
+      
+      // Only initialize the timer if NOT premium
+      if (!_isPremium) {
+        _initializeTimer();
+      }
+      
+      debugPrint('CountdownTimer - Premium status: $_isPremium');
+    } catch (e) {
+      debugPrint('CountdownTimer - Error checking premium status: $e');
+      setState(() {
+        _isCheckingPremium = false;
+        // Default to non-premium on error
+        _isPremium = false;
+      });
+      
+      // Initialize timer on error (default to free tier behavior)
+      _initializeTimer();
+    }
   }
   
   Future<void> _initializeTimer() async {
@@ -52,6 +101,9 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   }
   
   void _navigateToFeedbackIfNeeded() {
+    // Don't navigate if premium
+    if (_isPremium) return;
+    
     if (!_hasNavigatedToFeedback && mounted) {
       _hasNavigatedToFeedback = true;
       // Delay navigation slightly to prevent multiple navigations
@@ -79,6 +131,32 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // If checking premium status, show a loading indicator
+    if (_isCheckingPremium) {
+      return SizedBox(
+        height: 22.h,
+        width: 122.h,
+        child: Center(
+          child: SizedBox(
+            width: 14.h,
+            height: 14.h,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.h,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                appTheme.deepOrangeA200,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // If user is premium and we want to hide the widget, return an empty SizedBox
+    if (_isPremium && widget.hideIfPremium) {
+      return SizedBox.shrink();
+    }
+    
+    // Otherwise show the countdown timer
     return CustomElevatedButton(
       height: 22.h,
       width: 122.h,

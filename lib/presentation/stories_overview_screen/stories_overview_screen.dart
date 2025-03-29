@@ -114,7 +114,7 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
           alignment: Alignment.center,
           child: Container(
             margin: EdgeInsets.only(top: 4.h),
-            child: CountdownTimerWidget(),
+            child: CountdownTimerWidget(hideIfPremium: true),
           ),
         ),
         // Navigation bar with back button, title, and favorite button

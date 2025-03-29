@@ -934,7 +934,7 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             alignment: Alignment.center,
             child: Container(
               margin: EdgeInsets.only(top: 4.h),
-              child: CountdownTimerWidget(),
+              child: CountdownTimerWidget(hideIfPremium: true),
             ),
           ),
           

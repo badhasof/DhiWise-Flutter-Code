@@ -78,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
         Center(
           child: Container(
             margin: EdgeInsets.symmetric(vertical: 8.h),
-            child: CountdownTimerWidget(),
+            child: CountdownTimerWidget(hideIfPremium: true),
           ),
         ),
         // Settings header

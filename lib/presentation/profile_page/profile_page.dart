@@ -186,7 +186,7 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
 
   /// Section Widget
   Widget _buildTrialButton(BuildContext context) {
-    return CountdownTimerWidget();
+    return CountdownTimerWidget(hideIfPremium: true);
   }
 
   /// Section Widget

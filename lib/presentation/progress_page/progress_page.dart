@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/app_export.dart';
 import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../core/utils/pref_utils.dart';
+import '../../services/user_reading_service.dart';
+import '../../services/user_service.dart';
+import '../../services/subscription_service.dart';
 import 'bloc/progress_bloc.dart';
 import 'models/progress_model.dart'; // ignore_for_file: must_be_immutable
 
@@ -34,11 +38,80 @@ class _ProgressPageState extends State<ProgressPage> {
   late PrefUtils _prefUtils;
   bool _hasNavigatedToFeedback = false;
   
+  // Services and controllers
+  late UserReadingService _userReadingService;
+  late UserService _userService;
+  late SubscriptionService _subscriptionService;
+  ScrollController? _scrollController;
+  
+  // Completed stories count
+  int _completedStoriesCount = 0;
+  bool _isLoadingStats = true;
+  List<Map<String, dynamic>> _recentCompletedStories = [];
+  
+  // Premium status
+  bool _isPremium = false;
+  bool _isCheckingPremium = true;
+  String _subscriptionType = "";
+  
   @override
   void initState() {
     super.initState();
+    
+    // Initialize services
+    _userReadingService = UserReadingService();
+    _userService = UserService();
+    _subscriptionService = SubscriptionService();
     _prefUtils = PrefUtils();
-    _initializeTimer();
+    _scrollController = ScrollController();
+    
+    // Check premium status
+    _checkPremiumStatus();
+    
+    // Load user stats
+    _loadUserStats();
+  }
+  
+  Future<void> _checkPremiumStatus() async {
+    setState(() {
+      _isCheckingPremium = true;
+    });
+    
+    try {
+      // Check if user has premium access
+      bool isPremium = await _userService.hasPremiumAccess();
+      
+      if (isPremium) {
+        // Get subscription type
+        var userData = await _userService.getUserData();
+        if (userData != null && userData.containsKey('subscriptionType')) {
+          setState(() {
+            _subscriptionType = userData['subscriptionType'] ?? "";
+          });
+        }
+      }
+      
+      setState(() {
+        _isPremium = isPremium;
+        _isCheckingPremium = false;
+      });
+      
+      // Only initialize timer for non-premium users
+      if (!_isPremium) {
+        _initializeTimer();
+      }
+      
+      debugPrint('Premium status: $_isPremium, Type: $_subscriptionType');
+    } catch (e) {
+      debugPrint('Error checking premium status: $e');
+      setState(() {
+        _isCheckingPremium = false;
+        _isPremium = false;
+      });
+      
+      // Initialize timer on error (default to free tier behavior)
+      _initializeTimer();
+    }
   }
   
   Future<void> _initializeTimer() async {
@@ -66,7 +139,38 @@ class _ProgressPageState extends State<ProgressPage> {
     });
   }
   
+  Future<void> _loadUserStats() async {
+    try {
+      setState(() {
+        _isLoadingStats = true;
+      });
+      
+      // Get the total number of completed stories
+      final totalStories = await _userReadingService.getTotalCompletedStories();
+      
+      // Get the most recent completed stories (up to 5)
+      final recentStories = await _userReadingService.getCompletedStories();
+      final limitedRecentStories = recentStories.take(5).toList();
+      
+      setState(() {
+        _completedStoriesCount = totalStories;
+        _recentCompletedStories = limitedRecentStories;
+        _isLoadingStats = false;
+      });
+      
+      debugPrint('✅ Loaded user stats: $_completedStoriesCount completed stories');
+    } catch (e) {
+      debugPrint('❌ Error loading user stats: $e');
+      setState(() {
+        _isLoadingStats = false;
+      });
+    }
+  }
+  
   void _navigateToFeedbackIfNeeded() {
+    // Don't navigate to feedback page if user is premium
+    if (_isPremium) return;
+    
     if (!_hasNavigatedToFeedback && mounted) {
       _hasNavigatedToFeedback = true;
       // Delay navigation slightly to prevent multiple navigations
@@ -114,16 +218,22 @@ class _ProgressPageState extends State<ProgressPage> {
                 children: [
                   _buildTopBar(context),
                   Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 20.h),
-                      child: Column(
-                        children: [
-                          _buildStreakCard(context),
-                          SizedBox(height: 20.h),
-                          _buildProgressCards(context),
-                          SizedBox(height: 12.h),
-                          _buildNextLevelCard(context),
-                        ],
+                    child: RefreshIndicator(
+                      onRefresh: _loadUserStats,
+                      child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 20.h),
+                        child: Column(
+                          children: [
+                            _buildStreakCard(context),
+                            SizedBox(height: 20.h),
+                            _buildProgressCards(context),
+                            SizedBox(height: 12.h),
+                            _buildNextLevelCard(context),
+                            SizedBox(height: 20.h),
+                            _buildRecentCompletedStories(context),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -157,40 +267,92 @@ class _ProgressPageState extends State<ProgressPage> {
               ),
             ),
           ),
-          // Trial time container
-          Container(
-            width: double.maxFinite,
-            margin: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
-            padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: appTheme.deepOrangeA200,
-              borderRadius: BorderRadius.circular(12.h),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Trial time",
-                  style: CustomTextStyles.titleMediumOnPrimaryContainer,
-                ),
-                Row(
-                  children: [
-                    _buildTimeBox(timeDigits[0]),
-                    _buildTimeBox(timeDigits[1]),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4.h),
-                      child: Text(
-                        ":",
-                        style: CustomTextStyles.titleMediumOnPrimaryContainer,
+          
+          // Only show trial time container for non-premium users
+          if (!_isPremium)
+            Container(
+              width: double.maxFinite,
+              margin: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: appTheme.deepOrangeA200,
+                borderRadius: BorderRadius.circular(12.h),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Trial time",
+                    style: CustomTextStyles.titleMediumOnPrimaryContainer,
+                  ),
+                  Row(
+                    children: [
+                      _buildTimeBox(timeDigits[0]),
+                      _buildTimeBox(timeDigits[1]),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.h),
+                        child: Text(
+                          ":",
+                          style: CustomTextStyles.titleMediumOnPrimaryContainer,
+                        ),
                       ),
-                    ),
-                    _buildTimeBox(timeDigits[2]),
-                    _buildTimeBox(timeDigits[3]),
-                  ],
-                ),
-              ],
+                      _buildTimeBox(timeDigits[2]),
+                      _buildTimeBox(timeDigits[3]),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          else
+            // Show premium badge for premium users
+            Container(
+              width: double.maxFinite,
+              margin: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Color(0xFF59CC03), // Green for premium
+                borderRadius: BorderRadius.circular(12.h),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _isCheckingPremium ? "Checking status..." : "Premium Access",
+                    style: CustomTextStyles.titleMediumOnPrimaryContainer,
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12.h),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Colors.white,
+                              size: 16.h,
+                            ),
+                            SizedBox(width: 4.h),
+                            Text(
+                              _subscriptionType,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.fSize,
+                                fontFamily: 'Lato',
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -461,7 +623,7 @@ class _ProgressPageState extends State<ProgressPage> {
                 icon: ImageConstant.imgDartIcon,
                 iconBgColor: Color(0xFFCDEDFE),
                 title: "Stories Read",
-                value: "8",
+                value: _isLoadingStats ? "Loading..." : "$_completedStoriesCount",
               ),
             ),
           ],
@@ -502,17 +664,17 @@ class _ProgressPageState extends State<ProgressPage> {
           borderRadius: BorderRadius.circular(12.h),
           border: Border.all(
             color: appTheme.gray10001,
-            width: 1,
+            width: 1.5,
           ),
         ),
         child: Row(
           children: [
             Container(
-              width: 40.h,
-              height: 40.h,
+              width: 48.h,
+              height: 48.h,
               decoration: BoxDecoration(
                 color: iconBgColor,
-                borderRadius: BorderRadius.circular(66.h),
+                borderRadius: BorderRadius.circular(12.h),
               ),
               child: Center(
                 child: CustomImageView(
@@ -522,29 +684,43 @@ class _ProgressPageState extends State<ProgressPage> {
                 ),
               ),
             ),
-            SizedBox(width: 14.h),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: appTheme.gray600,
-                    fontSize: 14.fSize,
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w400,
+            SizedBox(width: 12.h),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: appTheme.gray70001,
+                      fontSize: 14.fSize,
+                      fontFamily: 'Be Vietnam Pro',
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: appTheme.gray800,
-                    fontSize: 18.fSize,
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+                  SizedBox(height: 2.h),
+                  _isLoadingStats && title == "Stories Read"
+                      ? SizedBox(
+                          height: 16.h,
+                          width: 16.h,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.h,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              appTheme.deepOrangeA200,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          value,
+                          style: TextStyle(
+                            color: appTheme.gray800,
+                            fontSize: 20.fSize,
+                            fontFamily: 'Be Vietnam Pro',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ],
+              ),
             ),
           ],
         ),
@@ -658,5 +834,180 @@ class _ProgressPageState extends State<ProgressPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildRecentCompletedStories(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.h),
+        border: Border.all(
+          color: appTheme.gray10001,
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Recently Completed Stories",
+            style: TextStyle(
+              color: appTheme.gray800,
+              fontSize: 16.fSize,
+              fontFamily: 'Be Vietnam Pro',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          if (_isLoadingStats)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    appTheme.deepOrangeA200,
+                  ),
+                ),
+              ),
+            )
+          else if (_recentCompletedStories.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
+                child: Text(
+                  "You haven't completed any stories yet.\nStart reading to see your progress!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: appTheme.gray600,
+                    fontSize: 14.fSize,
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: _recentCompletedStories.length,
+              separatorBuilder: (context, index) => Divider(
+                color: appTheme.gray10001,
+                height: 16.h,
+              ),
+              itemBuilder: (context, index) {
+                final story = _recentCompletedStories[index];
+                final title = story['titleEn'] ?? 'Unknown Story';
+                final completedAt = story['completedAt'] as Timestamp?;
+                final completedDate = completedAt != null 
+                    ? completedAt.toDate()
+                    : DateTime.now();
+                
+                // Format the date as "Mon, Jan 1"
+                final formattedDate = '${_getDayName(completedDate.weekday)}, ${_getMonthName(completedDate.month)} ${completedDate.day}';
+                
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40.h,
+                      height: 40.h,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFCDEDFE),
+                        borderRadius: BorderRadius.circular(8.h),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.book,
+                          color: appTheme.deepOrangeA200,
+                          size: 20.h,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.h),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: appTheme.gray800,
+                              fontSize: 14.fSize,
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(
+                              color: appTheme.gray600,
+                              fontSize: 12.fSize,
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: appTheme.deepOrangeA200.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16.h),
+                      ),
+                      child: Text(
+                        story['level'] ?? 'Beginner',
+                        style: TextStyle(
+                          color: appTheme.deepOrangeA200,
+                          fontSize: 10.fSize,
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+  
+  // Helper method to get the day name
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1: return 'Mon';
+      case 2: return 'Tue';
+      case 3: return 'Wed';
+      case 4: return 'Thu';
+      case 5: return 'Fri';
+      case 6: return 'Sat';
+      case 7: return 'Sun';
+      default: return '';
+    }
+  }
+  
+  // Helper method to get the month name
+  String _getMonthName(int month) {
+    switch (month) {
+      case 1: return 'Jan';
+      case 2: return 'Feb';
+      case 3: return 'Mar';
+      case 4: return 'Apr';
+      case 5: return 'May';
+      case 6: return 'Jun';
+      case 7: return 'Jul';
+      case 8: return 'Aug';
+      case 9: return 'Sep';
+      case 10: return 'Oct';
+      case 11: return 'Nov';
+      case 12: return 'Dec';
+      default: return '';
+    }
   }
 } 

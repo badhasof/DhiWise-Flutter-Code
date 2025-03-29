@@ -134,7 +134,7 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
       child: Column(
         children: [
           // Trial time indicator
-          CountdownTimerWidget(),
+          CountdownTimerWidget(hideIfPremium: true),
         ],
       ),
     );
