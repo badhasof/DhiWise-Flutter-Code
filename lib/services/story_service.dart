@@ -79,12 +79,16 @@ class StoryService {
   Future<List<Story>> getStories() async {
     // Return cached stories if available for current dialect
     if (_cachedStories.containsKey(_currentDialect)) {
+      print('Using cached stories for dialect: $_currentDialect');
       return _cachedStories[_currentDialect]!;
     }
     
     try {
       // Get file paths for current dialect
       final paths = _getFilePathsForDialect(_currentDialect);
+      print('Loading stories for dialect: $_currentDialect');
+      print('Fiction path: ${paths['fiction']}');
+      print('Non-fiction path: ${paths['nonfiction']}');
       
       // Load both JSON files
       final String fictionJsonString = await rootBundle.loadString(paths['fiction']!);
@@ -97,12 +101,16 @@ class StoryService {
       final List<dynamic> fictionStoriesJson = fictionJsonData['stories'];
       final List<dynamic> nonfictionStoriesJson = nonfictionJsonData['stories'];
       
+      print('Fiction stories count: ${fictionStoriesJson.length}');
+      print('Non-fiction stories count: ${nonfictionStoriesJson.length}');
+      
       // Combine the stories from both sources
       final List<Story> fictionStories = fictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       final List<Story> nonfictionStories = nonfictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       
       _cachedStories[_currentDialect] = [...fictionStories, ...nonfictionStories];
       
+      print('Total stories loaded for $_currentDialect: ${_cachedStories[_currentDialect]!.length}');
       return _cachedStories[_currentDialect]!;
     } catch (e) {
       print('Error loading stories for dialect $_currentDialect: $e');

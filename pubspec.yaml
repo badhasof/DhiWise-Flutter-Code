@@ -42,6 +42,8 @@ flutter:
     - assets/icons/
     - assets/data/audio/
     - assets/data/audio/nonfiction/
+    - assets/data/audio/egyptian/
+    - assets/data/audio/egyptian/nonfiction/
     - assets/data/timestamps/
     - assets/svg/
     - assets/svg/play_button/

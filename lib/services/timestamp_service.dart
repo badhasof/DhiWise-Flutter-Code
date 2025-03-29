@@ -19,10 +19,43 @@ class TimestampService {
     if (audioPath.isEmpty) return '';
     
     // Extract file name without extension
-    final fileName = audioPath.split('/').last.split('.').first;
+    String fileName = audioPath.split('/').last.split('.').first;
+    
+    // Handle paths that might already include 'assets/'
+    if (audioPath.startsWith('assets/')) {
+      audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+    }
+    
+    // Check if this is a dialect-specific audio file
+    bool isDialectSpecific = false;
+    String dialectCode = '';
+    
+    // Check for Egyptian dialect
+    if (audioPath.contains('egyptian')) {
+      isDialectSpecific = true;
+      dialectCode = 'egyptian';
+    } 
+    // Check for Jordanian dialect
+    else if (audioPath.contains('jordanian')) {
+      isDialectSpecific = true;
+      dialectCode = 'jordanian';
+    } 
+    // Check for Moroccan dialect
+    else if (audioPath.contains('moroccan')) {
+      isDialectSpecific = true;
+      dialectCode = 'moroccan';
+    }
     
     // Build the timestamp path
-    final path = 'assets/data/timestamps/${fileName}_timestamps.json';
+    String path;
+    if (isDialectSpecific) {
+      // For dialect-specific files, ensure we use the correct filename pattern
+      path = 'assets/data/timestamps/${dialectCode}/${fileName}_timestamps.json';
+    } else {
+      // Standard MSA path
+      path = 'assets/data/timestamps/${fileName}_timestamps.json';
+    }
+    
     debugPrint('Timestamp path for $audioPath: $path');
     return path;
   }
@@ -40,12 +73,43 @@ class TimestampService {
       return _timestampCache[timestampPath];
     }
     
-    try {
-      // Load timestamps from asset
-      debugPrint('Attempting to load timestamps from: $timestampPath');
-      final timestamps = await WordTimestampCollection.loadFromAsset(timestampPath);
+    // For dialect-specific files, if we don't find timestamps in the dialect-specific directory,
+    // try to use the standard naming convention as a fallback
+    String fallbackPath = '';
+    if (timestampPath.contains('/egyptian/') || 
+        timestampPath.contains('/jordanian/') || 
+        timestampPath.contains('/moroccan/')) {
       
-      // Cache the timestamps
+      // Extract the filename
+      String fileName = audioPath.split('/').last.split('.').first;
+      
+      // If it's a dialect-specific audio file (like "something_egyptian_male.mp3")
+      // Convert to standard format (like "something_ar_male_timestamps.json")
+      String standardFileName = fileName;
+      
+      // Replace dialect markers with "ar"
+      standardFileName = standardFileName.replaceAll('_egyptian_', '_ar_')
+                                         .replaceAll('_jordanian_', '_ar_')
+                                         .replaceAll('_moroccan_', '_ar_')
+                                         .replaceAll('_nonfiction_', '_');
+      
+      // Create the fallback path
+      fallbackPath = 'assets/data/timestamps/${standardFileName}_timestamps.json';
+      debugPrint('Created fallback timestamp path: $fallbackPath');
+    }
+    
+    try {
+      // First try to load from the primary path
+      debugPrint('Attempting to load timestamps from: $timestampPath');
+      var timestamps = await WordTimestampCollection.loadFromAsset(timestampPath);
+      
+      // If primary path doesn't work and we have a fallback, try that
+      if (timestamps == null && fallbackPath.isNotEmpty) {
+        debugPrint('Primary path failed, trying fallback path: $fallbackPath');
+        timestamps = await WordTimestampCollection.loadFromAsset(fallbackPath);
+      }
+      
+      // Cache the timestamps if we found them
       if (timestamps != null) {
         debugPrint('Successfully loaded timestamps for $audioPath with ${timestamps.words.length} words');
         _timestampCache[timestampPath] = timestamps;

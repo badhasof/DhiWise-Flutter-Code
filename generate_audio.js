@@ -231,60 +231,98 @@ async function processStories() {
         }
       }
       
-      // Skip if story has no valid Arabic content or if both male and female audio files already exist
-      if (!validateArabicContent(contentAr) || (story[maleAudioField] && story[femaleAudioField])) {
-        console.log(`Skipping story ${i + 1}/${totalStories}: ${displayTitle} (already has audio or invalid content)`);
+      // Skip if story has no valid Arabic content
+      if (!validateArabicContent(contentAr)) {
+        console.log(`Skipping story ${i + 1}/${totalStories}: ${displayTitle} (invalid content)`);
+        continue;
+      }
+      
+      // Setup file paths
+      const filePrefix = storyType === 'nonfiction' && !isEgyptian ? 'nonfiction_' : '';
+      const storyId = story.id || `story${i+1}`;
+      
+      // Set appropriate relative path for audio files
+      let relativePath;
+      if (isEgyptian) {
+        relativePath = isNonfiction ? 'data/audio/egyptian/nonfiction/' : 'data/audio/egyptian/';
+      } else {
+        relativePath = storyType === 'nonfiction' ? 'data/audio/nonfiction/' : 'data/audio/';
+      }
+      
+      // Determine file names
+      let maleSuffix, femaleSuffix;
+      if (isEgyptian) {
+        maleSuffix = isNonfiction ? '_egyptian_nonfiction_male.mp3' : '_egyptian_male.mp3';
+        femaleSuffix = isNonfiction ? '_egyptian_nonfiction_female.mp3' : '_egyptian_female.mp3';
+      } else {
+        maleSuffix = isNonfiction ? '_ar_nonfiction_male.mp3' : '_ar_male.mp3';
+        femaleSuffix = isNonfiction ? '_ar_nonfiction_female.mp3' : '_ar_female.mp3';
+      }
+      
+      const maleAudioFileName = `${filePrefix}${storyId}${maleSuffix}`;
+      const femaleAudioFileName = `${filePrefix}${storyId}${femaleSuffix}`;
+      
+      // Check if files exist physically on disk
+      const maleFilePath = path.join(audioDir, maleAudioFileName);
+      const femaleFilePath = path.join(audioDir, femaleAudioFileName);
+      
+      const maleFileExists = fs.existsSync(maleFilePath);
+      const femaleFileExists = fs.existsSync(femaleFilePath);
+      
+      // Check if both male and female files exist and are non-empty
+      const maleAudioMissing = !maleFileExists || (maleFileExists && fs.statSync(maleFilePath).size < 1000);
+      const femaleAudioMissing = !femaleFileExists || (femaleFileExists && fs.statSync(femaleFilePath).size < 1000);
+      
+      if (!maleAudioMissing && !femaleAudioMissing) {
+        console.log(`Skipping story ${i + 1}/${totalStories}: ${displayTitle} (audio files already exist)`);
+        
+        // Update the JSON fields if they're missing but files exist
+        if (!story[maleAudioField]) {
+          story[maleAudioField] = `${relativePath}${maleAudioFileName}`;
+          console.log(`Updated JSON with existing male audio path: ${story[maleAudioField]}`);
+        }
+        
+        if (!story[femaleAudioField]) {
+          story[femaleAudioField] = `${relativePath}${femaleAudioFileName}`;
+          console.log(`Updated JSON with existing female audio path: ${story[femaleAudioField]}`);
+        }
+        
         continue;
       }
       
       console.log(`Processing story ${i + 1}/${totalStories}: ${displayTitle}`);
       
       try {
-        const filePrefix = storyType === 'nonfiction' && !isEgyptian ? 'nonfiction_' : '';
-        const storyId = story.id || `story${i+1}`;
-        
-        // Set appropriate relative path for audio files
-        let relativePath;
-        if (isEgyptian) {
-          relativePath = isNonfiction ? 'data/audio/egyptian/nonfiction/' : 'data/audio/egyptian/';
-        } else {
-          relativePath = storyType === 'nonfiction' ? 'data/audio/nonfiction/' : 'data/audio/';
-        }
-        
         // Generate audio with male voice if needed
-        if (!story[maleAudioField]) {
-          let suffix;
-          if (isEgyptian) {
-            suffix = isNonfiction ? '_egyptian_nonfiction_male.mp3' : '_egyptian_male.mp3';
-          } else {
-            suffix = isNonfiction ? '_ar_nonfiction_male.mp3' : '_ar_male.mp3';
-          }
-          const maleAudioFileName = `${filePrefix}${storyId}${suffix}`;
-          
+        if (maleAudioMissing) {
           await generateAudio(contentAr, maleAudioFileName, 'male');
           
           // Update field in JSON
           story[maleAudioField] = `${relativePath}${maleAudioFileName}`;
           
           console.log(`Generated male audio for story: ${displayTitle}`);
+        } else {
+          console.log(`Male audio already exists for story: ${displayTitle}`);
+          // Ensure JSON field is set even if we're not generating new audio
+          if (!story[maleAudioField]) {
+            story[maleAudioField] = `${relativePath}${maleAudioFileName}`;
+          }
         }
         
         // Generate audio with female voice if needed
-        if (!story[femaleAudioField]) {
-          let suffix;
-          if (isEgyptian) {
-            suffix = isNonfiction ? '_egyptian_nonfiction_female.mp3' : '_egyptian_female.mp3';
-          } else {
-            suffix = isNonfiction ? '_ar_nonfiction_female.mp3' : '_ar_female.mp3';
-          }
-          const femaleAudioFileName = `${filePrefix}${storyId}${suffix}`;
-          
+        if (femaleAudioMissing) {
           await generateAudio(contentAr, femaleAudioFileName, 'female');
           
           // Update field in JSON
           story[femaleAudioField] = `${relativePath}${femaleAudioFileName}`;
           
           console.log(`Generated female audio for story: ${displayTitle}`);
+        } else {
+          console.log(`Female audio already exists for story: ${displayTitle}`);
+          // Ensure JSON field is set even if we're not generating new audio
+          if (!story[femaleAudioField]) {
+            story[femaleAudioField] = `${relativePath}${femaleAudioFileName}`;
+          }
         }
         
         // Save updated JSON back to the file after each story is processed

@@ -49,23 +49,72 @@ class Story extends Equatable {
     String? audioArMale;
     String? audioArFemale;
     
+    // Check for the dialect
+    String dialect = json['dialect'] as String? ?? 'MSA Arabic';
+    String dialectCode = 'msa';
+    
+    // Determine dialect code from dialect name
+    if (dialect.contains('Egyptian')) {
+      dialectCode = 'egyptian';
+      print('Detected Egyptian dialect story: ${json['id']}');
+    } else if (dialect.contains('Jordanian')) {
+      dialectCode = 'jordanian';
+      print('Detected Jordanian dialect story: ${json['id']}');
+    } else if (dialect.contains('Moroccan')) {
+      dialectCode = 'moroccan';
+      print('Detected Moroccan dialect story: ${json['id']}');
+    }
+    
     // Check for fiction-style audio paths (using snake_case)
     if (json['audio_ar_male'] != null) {
       audioArMale = json['audio_ar_male'] as String?;
+      print('Using audio_ar_male: $audioArMale');
     } 
     // Check for nonfiction-style audio paths (using camelCase)
     else if (json['audioArMale'] != null) {
       audioArMale = json['audioArMale'] as String?;
+      print('Using audioArMale: $audioArMale');
+    }
+    // Check for dialect-specific audio paths
+    else if (json['audio_${dialectCode}_male'] != null) {
+      audioArMale = json['audio_${dialectCode}_male'] as String?;
+      print('Using audio_${dialectCode}_male: $audioArMale');
+    }
+    // Check for dialect-specific nonfiction audio paths
+    else if (json['audio_${dialectCode}_nonfiction_male'] != null) {
+      audioArMale = json['audio_${dialectCode}_nonfiction_male'] as String?;
+      print('Using audio_${dialectCode}_nonfiction_male: $audioArMale');
     }
     
     // Same for female audio
     if (json['audio_ar_female'] != null) {
       audioArFemale = json['audio_ar_female'] as String?;
+      print('Using audio_ar_female: $audioArFemale');
     } 
     else if (json['audioArFemale'] != null) {
       audioArFemale = json['audioArFemale'] as String?;
+      print('Using audioArFemale: $audioArFemale');
+    }
+    // Check for dialect-specific audio paths
+    else if (json['audio_${dialectCode}_female'] != null) {
+      audioArFemale = json['audio_${dialectCode}_female'] as String?;
+      print('Using audio_${dialectCode}_female: $audioArFemale');
+    }
+    // Check for dialect-specific nonfiction audio paths
+    else if (json['audio_${dialectCode}_nonfiction_female'] != null) {
+      audioArFemale = json['audio_${dialectCode}_nonfiction_female'] as String?;
+      print('Using audio_${dialectCode}_nonfiction_female: $audioArFemale');
     }
     
+    // Handle story content field variations
+    String contentAr = '';
+    if (json['content_ar'] != null) {
+      contentAr = json['content_ar'] as String;
+    } else if (json['story_content'] != null) {
+      contentAr = json['story_content'] as String;
+    }
+    
+    // Create the story object
     return Story(
       id: json['id'] as String,
       titleEn: json['title_en'] as String,
@@ -73,9 +122,9 @@ class Story extends Equatable {
       genre: json['genre'] as String,
       subGenre: json['sub_genre'] as String? ?? '',
       level: json['level'] as String,
-      dialect: json['dialect'] as String,
+      dialect: dialect,
       summaryEn: json['summary_en'] as String,
-      contentAr: json['content_ar'] as String,
+      contentAr: contentAr,
       contentEn: json['content_en'] as String,
       audioAr: json['audio_ar'] as String?,
       audioEn: json['audio_en'] as String?,
@@ -128,4 +177,13 @@ class Story extends Equatable {
         audioArFemale,
         imagePath,
       ];
+      
+  // Debug method to print audio paths
+  void printAudioPaths() {
+    print('Story ID: $id, Dialect: $dialect');
+    print('audioAr: $audioAr');
+    print('audioEn: $audioEn');
+    print('audioArMale: $audioArMale');
+    print('audioArFemale: $audioArFemale');
+  }
 } 

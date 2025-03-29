@@ -78,6 +78,9 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    // Debug: Print audio paths
+    widget.story.printAudioPaths();
+    
     // Initialize word lists using the service method
     _arabicWords = _textHighlightingService.extractWordsArray(widget.story.contentAr);
     _englishWords = _textHighlightingService.extractWordsArray(widget.story.contentEn);
@@ -195,31 +198,53 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       // Check for gender-specific audio files
       if (_isMaleVoice && widget.story.audioArMale != null && widget.story.audioArMale!.isNotEmpty) {
         audioPath = widget.story.audioArMale;
+        debugPrint('Using male voice audio: $audioPath');
       } else if (!_isMaleVoice && widget.story.audioArFemale != null && widget.story.audioArFemale!.isNotEmpty) {
         audioPath = widget.story.audioArFemale;
+        debugPrint('Using female voice audio: $audioPath');
       } else if (widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
         // Fallback to generic Arabic audio
         audioPath = widget.story.audioAr;
+        debugPrint('Falling back to generic Arabic audio: $audioPath');
       }
       
-      // Load timestamps for Arabic audio
-      if (audioPath != null && audioPath.isNotEmpty) {
-        _wordTimestamps = await _timestampService.loadTimestamps(audioPath);
-      }
+      // Skip timestamp loading for now to simplify the process
       
       // Load audio source
       try {
         if (audioPath != null && audioPath.isNotEmpty) {
-          // Make sure the path doesn't start with 'assets/' to avoid duplication
-          if (audioPath.startsWith('assets/')) {
-            audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+          debugPrint('Original audio path: $audioPath');
+          
+          // For paths starting with "data/" (which is the format in our JSON files)
+          // we need to ensure proper path handling
+          if (!audioPath.startsWith('assets/')) {
+            // If it's not already prefixed with 'assets/', add it
+            audioPath = 'assets/' + audioPath;
           }
           
-          await _audioPlayer.setSource(AssetSource(audioPath));
+          debugPrint('Updated audio path: $audioPath');
+          
+          // Now process it for AssetSource which requires paths without 'assets/'
+          String assetPath = audioPath;
+          if (assetPath.startsWith('assets/')) {
+            assetPath = assetPath.substring(7); // Remove 'assets/' prefix for AssetSource
+          }
+          
+          debugPrint('Final asset path for AudioPlayer: $assetPath');
+          
+          // Verify the path format - for debugging only
+          if (widget.story.dialect.contains('Egyptian')) {
+            debugPrint('Loading Egyptian dialect audio file');
+            if (assetPath.contains('egyptian')) {
+              debugPrint('Path contains "egyptian" as expected');
+            } else {
+              debugPrint('WARNING: Egyptian dialect story but path doesn\'t contain "egyptian"');
+            }
+          }
+          
+          await _audioPlayer.setSource(AssetSource(assetPath));
           await _audioPlayer.setPlaybackRate(_playbackSpeed);
           
-          // Immediately update highlighted word at position zero
-          // This needs to happen before setting _isAudioLoaded to ensure the UI updates
           setState(() {
             if (_currentLanguage == 'ar' && _arabicWords.isNotEmpty) {
               _highlightedArabicWord = _arabicWords.first;
@@ -228,46 +253,79 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
               _highlightedEnglishWord = _englishWords.first;
               _highlightedArabicWord = '';
             }
-          });
-          
-          setState(() {
+            
             _isAudioLoaded = true;
           });
           
           _updateHighlightedWord(Duration.zero);
         } else {
+          debugPrint('No audio path available');
           setState(() {
             _isAudioLoaded = false;
           });
         }
       } catch (e) {
-        // Handle error
+        // More detailed error handling
         print("Error loading audio: $e");
+        print("Failed path: $audioPath");
+        
+        // Try an alternative approach - this is a fallback attempt
+        if (audioPath != null && audioPath.isNotEmpty) {
+          try {
+            String alternativePath = audioPath;
+            // If we're dealing with Egyptian dialect, try alternative path structure
+            if (widget.story.dialect.contains('Egyptian')) {
+              String fileName = audioPath.split('/').last;
+              // Try directly with the file name
+              alternativePath = fileName;
+              print("Trying alternative path: $alternativePath");
+              await _audioPlayer.setSource(AssetSource(alternativePath));
+              await _audioPlayer.setPlaybackRate(_playbackSpeed);
+              print("Alternative path worked!");
+              setState(() { _isAudioLoaded = true; });
+              return;
+            }
+          } catch (fallbackError) {
+            print("Fallback attempt also failed: $fallbackError");
+          }
+        }
+        
         setState(() {
           _isAudioLoaded = false;
         });
       }
     } else if (_currentLanguage == 'en' && widget.story.audioEn != null && widget.story.audioEn!.isNotEmpty) {
       audioPath = widget.story.audioEn;
+      debugPrint('Using English audio: $audioPath');
       
-      // Load timestamps for English audio
-      if (audioPath != null && audioPath.isNotEmpty) {
-        _wordTimestamps = await _timestampService.loadTimestamps(audioPath);
-      }
+      // Skip timestamp loading for now
       
       try {
-        // Make sure the path doesn't start with 'assets/' to avoid duplication
-        if (audioPath != null && audioPath.startsWith('assets/')) {
-          audioPath = audioPath.substring(7); // Remove 'assets/' prefix
-        }
-        
+        // Make sure the path is properly formatted for AssetSource
         if (audioPath != null) {
-          await _audioPlayer.setSource(AssetSource(audioPath));
+          debugPrint('Original English audio path: $audioPath');
+          
+          // For paths that don't start with 'assets/', add it
+          if (!audioPath.startsWith('assets/')) {
+            audioPath = 'assets/' + audioPath;
+          }
+          
+          debugPrint('Updated English audio path: $audioPath');
+          
+          // Now process it for AssetSource which requires paths without 'assets/'
+          String assetPath = audioPath;
+          if (assetPath.startsWith('assets/')) {
+            assetPath = assetPath.substring(7); // Remove 'assets/' prefix for AssetSource
+          }
+          
+          debugPrint('Final English asset path: $assetPath');
+          await _audioPlayer.setSource(AssetSource(assetPath));
           await _audioPlayer.setPlaybackRate(_playbackSpeed);
           setState(() {
             _isAudioLoaded = true;
           });
         } else {
+          debugPrint('No English audio path available');
           setState(() {
             _isAudioLoaded = false;
           });
@@ -275,11 +333,13 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       } catch (e) {
         // Handle error
         print("Error loading English audio: $e");
+        print("Failed English path: $audioPath");
         setState(() {
           _isAudioLoaded = false;
         });
       }
     } else {
+      debugPrint('No matching language or audio files available');
       setState(() {
         _isAudioLoaded = false;
       });
@@ -308,76 +368,8 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       }
     }
     
-    // First approach: Setup the index map if we have timestamps
-    if (_wordTimestamps != null && _wordTimestamps!.words.isNotEmpty) {
-      // Initialize the index map if empty (first time)
-      if (_textHighlightingService.wordIndexMap.isEmpty) {
-        final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
-        
-        // Print debug info about timestamp collection and content words
-        print("Timestamp words: ${_wordTimestamps!.words.length}, Content words: ${currentWords.length}");
-        
-        // Create the index map with direct timestamp matching
-        final indexMap = _textHighlightingService.createWordIndexMap(_wordTimestamps, currentWords);
-        _textHighlightingService.setWordIndexMap(indexMap);
-        
-        // Verify all content words are represented in the index map
-        print("Index map created with ${indexMap.length} words");
-      }
-      
-      // Get the index of the word to highlight at current position using timestamp-based lookup
-      int wordIndex = _textHighlightingService.findHighlightedWordAtPosition(position);
-      
-      // Check if the index is valid
-      if (wordIndex >= 0) {
-        final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
-        
-        // Get the actual word at this index if it's valid
-        if (wordIndex < currentWords.length) {
-          final wordToHighlight = currentWords[wordIndex];
-          
-          // Check if the word is actually new to avoid unnecessary UI updates
-          final currentHighlighted = _currentLanguage == 'ar' ? _highlightedArabicWord : _highlightedEnglishWord;
-          
-          if (wordToHighlight != currentHighlighted) {
-            // Update the UI with the new highlighted word immediately
-            setState(() {
-              if (_currentLanguage == 'ar') {
-                _highlightedArabicWord = wordToHighlight;
-                _highlightedEnglishWord = '';
-              } else {
-                _highlightedEnglishWord = wordToHighlight;
-                _highlightedArabicWord = '';
-              }
-              _currentWordIndex = wordIndex;
-            });
-          }
-        }
-      } else if (wordIndex == -1 && _currentWordIndex > 0) {
-        // We have a -1 index but we've already started highlighting words
-        // This is likely an edge case, so maintain the current word
-        // Don't reset highlighting to avoid skipping words
-      } else if (wordIndex == -1) {
-        // Initial case: No word to highlight yet (before first word)
-        // But let's highlight the first word anyway for better UX
-        final currentWords = _currentLanguage == 'ar' ? _arabicWords : _englishWords;
-        if (currentWords.isNotEmpty) {
-          setState(() {
-            if (_currentLanguage == 'ar') {
-              _highlightedArabicWord = currentWords.first;
-              _highlightedEnglishWord = '';
-            } else {
-              _highlightedEnglishWord = currentWords.first;
-              _highlightedArabicWord = '';
-            }
-            _currentWordIndex = 0;
-          });
-        }
-      }
-    } else {
-      // Fallback to the sequential approach if we don't have timestamps
-      _updateHighlightedWordSequential(position);
-    }
+    // Since we're skipping timestamps for now, always use the sequential approach
+    _updateHighlightedWordSequential(position);
   }
   
   // Separate method for the sequential approach to keep the main method clean
@@ -497,12 +489,27 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       await _audioPlayer.stop();
       String audioPath = widget.story.audioEn!;
       
-      // Make sure the path doesn't start with 'assets/' to avoid duplication
+      debugPrint('Switching to English audio: $audioPath');
+      
+      // Prepare the audio path for AssetSource
       if (audioPath.startsWith('assets/')) {
         audioPath = audioPath.substring(7); // Remove 'assets/' prefix
       }
       
-      await _audioPlayer.setSource(AssetSource(audioPath));
+      // For paths starting with "data/" prepend "assets/"
+      if (audioPath.startsWith('data/')) {
+        audioPath = 'assets/' + audioPath;
+      }
+      
+      // Process for AssetSource
+      String assetPath = audioPath;
+      if (assetPath.startsWith('assets/')) {
+        assetPath = assetPath.substring(7);
+      }
+      
+      debugPrint('Loading audio from asset: $assetPath');
+      await _audioPlayer.setSource(AssetSource(assetPath));
+      
       setState(() {
         _currentLanguage = 'en';
         _position = Duration.zero;
@@ -513,27 +520,56 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         // Reset word index map for new language
         _textHighlightingService.setWordIndexMap([]);
       });
-    } else if (_currentLanguage == 'en' && widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
+    } else if (_currentLanguage == 'en' && widget.story.audioArMale != null && widget.story.audioArMale!.isNotEmpty) {
       await _audioPlayer.stop();
       
-      String audioPath = widget.story.audioAr!;
+      String audioPath = '';
       
-      // Make sure the path doesn't start with 'assets/' to avoid duplication
-      if (audioPath.startsWith('assets/')) {
-        audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+      // Determine which Arabic audio to use based on voice preference
+      if (_isMaleVoice && widget.story.audioArMale != null && widget.story.audioArMale!.isNotEmpty) {
+        audioPath = widget.story.audioArMale!;
+        debugPrint('Switching to Arabic male audio: $audioPath');
+      } else if (!_isMaleVoice && widget.story.audioArFemale != null && widget.story.audioArFemale!.isNotEmpty) {
+        audioPath = widget.story.audioArFemale!;
+        debugPrint('Switching to Arabic female audio: $audioPath');
+      } else if (widget.story.audioAr != null && widget.story.audioAr!.isNotEmpty) {
+        audioPath = widget.story.audioAr!;
+        debugPrint('Switching to generic Arabic audio: $audioPath');
       }
       
-      await _audioPlayer.setSource(AssetSource(audioPath));
-      setState(() {
-        _currentLanguage = 'ar';
-        _position = Duration.zero;
-        _currentPosition = 0.0;
-        _currentWordIndex = 0;
-        _resetHighlightedWords();
-        _textHighlightingService.resetCurrentIndex();
-        // Reset word index map for new language
-        _textHighlightingService.setWordIndexMap([]);
-      });
+      if (audioPath.isNotEmpty) {
+        // Prepare the audio path for AssetSource
+        if (audioPath.startsWith('assets/')) {
+          audioPath = audioPath.substring(7); // Remove 'assets/' prefix
+        }
+        
+        // For paths starting with "data/" prepend "assets/"
+        if (audioPath.startsWith('data/')) {
+          audioPath = 'assets/' + audioPath;
+        }
+        
+        // Process for AssetSource
+        String assetPath = audioPath;
+        if (assetPath.startsWith('assets/')) {
+          assetPath = assetPath.substring(7);
+        }
+        
+        debugPrint('Loading Arabic audio from asset: $assetPath');
+        await _audioPlayer.setSource(AssetSource(assetPath));
+        
+        setState(() {
+          _currentLanguage = 'ar';
+          _position = Duration.zero;
+          _currentPosition = 0.0;
+          _currentWordIndex = 0;
+          _resetHighlightedWords();
+          _textHighlightingService.resetCurrentIndex();
+          // Reset word index map for new language
+          _textHighlightingService.setWordIndexMap([]);
+        });
+      } else {
+        debugPrint('No Arabic audio available to switch to');
+      }
     }
   }
   

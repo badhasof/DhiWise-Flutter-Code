@@ -179,8 +179,13 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     // Get the dialect for the selected flag
     final newDialect = _flagToDialect[flag] ?? "msa";
     
+    print('Flag selected: $flag');
+    print('Current dialect: $_currentDialect');
+    print('New dialect: $newDialect');
+    
     // If dialect hasn't changed, do nothing
     if (newDialect == _currentDialect) {
+      print('Dialect unchanged, not reloading stories');
       return;
     }
     
@@ -190,11 +195,17 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       _currentDialect = newDialect;
     });
     
+    // Clear the cache for the new dialect to force reloading from JSON files
+    _storyService.clearCacheForDialect(newDialect);
+    
     // Update the dialect in the story service
     _storyService.setDialect(newDialect);
+    print('Set dialect in story service to: $newDialect');
     
     // Reload stories with the new dialect
     await _loadStories();
+    print('Stories reloaded for dialect: $newDialect');
+    print('Displayed stories count: ${_displayedStories.length}');
     
     // Show a snackbar to indicate the dialect change
     ScaffoldMessenger.of(context).showSnackBar(
