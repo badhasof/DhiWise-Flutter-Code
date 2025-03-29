@@ -49,6 +49,12 @@ class _ProgressPageState extends State<ProgressPage> {
   bool _isLoadingStats = true;
   List<Map<String, dynamic>> _recentCompletedStories = [];
   
+  // Level calculation variables
+  int _currentLevel = 1;
+  int _storiesForNextLevel = 3;
+  int _totalStoriesForCurrentLevel = 0;
+  int _progressToNextLevel = 0;
+  
   // Premium status
   bool _isPremium = false;
   bool _isCheckingPremium = true;
@@ -155,19 +161,60 @@ class _ProgressPageState extends State<ProgressPage> {
       final recentStories = await _userReadingService.getCompletedStories();
       final limitedRecentStories = recentStories.take(5).toList();
       
+      // Calculate the user's level and progress
+      _calculateLevelStats(totalStories);
+      
       setState(() {
         _completedStoriesCount = totalStories;
         _recentCompletedStories = limitedRecentStories;
         _isLoadingStats = false;
       });
       
-      debugPrint('✅ Loaded user stats: $_completedStoriesCount completed stories');
+      debugPrint('✅ Loaded user stats: $_completedStoriesCount completed stories, Level: $_currentLevel');
     } catch (e) {
       debugPrint('❌ Error loading user stats: $e');
       setState(() {
         _isLoadingStats = false;
       });
     }
+  }
+  
+  // Calculate level stats based on completed stories
+  void _calculateLevelStats(int completedStories) {
+    int storiesRequired = 0;
+    int level = 1;
+    int storiesForThisLevel = 3; // Level 2 requires 3 stories
+    
+    // Start at level 1, requiring 0 stories
+    while (completedStories >= storiesRequired + storiesForThisLevel) {
+      // Move to the next level
+      level++;
+      storiesRequired += storiesForThisLevel;
+      storiesForThisLevel++; // Each level requires one more story
+    }
+    
+    // Calculate totals for the progress bar
+    int storiesCompletedInCurrentLevel = completedStories - storiesRequired;
+    int totalStoriesNeededForCurrentLevel = storiesForThisLevel;
+    
+    // Update state variables
+    _currentLevel = level;
+    _storiesForNextLevel = storiesForThisLevel; 
+    _totalStoriesForCurrentLevel = storiesForThisLevel;
+    _progressToNextLevel = storiesCompletedInCurrentLevel;
+  }
+  
+  // Get total stories needed to reach a specific level
+  int _getTotalStoriesForLevel(int targetLevel) {
+    int totalStories = 0;
+    int storiesIncrement = 3; // Start with 3 stories for level 2
+    
+    for (int level = 2; level <= targetLevel; level++) {
+      totalStories += storiesIncrement;
+      storiesIncrement++; // Each level requires one more story
+    }
+    
+    return totalStories;
   }
   
   void _navigateToFeedbackIfNeeded() {
@@ -755,6 +802,15 @@ class _ProgressPageState extends State<ProgressPage> {
   }
 
   Widget _buildNextLevelCard(BuildContext context) {
+    // Calculate progress percentage for the progress bar
+    double progressPercentage = _isLoadingStats 
+        ? 0.0 
+        : _progressToNextLevel / _totalStoriesForCurrentLevel;
+    
+    // Calculate the progress bar width (max 100%)
+    double progressWidth = MediaQuery.of(context).size.width - 112.h;
+    double filledWidth = progressWidth * progressPercentage;
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -802,7 +858,7 @@ class _ProgressPageState extends State<ProgressPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Level 6",
+                            _isLoadingStats ? "Loading..." : "Level $_currentLevel",
                             style: TextStyle(
                               color: appTheme.gray900,
                               fontSize: 16.fSize,
@@ -820,7 +876,9 @@ class _ProgressPageState extends State<ProgressPage> {
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        "12/35 stories",
+                        _isLoadingStats 
+                            ? "Loading..." 
+                            : "$_progressToNextLevel/$_totalStoriesForCurrentLevel stories",
                         style: TextStyle(
                           color: appTheme.blueGray400,
                           fontSize: 14.fSize,
@@ -839,7 +897,7 @@ class _ProgressPageState extends State<ProgressPage> {
                         child: Row(
                           children: [
                             Container(
-                              width: 124.h,
+                              width: _isLoadingStats ? 0 : filledWidth,
                               height: 10.h,
                               decoration: BoxDecoration(
                                 color: Color(0xFF59CC03),
@@ -932,6 +990,15 @@ class _ProgressPageState extends State<ProgressPage> {
                 // Format the date as "Mon, Jan 1"
                 final formattedDate = '${_getDayName(completedDate.weekday)}, ${_getMonthName(completedDate.month)} ${completedDate.day}';
                 
+                // Calculate which story number this was in the user's progression
+                // This helps us display the proper level tag
+                int storyNumber = _completedStoriesCount - index;
+                if (storyNumber < 1) storyNumber = 1;
+                
+                // Calculate the level this story was completed at
+                int storyLevel = _calculateLevelForStoryNumber(storyNumber);
+                String levelDisplay = story['level'] ?? "Level $storyLevel";
+                
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -984,7 +1051,7 @@ class _ProgressPageState extends State<ProgressPage> {
                         borderRadius: BorderRadius.circular(16.h),
                       ),
                       child: Text(
-                        story['level'] ?? 'Beginner',
+                        levelDisplay,
                         style: TextStyle(
                           color: appTheme.deepOrangeA200,
                           fontSize: 10.fSize,
@@ -1000,6 +1067,24 @@ class _ProgressPageState extends State<ProgressPage> {
         ],
       ),
     );
+  }
+  
+  // Calculate the level for a specific story number
+  int _calculateLevelForStoryNumber(int storyNumber) {
+    int storiesRequired = 0;
+    int level = 1;
+    int storiesForThisLevel = 3; // Level 2 requires 3 stories
+    
+    while (storyNumber > storiesRequired) {
+      storiesRequired += storiesForThisLevel;
+      if (storyNumber <= storiesRequired) {
+        return level;
+      }
+      level++;
+      storiesForThisLevel++;
+    }
+    
+    return level;
   }
   
   // Helper method to get the day name

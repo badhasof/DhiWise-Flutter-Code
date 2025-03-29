@@ -19,6 +19,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/utils/pref_utils.dart';
+import '../../services/user_reading_service.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -52,6 +53,10 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   // Streak counter
   int _streakCount = 0;
   late PrefUtils _prefUtils;
+  
+  // User level
+  int _userLevel = 1;
+  int _completedStoriesCount = 0;
   
   // Map flags to dialects
   final Map<String, String> _flagToDialect = {
@@ -98,6 +103,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     super.initState();
     _prefUtils = PrefUtils();
     _loadStreakCount();
+    _loadUserLevel();
     _loadSavedDialect().then((_) {
       _loadStories();
     });
@@ -112,6 +118,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     super.didChangeDependencies();
     // Refresh streak count when returning to this page
     _loadStreakCount();
+    _loadUserLevel();
   }
   
   // Load streak count from preferences
@@ -120,6 +127,40 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     setState(() {
       _streakCount = _prefUtils.getStreakCount();
     });
+  }
+  
+  // Load user level based on completed stories
+  Future<void> _loadUserLevel() async {
+    try {
+      // Get total completed stories
+      final userReadingService = UserReadingService();
+      final completedStories = await userReadingService.getTotalCompletedStories();
+      
+      // Calculate level
+      setState(() {
+        _completedStoriesCount = completedStories;
+        _userLevel = _calculateUserLevel(completedStories);
+      });
+    } catch (e) {
+      print('Error loading user level: $e');
+    }
+  }
+  
+  // Calculate the user's level based on completed stories
+  int _calculateUserLevel(int completedStories) {
+    int storiesRequired = 0;
+    int level = 1;
+    int storiesForThisLevel = 3; // Level 2 requires 3 stories
+    
+    // Start at level 1, requiring 0 stories
+    while (completedStories >= storiesRequired + storiesForThisLevel) {
+      // Move to the next level
+      level++;
+      storiesRequired += storiesForThisLevel;
+      storiesForThisLevel++; // Each level requires one more story
+    }
+    
+    return level;
   }
   
   // Load user data from Firebase
@@ -291,6 +332,13 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     );
   }
 
+  // Get the level badge image path based on user level
+  String _getLevelBadgeImage() {
+    // For now use the beginner badge for all levels
+    // In a real implementation, you would have different badge images for different levels
+    return ImageConstant.imgLinguaBeginner;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -405,9 +453,37 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                     alignment: Alignment.bottomRight,
                                     children: [
                                       CustomImageView(
-                                        imagePath: ImageConstant.imgLinguaBeginner,
+                                        imagePath: _getLevelBadgeImage(),
                                         height: 34.h,
                                         width: 38.h,
+                                      ),
+                                      // Level indicator
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          height: 16.h,
+                                          width: 16.h,
+                                          decoration: BoxDecoration(
+                                            color: appTheme.deepOrangeA200,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 1.h,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "$_userLevel",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 9.fSize,
+                                                fontFamily: 'Be Vietnam Pro',
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
