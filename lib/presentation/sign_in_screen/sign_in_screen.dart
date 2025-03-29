@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../services/user_service.dart';
 import '../../core/app_export.dart';
 import '../../core/utils/validation_functions.dart';
-
-
 import '../../theme/custom_button_style.dart';
+import '../../theme/custom_text_style.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/app_bar/appbar_title.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
@@ -502,6 +502,10 @@ class SignInScreen extends StatelessWidget {
         password: password,
       );
       
+      // Initialize user data in Firestore
+      final userService = UserService();
+      await userService.initializeUserDataIfNeeded();
+      
       // Dismiss loading dialog
       Navigator.of(context, rootNavigator: true).pop();
       
@@ -580,6 +584,10 @@ class SignInScreen extends StatelessWidget {
       // Sign in to Firebase with the Google credential
       await FirebaseAuth.instance.signInWithCredential(credential);
       
+      // Initialize user data in Firestore
+      final userService = UserService();
+      await userService.initializeUserDataIfNeeded();
+      
       // Dismiss loading dialog
       Navigator.of(context, rootNavigator: true).pop();
       
@@ -643,6 +651,10 @@ class SignInScreen extends StatelessWidget {
         
         // Sign in to Firebase with the Facebook credential
         await FirebaseAuth.instance.signInWithCredential(credential);
+        
+        // Initialize user data in Firestore
+        final userService = UserService();
+        await userService.initializeUserDataIfNeeded();
         
         // Dismiss loading dialog
         Navigator.of(context, rootNavigator: true).pop();

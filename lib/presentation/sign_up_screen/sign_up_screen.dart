@@ -12,6 +12,7 @@ import '../../widgets/custom_text_form_field.dart';
 import 'bloc/sign_up_bloc.dart';
 import 'models/sign_up_model.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import '../../services/user_service.dart';
 
 // ignore_for_file: must_be_immutable
 class SignUpScreen extends StatelessWidget {
@@ -435,7 +436,7 @@ class SignUpScreen extends StatelessWidget {
         child: TextButton(
           onPressed: () {
             if (_formKey.currentState?.validate() ?? false) {
-              _signUpWithEmailPassword(context);
+              _signUpWithEmailAndPassword(context);
             }
           },
           style: TextButton.styleFrom(
@@ -638,7 +639,7 @@ class SignUpScreen extends StatelessWidget {
   }
 
   // Firebase Authentication Methods
-  void _signUpWithEmailPassword(BuildContext context) async {
+  void _signUpWithEmailAndPassword(BuildContext context) async {
     try {
       final bloc = context.read<SignUpBloc>();
       final state = bloc.state;
@@ -646,7 +647,7 @@ class SignUpScreen extends StatelessWidget {
       final password = state.passwordFieldController?.text ?? '';
       final confirmPassword = state.confirmPasswordFieldController?.text ?? '';
       
-      // Validate email and password
+      // Validate inputs
       if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
         throw Exception('Email and password cannot be empty');
       }
@@ -661,6 +662,10 @@ class SignUpScreen extends StatelessWidget {
         email: email,
         password: password,
       );
+      
+      // Initialize user data in Firestore
+      final userService = UserService();
+      await userService.initializeUserDataIfNeeded();
       
       // Navigate to create profile screen
       Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);
@@ -704,6 +709,10 @@ class SignUpScreen extends StatelessWidget {
       // Sign in to Firebase with the Google credential
       await FirebaseAuth.instance.signInWithCredential(credential);
       
+      // Initialize user data in Firestore
+      final userService = UserService();
+      await userService.initializeUserDataIfNeeded();
+      
       // Navigate to create profile screen
       Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);
       
@@ -733,6 +742,10 @@ class SignUpScreen extends StatelessWidget {
         
         // Sign in to Firebase with the Facebook credential
         await FirebaseAuth.instance.signInWithCredential(credential);
+        
+        // Initialize user data in Firestore
+        final userService = UserService();
+        await userService.initializeUserDataIfNeeded();
         
         // Navigate to create profile screen
         Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'core/app_export.dart';
 import 'services/subscription_service.dart';
@@ -12,9 +14,23 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase successfully initialized');
+    
+    // Test Firestore connection
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    print('📊 Got Firestore instance');
+    
+    // Verify if a user is logged in
+    final user = FirebaseAuth.instance.currentUser;
+    print('👤 Current user: ${user?.uid ?? 'No user logged in'}');
+    
+  } catch (e) {
+    print('❌ Error initializing Firebase: $e');
+  }
   
   // Initialize services
   await _initializeServices();
@@ -61,7 +77,24 @@ class MyApp extends StatelessWidget {
                     data: MediaQuery.of(context).copyWith(
                       textScaler: TextScaler.linear(1.0),
                     ),
-                    child: child!,
+                    child: Stack(
+                      children: [
+                        child!,
+                        // Debug button in the corner
+                        Positioned(
+                          right: 20,
+                          bottom: 80,
+                          child: FloatingActionButton(
+                            backgroundColor: Colors.red,
+                            mini: true,
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/firebase_test_screen');
+                            },
+                            child: Icon(Icons.bug_report, size: 20),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
                 navigatorKey: NavigatorService.navigatorKey,

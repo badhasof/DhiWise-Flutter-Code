@@ -28,6 +28,7 @@ import '../presentation/demo_time_screen/demo_time_screen.dart';
 import '../presentation/feedback_screen/feedback_screen.dart';
 import '../presentation/subscription_screen/subscription_screen.dart';
 import '../presentation/product_test_screen/product_test_screen.dart';
+import '../presentation/firebase_test_screen.dart';
 
 class AppRoutes {
   static const String onboardimgScreen = '/onboardimg_screen';
@@ -90,6 +91,8 @@ class AppRoutes {
   
   static const String productTestScreen = '/product_test_screen';
 
+  static const String firebaseTestScreen = '/firebase_test_screen';
+
   static Map<String, WidgetBuilder> get routes => {
         onboardimgScreen: OnboardimgScreen.builder,
         quizScreen: QuizScreen.builder,
@@ -120,6 +123,7 @@ class AppRoutes {
         demoTimeScreen: DemoTimeScreen.builder,
         feedbackScreen: FeedbackScreen.builder,
         subscriptionScreen: SubscriptionScreen.builder,
-        productTestScreen: ProductTestScreen.builder
+        productTestScreen: ProductTestScreen.builder,
+        firebaseTestScreen: FirebaseTestScreen.builder
       };
 }

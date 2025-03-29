@@ -19,24 +19,71 @@ class UserReadingService {
   // Check if user is logged in
   bool get isLoggedIn => currentUser != null;
   
+  // Debug user status
+  void debugCurrentUserState() {
+    if (!isLoggedIn) {
+      debugPrint('🚫 No user is logged in (currentUser is null)');
+      return;
+    }
+    
+    final user = currentUser!;
+    debugPrint('👤 Current User:');
+    debugPrint('  UID: ${user.uid}');
+    debugPrint('  Email: ${user.email}');
+    debugPrint('  Display Name: ${user.displayName}');
+    debugPrint('  Email Verified: ${user.emailVerified}');
+    debugPrint('  Phone Number: ${user.phoneNumber}');
+    debugPrint('  Photo URL: ${user.photoURL}');
+    debugPrint('  Provider Data: ${user.providerData.map((info) => info.providerId).join(", ")}');
+  }
+  
   // Record a completed story
   Future<void> recordCompletedStory(String storyId, {Story? storyDetails}) async {
-    if (!isLoggedIn) return;
+    debugPrint('🔍 Attempting to record story completion for ID: $storyId');
+    debugCurrentUserState();
+    
+    if (!isLoggedIn) {
+      debugPrint('🚫 Cannot record story completion: No user is logged in');
+      return;
+    }
     
     try {
       final userId = currentUser!.uid;
       final now = DateTime.now();
       
-      // Create a reference to the user's completed stories subcollection
+      debugPrint('📝 Creating reference to user document: users/$userId');
+      
+      // Create a reference to the user's document
       final userRef = _firestore.collection('users').doc(userId);
       
-      // Add the story to the user's completed stories array
+      // Check if the user document exists
+      final userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        debugPrint('❌ User document does not exist. Creating it now...');
+        
+        // Create the user document if it doesn't exist
+        await userRef.set({
+          'email': currentUser!.email,
+          'createdAt': FieldValue.serverTimestamp(),
+          'isPremium': false,
+          'stats': {
+            'totalStoriesCompleted': 0,
+            'lastCompletedAt': null,
+          }
+        });
+        
+        debugPrint('✅ Created user document');
+      }
+      
+      // Add the story to the user's stats
+      debugPrint('📊 Updating user stats for story completion');
       await userRef.update({
         'stats.totalStoriesCompleted': FieldValue.increment(1),
         'stats.lastCompletedAt': FieldValue.serverTimestamp(),
       });
       
       // Add to the completedStories subcollection for detailed history
+      debugPrint('📚 Adding entry to completedStories subcollection');
       await userRef.collection('completedStories').doc(storyId).set({
         'storyId': storyId,
         'completedAt': FieldValue.serverTimestamp(),
@@ -47,9 +94,9 @@ class UserReadingService {
         'genre': storyDetails?.genre ?? '',
       });
       
-      debugPrint('Story completion recorded successfully');
+      debugPrint('✅ Story completion recorded successfully');
     } catch (e) {
-      debugPrint('Error recording story completion: $e');
+      debugPrint('❌ Error recording story completion: $e');
     }
   }
   
@@ -127,6 +174,39 @@ class UserReadingService {
       }
     } catch (e) {
       debugPrint('Error initializing reading stats: $e');
+    }
+  }
+  
+  // Test Firestore permissions
+  Future<bool> testFirestorePermissions() async {
+    debugPrint('🔍 Testing Firestore permissions...');
+    
+    try {
+      // Try to write a test document
+      final testDocRef = _firestore.collection('permissionTest').doc('test');
+      
+      await testDocRef.set({
+        'timestamp': FieldValue.serverTimestamp(),
+        'testValue': 'This is a test',
+      });
+      
+      debugPrint('✅ Successfully wrote to Firestore');
+      
+      // Clean up by deleting the test document
+      await testDocRef.delete();
+      debugPrint('🧹 Cleaned up test document');
+      
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error testing Firestore permissions: $e');
+      
+      // Check if the error is a permission issue
+      if (e.toString().contains('permission-denied')) {
+        debugPrint('⚠️ PERMISSION DENIED: Check your Firestore security rules');
+        debugPrint('⚠️ Make sure your rules allow write access to the collections you\'re using');
+      }
+      
+      return false;
     }
   }
 } 

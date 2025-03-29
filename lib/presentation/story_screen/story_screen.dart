@@ -165,8 +165,8 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             // Reset highlighted words
             _resetHighlightedWords();
             
-            // Show completion screen
-            _showCompletionScreen();
+            // Show completion screen - handled by onPlayerComplete listener
+            // Removed _showCompletionScreen(); call from here to avoid double counting
           }
         });
       }
