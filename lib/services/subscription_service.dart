@@ -52,6 +52,10 @@ class SubscriptionService {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
   
+  // Store the last error details for better error handling
+  Map<String, dynamic>? _lastErrorDetails;
+  Map<String, dynamic>? get lastErrorDetails => _lastErrorDetails;
+  
   // Product getters
   ProductDetails? get monthlySubscription => 
       _products.firstWhere((product) => product.id == monthlyProductId, 
@@ -341,8 +345,95 @@ class SubscriptionService {
     
     // Log additional information for Apple errors
     if (Platform.isIOS) {
-      debugPrint('Apple Error Code: ${error.details?['NSUnderlyingError']?['code'] ?? 'Unknown'}');
-      debugPrint('Apple Error Domain: ${error.details?['NSUnderlyingError']?['domain'] ?? 'Unknown'}');
+      final errorCode = error.details?['NSUnderlyingError']?['code'] ?? 'Unknown';
+      final errorDomain = error.details?['NSUnderlyingError']?['domain'] ?? 'Unknown';
+      
+      debugPrint('Apple Error Code: $errorCode');
+      debugPrint('Apple Error Domain: $errorDomain');
+      
+      // Store error details for the UI to use
+      _lastErrorDetails = {
+        'code': errorCode,
+        'domain': errorDomain,
+        'message': error.message
+      };
+      
+      // Handle Apple Store Display (ASD) errors
+      if (errorDomain == 'ASDErrorDomain') {
+        switch (errorCode) {
+          case 500:
+            // Error 500 typically means the App Store account has issues or purchase is unavailable
+            debugPrint('⚠️ ASDErrorDomain 500: App Store account or purchase availability issue');
+            debugPrint('⚠️ This error often occurs when:');
+            debugPrint('⚠️ 1. The user is trying to purchase with a sandbox account in production');
+            debugPrint('⚠️ 2. There are App Store Connect configuration issues with the product');
+            debugPrint('⚠️ 3. The App Store account may have payment issues or restrictions');
+            
+            // Clean up any pending transactions that might be stuck
+            _cleanupPendingTransactions();
+            
+            // Try to recover from the error
+            handleASDError(500);
+            break;
+          default:
+            debugPrint('⚠️ Unhandled ASDErrorDomain error: $errorCode');
+        }
+      }
+      
+      // Handle SKErrorDomain errors
+      if (errorDomain == 'SKErrorDomain') {
+        switch (errorCode) {
+          case 0: // SKError.Code.unknown
+            debugPrint('⚠️ Unknown StoreKit error, could be simulator limitation');
+            break;
+          case 2: // SKError.Code.paymentCancelled
+            debugPrint('⚠️ User cancelled payment');
+            break;
+          case 4: // SKError.Code.paymentNotAllowed
+            debugPrint('⚠️ Device not allowed to make payments');
+            break;
+          // Add more specific error handling for other SKErrorDomain codes
+          default:
+            debugPrint('⚠️ Unhandled SKErrorDomain error: $errorCode');
+        }
+      }
+    } else {
+      // For non-iOS platforms, store generic error details
+      _lastErrorDetails = {
+        'code': error.code,
+        'domain': 'unknown',
+        'message': error.message
+      };
+    }
+  }
+
+  // Clean up any pending transactions
+  Future<void> _cleanupPendingTransactions() async {
+    if (Platform.isIOS) {
+      try {
+        debugPrint('🧹 Attempting to clean up pending transactions...');
+        final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
+            _inAppPurchase.getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+        
+        final SKPaymentQueueWrapper paymentQueue = SKPaymentQueueWrapper();
+        final transactions = await paymentQueue.transactions();
+        
+        if (transactions.isNotEmpty) {
+          debugPrint('🧹 Found ${transactions.length} pending transactions to clean up');
+          for (final transaction in transactions) {
+            try {
+              await paymentQueue.finishTransaction(transaction);
+              debugPrint('🧹 Successfully finished transaction: ${transaction.transactionIdentifier ?? "Unknown"}');
+            } catch (e) {
+              debugPrint('❌ Error finishing transaction: $e');
+            }
+          }
+        } else {
+          debugPrint('✅ No pending transactions found to clean up');
+        }
+      } catch (e) {
+        debugPrint('❌ Error cleaning up transactions: $e');
+      }
     }
   }
 
@@ -545,6 +636,11 @@ class SubscriptionService {
         throw Exception('Product not found: $productId. Please refresh and try again.');
       }
       
+      // Pre-check for potential issues on iOS
+      if (Platform.isIOS) {
+        await _performPrePurchaseChecksIOS(productId);
+      }
+      
       // Create purchase parameter
       final PurchaseParam purchaseParam = PurchaseParam(
         productDetails: productDetails,
@@ -599,6 +695,58 @@ class SubscriptionService {
     }
   }
 
+  // Perform pre-purchase checks on iOS to catch common issues
+  Future<void> _performPrePurchaseChecksIOS(String productId) async {
+    debugPrint('🔍 Performing pre-purchase checks for iOS...');
+    
+    // Reset any previous error details
+    _lastErrorDetails = null;
+
+    try {
+      // Check if there are any pending transactions that might cause issues
+      final SKPaymentQueueWrapper paymentQueue = SKPaymentQueueWrapper();
+      final transactions = await paymentQueue.transactions();
+      
+      if (transactions.isNotEmpty) {
+        debugPrint('⚠️ Found ${transactions.length} pending transactions before purchase');
+        debugPrint('⚠️ Completing pending transactions to avoid issues...');
+        
+        // Try to finish any pending transactions to prevent conflicts
+        for (final transaction in transactions) {
+          try {
+            await paymentQueue.finishTransaction(transaction);
+            debugPrint('✅ Successfully finished transaction: ${transaction.transactionIdentifier ?? "Unknown"}');
+          } catch (e) {
+            debugPrint('❌ Error finishing transaction: $e');
+          }
+        }
+      }
+      
+      // Verify store is available (should be fixed in initialize but double-check)
+      final bool available = await _inAppPurchase.isAvailable();
+      if (!available) {
+        debugPrint('❌ Store suddenly became unavailable');
+        throw Exception('App Store is currently unavailable. Please try again later.');
+      }
+      
+      // Verify user can make payments
+      final bool canMakePayments = await SKPaymentQueueWrapper.canMakePayments();
+      if (!canMakePayments) {
+        debugPrint('❌ User cannot make payments');
+        throw Exception('Your device is not allowed to make payments. Please check your restrictions.');
+      }
+      
+      debugPrint('✅ Pre-purchase checks passed for iOS');
+    } catch (e) {
+      debugPrint('❌ Pre-purchase checks failed: $e');
+      // If this is not an Exception we already threw, wrap it
+      if (e is! Exception) {
+        throw Exception('Purchase preparation failed: $e');
+      }
+      rethrow;
+    }
+  }
+
   // Restore purchases
   Future<void> restorePurchases() async {
     try {
@@ -641,6 +789,51 @@ class SubscriptionService {
     _subscription?.cancel();
     _purchaseStatusController.close();
     _productsLoadedController.close();
+  }
+
+  // Method to check if price consent should be shown
+  bool shouldShowPriceConsent() {
+    return true;
+  }
+
+  // Add specific handling for ASD errors
+  Future<void> handleASDError(int errorCode) async {
+    if (errorCode == 500) {
+      debugPrint('🔍 Attempting to recover from ASDErrorDomain error 500...');
+      
+      if (Platform.isIOS) {
+        try {
+          // Clean up any pending transactions
+          await _cleanupPendingTransactions();
+          
+          // Reset the StoreKit payment queue state
+          final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
+              _inAppPurchase.getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+          
+          // Refresh the available products
+          debugPrint('🔄 Refreshing products after ASDErrorDomain error...');
+          await loadProducts();
+          
+          debugPrint('✅ Recovery procedures completed for ASDErrorDomain error 500');
+          
+          // If in sandbox mode, provide additional diagnostic information
+          if (_isSandboxEnvironment) {
+            debugPrint('🧪 Sandbox environment detected, additional diagnostics:');
+            debugPrint('🧪 ASDErrorDomain 500 in sandbox often means:');
+            debugPrint('🧪 1. The sandbox tester account may need to be recreated in App Store Connect');
+            debugPrint('🧪 2. The product may not be properly configured in App Store Connect');
+            debugPrint('🧪 3. There may be a delay in product availability after configuration changes');
+          } else {
+            debugPrint('🔍 Production environment - ASDErrorDomain 500 often indicates:');
+            debugPrint('🔍 1. User may have payment restrictions or issues with their Apple ID');
+            debugPrint('🔍 2. Product might not be approved or properly configured in App Store Connect');
+            debugPrint('🔍 3. App Store services may be experiencing temporary issues');
+          }
+        } catch (e) {
+          debugPrint('❌ Error during ASDErrorDomain 500 recovery: $e');
+        }
+      }
+    }
   }
 }
 

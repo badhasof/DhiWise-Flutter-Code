@@ -240,6 +240,20 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
             } else {
               debugPrint('WARNING: Egyptian dialect story but path doesn\'t contain "egyptian"');
             }
+          } else if (widget.story.dialect.contains('Jordanian')) {
+            debugPrint('Loading Jordanian dialect audio file');
+            if (assetPath.contains('jordanian')) {
+              debugPrint('Path contains "jordanian" as expected');
+            } else {
+              debugPrint('WARNING: Jordanian dialect story but path doesn\'t contain "jordanian"');
+            }
+          } else if (widget.story.dialect.contains('Moroccan')) {
+            debugPrint('Loading Moroccan dialect audio file');
+            if (assetPath.contains('moroccan')) {
+              debugPrint('Path contains "moroccan" as expected');
+            } else {
+              debugPrint('WARNING: Moroccan dialect story but path doesn\'t contain "moroccan"');
+            }
           }
           
           await _audioPlayer.setSource(AssetSource(assetPath));
@@ -273,8 +287,17 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
         if (audioPath != null && audioPath.isNotEmpty) {
           try {
             String alternativePath = audioPath;
-            // If we're dealing with Egyptian dialect, try alternative path structure
+            // If we're dealing with a specific dialect, try alternative path structure
+            String? dialectName;
             if (widget.story.dialect.contains('Egyptian')) {
+              dialectName = 'egyptian';
+            } else if (widget.story.dialect.contains('Jordanian')) {
+              dialectName = 'jordanian';
+            } else if (widget.story.dialect.contains('Moroccan')) {
+              dialectName = 'moroccan';
+            }
+            
+            if (dialectName != null) {
               String fileName = audioPath.split('/').last;
               // Try directly with the file name
               alternativePath = fileName;

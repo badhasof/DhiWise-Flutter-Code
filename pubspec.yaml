@@ -44,6 +44,10 @@ flutter:
     - assets/data/audio/nonfiction/
     - assets/data/audio/egyptian/
     - assets/data/audio/egyptian/nonfiction/
+    - assets/data/audio/jordanian/
+    - assets/data/audio/jordanian/nonfiction/
+    - assets/data/audio/moroccan/
+    - assets/data/audio/moroccan/nonfiction/
     - assets/data/timestamps/
     - assets/svg/
     - assets/svg/play_button/

@@ -66,7 +66,36 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             _purchaseStatus = 'Purchase restored!';
             break;
           case PurchaseStatus.error:
-            _purchaseStatus = 'Error occurred during purchase.';
+            // Check if we have detailed error information from our custom error stream
+            final errorDetails = _subscriptionService.lastErrorDetails;
+            if (errorDetails != null && 
+                errorDetails.containsKey('domain') && 
+                errorDetails.containsKey('code')) {
+              
+              // Handle specific error types with better messages
+              if (errorDetails['domain'] == 'ASDErrorDomain' && errorDetails['code'] == 500) {
+                _purchaseStatus = 'Purchase could not be completed. Please check your App Store account settings and try again later.';
+              } else if (errorDetails['domain'] == 'SKErrorDomain') {
+                // Handle SKErrorDomain errors with specific messages
+                switch (errorDetails['code']) {
+                  case 0: // Unknown error
+                    _purchaseStatus = 'An unexpected error occurred. Please try again later.';
+                    break;
+                  case 2: // Payment cancelled
+                    _purchaseStatus = 'Purchase was cancelled.';
+                    break;
+                  case 4: // Payment not allowed
+                    _purchaseStatus = 'Your device is not allowed to make payments. Please check your restrictions.';
+                    break;
+                  default:
+                    _purchaseStatus = 'Error occurred during purchase. Please try again later.';
+                }
+              } else {
+                _purchaseStatus = 'Error occurred during purchase. Please try again later.';
+              }
+            } else {
+              _purchaseStatus = 'Error occurred during purchase. Please try again later.';
+            }
             break;
           case PurchaseStatus.canceled:
             _purchaseStatus = 'Purchase canceled.';
@@ -84,6 +113,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         Future.delayed(Duration(seconds: 2), () {
           Navigator.pop(context);
         });
+      } else if (status == PurchaseStatus.error) {
+        // Show error snackbar with more specific messaging
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_purchaseStatus),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
+          ),
+        );
       }
     });
   }
