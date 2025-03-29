@@ -1179,7 +1179,10 @@ class _StoryScreenState extends State<StoryScreen> with TickerProviderStateMixin
       if (mounted) {  // Add safety check
         Navigator.of(context).push(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const StoryCompletionScreen(),
+            pageBuilder: (context, animation, secondaryAnimation) => StoryCompletionScreen(
+              storyId: widget.story.id,
+              storyDetails: widget.story,
+            ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);
               const end = Offset.zero;

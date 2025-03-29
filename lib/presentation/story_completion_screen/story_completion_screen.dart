@@ -6,9 +6,18 @@ import '../../core/app_export.dart';
 import '../new_stories_completion_screen/new_stories_completion_screen.dart';
 import '../home_screen/home_screen.dart';
 import '../../widgets/countdown_timer_widget.dart';
+import '../../services/user_reading_service.dart';
+import '../../domain/story/story_model.dart';
 
 class StoryCompletionScreen extends StatefulWidget {
-  const StoryCompletionScreen({Key? key}) : super(key: key);
+  final String? storyId;
+  final Story? storyDetails;
+  
+  const StoryCompletionScreen({
+    Key? key, 
+    this.storyId,
+    this.storyDetails,
+  }) : super(key: key);
 
   @override
   State<StoryCompletionScreen> createState() => _StoryCompletionScreenState();
@@ -16,6 +25,8 @@ class StoryCompletionScreen extends StatefulWidget {
 
 class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
   late ConfettiController _confettiController;
+  final _userReadingService = UserReadingService();
+  bool _isRecordingCompletion = false;
 
   @override
   void initState() {
@@ -32,10 +43,38 @@ class _StoryCompletionScreenState extends State<StoryCompletionScreen> {
         Future.delayed(Duration(milliseconds: 100), () {
           if (mounted) {
             _confettiController.play();
+            
+            // Record story completion
+            _recordStoryCompletion();
           }
         });
       }
     });
+  }
+
+  // Record that the user completed this story
+  Future<void> _recordStoryCompletion() async {
+    if (_isRecordingCompletion || widget.storyId == null) return;
+    
+    setState(() {
+      _isRecordingCompletion = true;
+    });
+    
+    try {
+      await _userReadingService.recordCompletedStory(
+        widget.storyId!,
+        storyDetails: widget.storyDetails,
+      );
+      debugPrint('✅ Successfully recorded story completion for ID: ${widget.storyId}');
+    } catch (e) {
+      debugPrint('❌ Error recording story completion: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRecordingCompletion = false;
+        });
+      }
+    }
   }
 
   @override
