@@ -65,6 +65,9 @@ class _ProgressPageState extends State<ProgressPage> {
     _prefUtils = PrefUtils();
     _scrollController = ScrollController();
     
+    // Record today's login for streak tracking
+    _prefUtils.recordTodayLogin();
+    
     // Check premium status
     _checkPremiumStatus();
     
@@ -230,7 +233,7 @@ class _ProgressPageState extends State<ProgressPage> {
                             _buildProgressCards(context),
                             SizedBox(height: 12.h),
                             _buildNextLevelCard(context),
-                            SizedBox(height: 20.h),
+                            SizedBox(height: 12.h),
                             _buildRecentCompletedStories(context),
                           ],
                         ),
@@ -302,56 +305,6 @@ class _ProgressPageState extends State<ProgressPage> {
                   ),
                 ],
               ),
-            )
-          else
-            // Show premium badge for premium users
-            Container(
-              width: double.maxFinite,
-              margin: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
-              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: Color(0xFF59CC03), // Green for premium
-                borderRadius: BorderRadius.circular(12.h),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _isCheckingPremium ? "Checking status..." : "Premium Access",
-                    style: CustomTextStyles.titleMediumOnPrimaryContainer,
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12.h),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 16.h,
-                            ),
-                            SizedBox(width: 4.h),
-                            Text(
-                              _subscriptionType,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.fSize,
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
         ],
       ),
@@ -383,6 +336,23 @@ class _ProgressPageState extends State<ProgressPage> {
 
   /// Section Widget
   Widget _buildStreakCard(BuildContext context) {
+    // Get streak data
+    final streakCount = _prefUtils.getStreakCount();
+    final loginDays = _prefUtils.getLoginDaysOfWeek();
+    final today = DateTime.now().weekday;
+    
+    // Calculate day numbers for the current week (Monday to Sunday)
+    // First, get the date of Monday of this week
+    final now = DateTime.now();
+    final mondayDate = now.subtract(Duration(days: now.weekday - 1));
+    
+    // Create a map of day numbers for the full week
+    Map<int, String> dayNumbers = {};
+    for (int i = 1; i <= 7; i++) {
+      final date = mondayDate.add(Duration(days: i - 1));
+      dayNumbers[i] = date.day.toString();
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(16.h),
       child: Stack(
@@ -490,7 +460,7 @@ class _ProgressPageState extends State<ProgressPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "12",
+                          "$streakCount",
                           style: TextStyle(
                             color: appTheme.deepOrangeA200,
                             fontSize: 56.fSize,
@@ -529,13 +499,69 @@ class _ProgressPageState extends State<ProgressPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDayColumn("M", true),
-                    _buildDayColumn("T", true, isActive: true),
-                    _buildDayColumn("W", true),
-                    _buildDayColumn("T", true),
-                    _buildDayColumn("F", false, number: "8"),
-                    _buildDayColumn("S", false, number: "9"),
-                    _buildDayColumn("S", false, number: "10"),
+                    // Monday (weekday 1)
+                    _buildDayColumn(
+                      "M", 
+                      loginDays.contains(1), 
+                      isActive: today == 1,
+                      weekday: 1,
+                      today: today,
+                      dayNumber: dayNumbers[1]
+                    ),
+                    // Tuesday (weekday 2)
+                    _buildDayColumn(
+                      "T", 
+                      loginDays.contains(2), 
+                      isActive: today == 2,
+                      weekday: 2,
+                      today: today,
+                      dayNumber: dayNumbers[2]
+                    ),
+                    // Wednesday (weekday 3)
+                    _buildDayColumn(
+                      "W", 
+                      loginDays.contains(3), 
+                      isActive: today == 3,
+                      weekday: 3,
+                      today: today,
+                      dayNumber: dayNumbers[3]
+                    ),
+                    // Thursday (weekday 4)
+                    _buildDayColumn(
+                      "T", 
+                      loginDays.contains(4), 
+                      isActive: today == 4,
+                      weekday: 4,
+                      today: today,
+                      dayNumber: dayNumbers[4]
+                    ),
+                    // Friday (weekday 5)
+                    _buildDayColumn(
+                      "F", 
+                      loginDays.contains(5), 
+                      isActive: today == 5,
+                      weekday: 5,
+                      today: today,
+                      dayNumber: dayNumbers[5]
+                    ),
+                    // Saturday (weekday 6)
+                    _buildDayColumn(
+                      "S", 
+                      loginDays.contains(6), 
+                      isActive: today == 6,
+                      weekday: 6,
+                      today: today,
+                      dayNumber: dayNumbers[6]
+                    ),
+                    // Sunday (weekday 7)
+                    _buildDayColumn(
+                      "S", 
+                      loginDays.contains(7), 
+                      isActive: today == 7,
+                      weekday: 7,
+                      today: today,
+                      dayNumber: dayNumbers[7]
+                    ),
                   ],
                 ),
               ],
@@ -546,7 +572,21 @@ class _ProgressPageState extends State<ProgressPage> {
     );
   }
 
-  Widget _buildDayColumn(String day, bool isChecked, {bool isActive = false, String? number}) {
+  Widget _buildDayColumn(String day, bool isChecked, {
+    bool isActive = false, 
+    required int weekday,
+    required int today,
+    required String? dayNumber
+  }) {
+    final isPastDay = weekday < today;
+    final isFutureDay = weekday > today;
+    final isToday = weekday == today;
+    
+    // For past days, show day number if not logged in, checkmark if logged in
+    // For today, always show checkmark if logged in
+    // For future days, always show day number
+    final showNumber = (isPastDay && !isChecked) || isFutureDay;
+    
     return Column(
       children: [
         Text(
@@ -563,7 +603,7 @@ class _ProgressPageState extends State<ProgressPage> {
           width: 30.h,
           height: 30.h,
           decoration: BoxDecoration(
-            gradient: isChecked && number == null
+            gradient: isChecked && !showNumber
                 ? LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -573,13 +613,13 @@ class _ProgressPageState extends State<ProgressPage> {
                     ],
                   )
                 : null,
-            color: number != null 
-                ? appTheme.gray70001.withOpacity(0.1) 
+            color: showNumber 
+                ? appTheme.gray70001.withOpacity(0.1) // Same opacity for both past and future days
                 : !isChecked
                     ? appTheme.gray50
                     : null,
             borderRadius: BorderRadius.circular(88.h),
-            boxShadow: isChecked ? [
+            boxShadow: isChecked && !showNumber ? [
               BoxShadow(
                 color: Colors.black.withOpacity(0.06),
                 offset: Offset(0, 2),
@@ -588,11 +628,11 @@ class _ProgressPageState extends State<ProgressPage> {
             ] : null,
           ),
           child: Center(
-            child: number != null
+            child: showNumber && dayNumber != null
                 ? Text(
-                    number,
+                    dayNumber,
                     style: TextStyle(
-                      color: appTheme.gray70001,
+                      color: appTheme.gray70001, // Same color for both past and future days
                       fontSize: 14.fSize,
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,
@@ -624,20 +664,6 @@ class _ProgressPageState extends State<ProgressPage> {
                 iconBgColor: Color(0xFFCDEDFE),
                 title: "Stories Read",
                 value: _isLoadingStats ? "Loading..." : "$_completedStoriesCount",
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                context,
-                icon: ImageConstant.imgTrophyIcon,
-                iconBgColor: Color(0xFFE2FECD),
-                title: "Current level",
-                value: "Level 5",
               ),
             ),
           ],
@@ -728,17 +754,15 @@ class _ProgressPageState extends State<ProgressPage> {
     );
   }
 
-  /// Section Widget
   Widget _buildNextLevelCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: Offset(0, 3),
-            blurRadius: 0,
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.h),
+        border: Border.all(
+          color: appTheme.gray10001,
+          width: 1,
+        ),
       ),
       child: Container(
         padding: EdgeInsets.all(16.h),

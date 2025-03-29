@@ -113,4 +113,100 @@ class PrefUtils {
     // Set initial remaining seconds to full demo time
     await saveRemainingSeconds(demoTimeMinutes * 60);
   }
+
+  // ----- STREAK TRACKING METHODS -----
+  
+  // Get the current streak count
+  int getStreakCount() {
+    return _sharedPreferences!.getInt('streakCount') ?? 0;
+  }
+  
+  // Set the streak count
+  Future<void> setStreakCount(int count) {
+    return _sharedPreferences!.setInt('streakCount', count);
+  }
+  
+  // Get the last login date
+  DateTime? getLastLoginDate() {
+    final lastLoginMillis = _sharedPreferences!.getInt('lastLoginDate');
+    if (lastLoginMillis == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(lastLoginMillis);
+  }
+  
+  // Set the last login date
+  Future<void> setLastLoginDate(DateTime date) {
+    return _sharedPreferences!.setInt('lastLoginDate', date.millisecondsSinceEpoch);
+  }
+  
+  // Get days of the week when user logged in (this week)
+  List<int> getLoginDaysOfWeek() {
+    final List<String> daysList = _sharedPreferences!.getStringList('loginDaysOfWeek') ?? [];
+    return daysList.map((day) => int.parse(day)).toList();
+  }
+  
+  // Set days of the week when user logged in
+  Future<void> setLoginDaysOfWeek(List<int> days) {
+    final List<String> daysList = days.map((day) => day.toString()).toList();
+    return _sharedPreferences!.setStringList('loginDaysOfWeek', daysList);
+  }
+  
+  // Add today to login days and update streak
+  Future<void> recordTodayLogin() async {
+    final now = DateTime.now();
+    final today = now.weekday; // 1-7 (Monday-Sunday)
+    
+    // Get existing data
+    final lastLoginDate = getLastLoginDate();
+    final loginDays = getLoginDaysOfWeek();
+    var streakCount = getStreakCount();
+    
+    // If this is the first time logging in
+    if (lastLoginDate == null) {
+      await setStreakCount(1);
+      await setLoginDaysOfWeek([today]);
+      await setLastLoginDate(now);
+      return;
+    }
+    
+    // Check if we need to reset the week
+    final lastLoginDateTime = DateTime(lastLoginDate.year, lastLoginDate.month, lastLoginDate.day);
+    final todayDateTime = DateTime(now.year, now.month, now.day);
+    final difference = todayDateTime.difference(lastLoginDateTime).inDays;
+    
+    // Already logged in today, nothing to do
+    if (difference == 0) {
+      return;
+    }
+    
+    // If it's a new week (last login was more than 7 days ago or in a different week)
+    bool isNewWeek = difference > 7 || 
+                     lastLoginDate.weekday > today || 
+                     (lastLoginDate.year != now.year || 
+                     lastLoginDate.month != now.month ||
+                     (lastLoginDate.day - lastLoginDate.weekday) != (now.day - now.weekday));
+    
+    if (isNewWeek) {
+      // Reset login days for new week
+      loginDays.clear();
+    }
+    
+    // If logged in yesterday, increment streak
+    if (difference == 1) {
+      streakCount++;
+    } 
+    // If missed a day or more, reset streak
+    else if (difference > 1) {
+      streakCount = 1;
+    }
+    
+    // Add today to login days if not already present
+    if (!loginDays.contains(today)) {
+      loginDays.add(today);
+    }
+    
+    // Save all updates
+    await setStreakCount(streakCount);
+    await setLoginDaysOfWeek(loginDays);
+    await setLastLoginDate(now);
+  }
 }

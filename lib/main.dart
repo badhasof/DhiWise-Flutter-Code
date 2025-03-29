@@ -77,24 +77,7 @@ class MyApp extends StatelessWidget {
                     data: MediaQuery.of(context).copyWith(
                       textScaler: TextScaler.linear(1.0),
                     ),
-                    child: Stack(
-                      children: [
-                        child!,
-                        // Debug button in the corner
-                        Positioned(
-                          right: 20,
-                          bottom: 80,
-                          child: FloatingActionButton(
-                            backgroundColor: Colors.red,
-                            mini: true,
-                            onPressed: () {
-                              Navigator.of(context).pushNamed('/firebase_test_screen');
-                            },
-                            child: Icon(Icons.bug_report, size: 20),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: child!,
                   );
                 },
                 navigatorKey: NavigatorService.navigatorKey,

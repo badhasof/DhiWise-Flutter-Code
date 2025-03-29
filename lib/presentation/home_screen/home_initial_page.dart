@@ -18,6 +18,7 @@ import '../settings_screen/settings_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/utils/pref_utils.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -47,6 +48,10 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   // Shared Preferences key for dialect
   static const String _dialectPrefsKey = 'selectedDialect';
   static const String _flagPrefsKey = 'selectedFlag';
+  
+  // Streak counter
+  int _streakCount = 0;
+  late PrefUtils _prefUtils;
   
   // Map flags to dialects
   final Map<String, String> _flagToDialect = {
@@ -91,6 +96,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   @override
   void initState() {
     super.initState();
+    _prefUtils = PrefUtils();
+    _loadStreakCount();
     _loadSavedDialect().then((_) {
       _loadStories();
     });
@@ -98,6 +105,21 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     
     // Set the initial dialect in the story service
     _storyService.setDialect(_currentDialect);
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh streak count when returning to this page
+    _loadStreakCount();
+  }
+  
+  // Load streak count from preferences
+  Future<void> _loadStreakCount() async {
+    await _prefUtils.init();
+    setState(() {
+      _streakCount = _prefUtils.getStreakCount();
+    });
   }
   
   // Load user data from Firebase
@@ -415,7 +437,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                               CustomElevatedButton(
                                 height: 28.h,
                                 width: 56.h,
-                                text: "12",
+                                text: "$_streakCount",
                                 leftIcon: Container(
                                   margin: EdgeInsets.only(right: 4.h),
                                   child: CustomImageView(
@@ -428,6 +450,14 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                 buttonStyle: CustomButtonStyles.outlineBlack,
                                 buttonTextStyle:
                                     CustomTextStyles.titleSmallDeeporangeA200Bold,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProgressPage.builder(context),
+                                    ),
+                                  );
+                                },
                               ),
                               Container(
                                 margin: EdgeInsets.only(left: 8.h),
