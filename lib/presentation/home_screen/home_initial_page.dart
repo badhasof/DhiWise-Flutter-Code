@@ -16,6 +16,8 @@ import '../story_screen/story_screen.dart';
 import '../progress_page/progress_page.dart';
 import '../settings_screen/settings_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -42,12 +44,24 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   String _selectedFlag = "🇺🇸"; // Add variable to track selected flag
   String _currentDialect = "msa"; // Track the current dialect
   
+  // Shared Preferences key for dialect
+  static const String _dialectPrefsKey = 'selectedDialect';
+  static const String _flagPrefsKey = 'selectedFlag';
+  
   // Map flags to dialects
   final Map<String, String> _flagToDialect = {
     "🇺🇸": "msa",     // MSA (Modern Standard Arabic) with US flag
     "🇪🇬": "egyptian", // Egyptian dialect
     "🇯🇴": "jordanian", // Jordanian dialect
     "🇲🇦": "moroccan"  // Moroccan dialect
+  };
+  
+  // Map dialects to flags (reverse mapping)
+  late final Map<String, String> _dialectToFlag = {
+    "msa": "🇺🇸",
+    "egyptian": "🇪🇬",
+    "jordanian": "🇯🇴",
+    "moroccan": "🇲🇦"
   };
   
   // Map dialects to display names
@@ -77,7 +91,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   @override
   void initState() {
     super.initState();
-    _loadStories();
+    _loadSavedDialect().then((_) {
+      _loadStories();
+    });
     _loadUserData();
     
     // Set the initial dialect in the story service
@@ -98,6 +114,40 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       }
     } catch (e) {
       print('Error loading user data: $e');
+    }
+  }
+  
+  // Load saved dialect preference from SharedPreferences
+  Future<void> _loadSavedDialect() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedDialect = prefs.getString(_dialectPrefsKey);
+      final savedFlag = prefs.getString(_flagPrefsKey);
+      
+      if (savedDialect != null && _dialectToFlag.containsKey(savedDialect)) {
+        setState(() {
+          _currentDialect = savedDialect;
+          _selectedFlag = savedFlag ?? _dialectToFlag[savedDialect]!;
+        });
+        
+        // Set the dialect in the story service
+        _storyService.setDialect(_currentDialect);
+        print('Loaded saved dialect: $_currentDialect with flag: $_selectedFlag');
+      }
+    } catch (e) {
+      print('Error loading saved dialect: $e');
+    }
+  }
+  
+  // Save dialect preference to SharedPreferences
+  Future<void> _saveDialectPreference(String dialect, String flag) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_dialectPrefsKey, dialect);
+      await prefs.setString(_flagPrefsKey, flag);
+      print('Saved dialect preference: $dialect with flag: $flag');
+    } catch (e) {
+      print('Error saving dialect preference: $e');
     }
   }
   
@@ -194,6 +244,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       _selectedFlag = flag;
       _currentDialect = newDialect;
     });
+    
+    // Save the new dialect preference
+    await _saveDialectPreference(newDialect, flag);
     
     // Clear the cache for the new dialect to force reloading from JSON files
     _storyService.clearCacheForDialect(newDialect);
