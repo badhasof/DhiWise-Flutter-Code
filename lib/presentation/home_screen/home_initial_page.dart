@@ -57,6 +57,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   // User level
   int _userLevel = 1;
   int _completedStoriesCount = 0;
+  int _storiesNeededForNextLevel = 3;
+  int _storiesCompletedInCurrentLevel = 0;
   
   // Map flags to dialects
   final Map<String, String> _flagToDialect = {
@@ -136,18 +138,22 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       final userReadingService = UserReadingService();
       final completedStories = await userReadingService.getTotalCompletedStories();
       
-      // Calculate level
+      // Calculate level and stories needed for next level
+      final levelData = _calculateLevelAndProgress(completedStories);
+      
       setState(() {
         _completedStoriesCount = completedStories;
-        _userLevel = _calculateUserLevel(completedStories);
+        _userLevel = levelData['level'] ?? 1;
+        _storiesNeededForNextLevel = levelData['storiesForNextLevel'] ?? 3;
+        _storiesCompletedInCurrentLevel = levelData['storiesCompletedInCurrentLevel'] ?? 0;
       });
     } catch (e) {
       print('Error loading user level: $e');
     }
   }
   
-  // Calculate the user's level based on completed stories
-  int _calculateUserLevel(int completedStories) {
+  // Calculate detailed level information including progress
+  Map<String, int> _calculateLevelAndProgress(int completedStories) {
     int storiesRequired = 0;
     int level = 1;
     int storiesForThisLevel = 3; // Level 2 requires 3 stories
@@ -160,7 +166,15 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       storiesForThisLevel++; // Each level requires one more story
     }
     
-    return level;
+    // Calculate progress within current level
+    int storiesCompletedInCurrentLevel = completedStories - storiesRequired;
+    
+    return {
+      'level': level,
+      'storiesForNextLevel': storiesForThisLevel,
+      'storiesCompletedInCurrentLevel': storiesCompletedInCurrentLevel,
+      'totalStoriesRequired': storiesRequired
+    };
   }
   
   // Load user data from Firebase
@@ -792,7 +806,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                             Align(
                                               alignment: Alignment.center,
                                               child: Text(
-                                                "Complete 3 stories today".tr,
+                                                "Complete ${_storiesNeededForNextLevel - _storiesCompletedInCurrentLevel} more to Level ${_userLevel + 1}".tr,
                                                 style: CustomTextStyles
                                                     .titleMediumGray900,
                                               ),
@@ -807,7 +821,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                         ),
                                       ),
                                       Text(
-                                        "2/3 Completed".tr,
+                                        "${_storiesCompletedInCurrentLevel}/${_storiesNeededForNextLevel} Completed".tr,
                                         style:
                                             CustomTextStyles.titleSmallBluegray400,
                                       ),
@@ -825,7 +839,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                           children: [
                                             Container(
                                               height: 10.h,
-                                              width: 124.h,
+                                              width: (_storiesCompletedInCurrentLevel / _storiesNeededForNextLevel) * MediaQuery.of(context).size.width * 0.58,
                                               decoration: BoxDecoration(
                                                 color: appTheme.lightGreenA700,
                                                 borderRadius: BorderRadius.circular(
