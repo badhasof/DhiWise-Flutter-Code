@@ -60,7 +60,7 @@ class HomeSixItemWidget extends StatelessWidget {
         child: Row(
           children: [
             CustomImageView(
-              imagePath: ImageConstant.imgImage10,
+              imagePath: story?.imagePath ?? ImageConstant.imgImage10,
               height: 94.h,
               width: 94.h,
               radius: BorderRadius.circular(

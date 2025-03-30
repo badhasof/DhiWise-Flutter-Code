@@ -37,12 +37,12 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadStories();
+    _loadStories(true); // Initially load fiction stories
   }
   
-  // Load stories from the service
-  Future<void> _loadStories() async {
-    final stories = await _storyService.getStories();
+  // Load stories based on fiction or non-fiction
+  Future<void> _loadStories(bool isFiction) async {
+    final stories = await _storyService.getStoriesByCategory(isFiction);
     setState(() {
       _stories = stories;
     });
@@ -95,7 +95,7 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
                 child: Column(
                   children: [
                     SizedBox(height: 16.h),
-                    _buildTrialTimeWidget(),
+                    _buildCategoryTabs(context, state),
                     SizedBox(height: 24.h),
                     _buildStoryList(),
                   ],
@@ -108,50 +108,68 @@ class _NewStoriesScreenState extends State<NewStoriesScreen> {
     );
   }
 
-  Widget _buildTrialTimeWidget() {
+  Widget _buildCategoryTabs(BuildContext context, NewStoriesState state) {
+    final isFictionSelected = state.newStoriesModelObj?.isFictionSelected ?? true;
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 12.h),
       decoration: BoxDecoration(
-        color: appTheme.deepOrangeA200,
+        color: appTheme.gray100,
         borderRadius: BorderRadius.circular(12.h),
       ),
       child: Row(
         children: [
-          Text(
-            "Trial time",
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: _buildTabButton(
+              context,
+              "Fiction",
+              isSelected: isFictionSelected,
+              onTap: () {
+                context.read<NewStoriesBloc>().add(
+                  ToggleStoryTypeEvent(isFiction: true),
+                );
+                _loadStories(true);
+              },
             ),
           ),
-          Spacer(),
-          _buildTimeDigit("2"),
-          _buildTimeDigit("9"),
-          Text(
-            ":",
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: Colors.white,
+          Expanded(
+            child: _buildTabButton(
+              context,
+              "Non-Fiction",
+              isSelected: !isFictionSelected,
+              onTap: () {
+                context.read<NewStoriesBloc>().add(
+                  ToggleStoryTypeEvent(isFiction: false),
+                );
+                _loadStories(false);
+              },
             ),
           ),
-          _buildTimeDigit("5"),
-          _buildTimeDigit("9"),
         ],
       ),
     );
   }
 
-  Widget _buildTimeDigit(String digit) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 2.h),
-      padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(4.h),
-      ),
-      child: Text(
-        digit,
-        style: theme.textTheme.titleLarge?.copyWith(
-          color: Colors.white,
+  Widget _buildTabButton(
+    BuildContext context,
+    String title, {
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        decoration: BoxDecoration(
+          color: isSelected ? appTheme.deepOrangeA200 : Colors.transparent,
+          borderRadius: BorderRadius.circular(12.h),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: isSelected ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

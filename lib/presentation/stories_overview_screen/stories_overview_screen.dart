@@ -172,7 +172,7 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12.h),
       child: Image.asset(
-        widget.storyData.imagePath,
+        _story?.imagePath ?? widget.storyData.imagePath,
         width: double.infinity,
         height: 200.h,
         fit: BoxFit.cover,

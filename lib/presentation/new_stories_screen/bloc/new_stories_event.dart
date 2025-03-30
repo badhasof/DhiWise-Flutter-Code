@@ -13,4 +13,14 @@ class NewStoriesEvent extends Equatable {
 class NewStoriesInitialEvent extends NewStoriesEvent {
   @override
   List<Object?> get props => [];
+}
+
+/// Event that is dispatched when the user toggles between fiction and non-fiction.
+class ToggleStoryTypeEvent extends NewStoriesEvent {
+  final bool isFiction;
+
+  ToggleStoryTypeEvent({required this.isFiction});
+
+  @override
+  List<Object?> get props => [isFiction];
 } 

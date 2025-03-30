@@ -108,9 +108,14 @@ class StoryService {
       final List<Story> fictionStories = fictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       final List<Story> nonfictionStories = nonfictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       
-      _cachedStories[_currentDialect] = [...fictionStories, ...nonfictionStories];
+      final allStories = [...fictionStories, ...nonfictionStories];
+      _cachedStories[_currentDialect] = allStories;
       
       print('Total stories loaded for $_currentDialect: ${_cachedStories[_currentDialect]!.length}');
+      
+      // Validate that all story images exist
+      validateStoryImages(allStories);
+      
       return _cachedStories[_currentDialect]!;
     } catch (e) {
       print('Error loading stories for dialect $_currentDialect: $e');
@@ -125,6 +130,37 @@ class StoryService {
       return stories.firstWhere((story) => story.id == id);
     } catch (e) {
       return null;
+    }
+  }
+  
+  // Check if image assets exist for stories
+  void validateStoryImages(List<Story> stories) {
+    print('Validating image paths for ${stories.length} stories...');
+    
+    final Set<String> missingPaths = {};
+    final Set<String> foundPaths = {};
+    
+    for (var story in stories) {
+      // Print the ID and image path
+      print('Story ID: ${story.id}');
+      print('Image path: ${story.imagePath}');
+      
+      if (story.genre.toLowerCase() == 'nonfiction' || 
+          story.genre.toLowerCase() == 'non-fiction') {
+        // Check if the story ID matches any nonfiction image filenames
+        print('Checking nonfiction image: ${story.id}.png');
+      } else {
+        // Check if the story ID matches any fiction image filenames
+        print('Checking fiction image: ${story.id}.png');
+      }
+    }
+    
+    print('Validation complete. Found: ${foundPaths.length}, Missing: ${missingPaths.length}');
+    if (missingPaths.isNotEmpty) {
+      print('Missing image paths:');
+      for (var path in missingPaths) {
+        print(' - $path');
+      }
     }
   }
   

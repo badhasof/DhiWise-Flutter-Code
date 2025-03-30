@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../presentation/stories_overview_screen/stories_overview_screen.dart';
+import 'dart:io';
 
 /// Story model class representing a story from the JSON file
 class Story extends Equatable {
@@ -22,7 +23,7 @@ class Story extends Equatable {
   final String? audioArMale;
   final String? audioArFemale;
   
-  // Default image path for stories - can be customized later
+  // Image path for the story
   final String imagePath;
 
   const Story({
@@ -114,12 +115,25 @@ class Story extends Equatable {
       contentAr = json['story_content'] as String;
     }
     
+    final String id = json['id'] as String;
+    final String genre = json['genre'] as String;
+    
+    // Determine image path based on whether it's fiction or nonfiction
+    String imagePath;
+    if (genre.toLowerCase() == 'nonfiction' || genre.toLowerCase() == 'non-fiction') {
+      imagePath = 'assets/nonfiction_images/$id.png';
+      print('Using nonfiction image path: $imagePath');
+    } else {
+      imagePath = 'assets/story_images/$id.png';
+      print('Using fiction image path: $imagePath');
+    }
+    
     // Create the story object
     return Story(
-      id: json['id'] as String,
+      id: id,
       titleEn: json['title_en'] as String,
       titleAr: json['title_ar'] as String,
-      genre: json['genre'] as String,
+      genre: genre,
       subGenre: json['sub_genre'] as String? ?? '',
       level: json['level'] as String,
       dialect: dialect,
@@ -130,6 +144,7 @@ class Story extends Equatable {
       audioEn: json['audio_en'] as String?,
       audioArMale: audioArMale,
       audioArFemale: audioArFemale,
+      imagePath: imagePath,
     );
   }
 
@@ -185,5 +200,14 @@ class Story extends Equatable {
     print('audioEn: $audioEn');
     print('audioArMale: $audioArMale');
     print('audioArFemale: $audioArFemale');
+    print('imagePath: $imagePath');
+  }
+  
+  // Helper method to verify if the image path exists
+  bool imageExists() {
+    final file = File(imagePath);
+    final exists = file.existsSync();
+    print('Checking if image exists at path: $imagePath - ${exists ? 'Exists' : 'Not found'}');
+    return exists;
   }
 } 

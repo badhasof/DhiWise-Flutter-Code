@@ -10,10 +10,29 @@ part 'new_stories_state.dart';
 class NewStoriesBloc extends Bloc<NewStoriesEvent, NewStoriesState> {
   NewStoriesBloc(NewStoriesState initialState) : super(initialState) {
     on<NewStoriesInitialEvent>(_onInitialize);
+    on<ToggleStoryTypeEvent>(_onToggleStoryType);
   }
 
   _onInitialize(
     NewStoriesInitialEvent event,
     Emitter<NewStoriesState> emit,
-  ) async {}
+  ) async {
+    emit(state.copyWith(
+      newStoriesModelObj: NewStoriesModel(
+        isFictionSelected: true,
+      ),
+    ));
+  }
+
+  _onToggleStoryType(
+    ToggleStoryTypeEvent event,
+    Emitter<NewStoriesState> emit,
+  ) {
+    final currentModel = state.newStoriesModelObj;
+    emit(state.copyWith(
+      newStoriesModelObj: currentModel?.copyWith(
+        isFictionSelected: event.isFiction,
+      ),
+    ));
+  }
 } 

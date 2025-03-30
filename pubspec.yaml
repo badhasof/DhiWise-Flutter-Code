@@ -57,6 +57,8 @@ flutter:
     - assets/stories_json/egyptian/
     - assets/stories_json/jordanian/
     - assets/stories_json/moroccan/
+    - assets/story_images/
+    - assets/nonfiction_images/
     
   fonts: 
     - family: Lato
