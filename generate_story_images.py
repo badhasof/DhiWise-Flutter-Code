@@ -22,6 +22,7 @@ def generate():
     
     # Get all story titles
     stories = get_story_titles()
+    print(f"Total stories found: {len(stories)}")
     
     # Check for already generated images
     existing_images = set()
@@ -29,6 +30,21 @@ def generate():
         for file in os.listdir("assets/story_images"):
             name = os.path.splitext(file)[0]  # Get filename without extension
             existing_images.add(name)
+    print(f"Total existing images found: {len(existing_images)}")
+    print(f"Existing images: {', '.join(list(existing_images)[:10])}...")
+    
+    # Count how many stories need images
+    stories_needing_images = []
+    for story in stories:
+        story_id = story['id']
+        if story_id not in existing_images:
+            stories_needing_images.append(story)
+    
+    print(f"Stories needing images: {len(stories_needing_images)}")
+    if stories_needing_images:
+        print(f"First few stories needing images: {[s['title_en'] for s in stories_needing_images[:5]]}")
+    else:
+        print("No stories need images. All images already exist!")
     
     # Process count for rate limit management
     request_count = 0
@@ -39,7 +55,7 @@ def generate():
         
         # Skip if this image already exists
         if story_id in existing_images:
-            print(f"Skipping {title_en} - image already exists")
+            # print(f"Skipping {title_en} - image already exists")
             continue
         
         print(f"Generating image for: {title_en}")

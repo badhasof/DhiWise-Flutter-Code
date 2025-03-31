@@ -131,6 +131,7 @@ class CustomFloatingTextField extends StatelessWidget {
           maxLines: maxLines ?? 1,
           decoration: decoration,
           validator: validator,
+          initialValue: null,
         ),
       );
   InputDecoration get decoration => InputDecoration(
@@ -138,6 +139,9 @@ class CustomFloatingTextField extends StatelessWidget {
         hintStyle: hintStyle ?? CustomTextStyles.bodyMediumGray500,
         labelText: labelText ?? "",
         labelStyle: labelStyle,
+        floatingLabelBehavior: controller != null && controller!.text.isNotEmpty 
+            ? FloatingLabelBehavior.always 
+            : FloatingLabelBehavior.auto,
         prefixIcon: prefix,
         prefixIconConstraints: prefixConstraints,
         suffixIcon: suffix,

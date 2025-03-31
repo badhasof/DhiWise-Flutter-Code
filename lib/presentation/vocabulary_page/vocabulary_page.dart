@@ -6,6 +6,7 @@ import '../../widgets/custom_elevated_button.dart';
 import 'bloc/vocabulary_bloc.dart';
 import 'models/vocabulary_model.dart'; // ignore_for_file: must_be_immutable
 import '../../core/utils/pref_utils.dart';
+import '../../services/user_service.dart';
 
 class VocabularyPage extends StatefulWidget {
   const VocabularyPage({Key? key})
@@ -31,12 +32,47 @@ class _VocabularyPageState extends State<VocabularyPage> {
   Timer? _timer;
   int _remainingSeconds = 1800; // 30 minutes in seconds
   late PrefUtils _prefUtils;
+  bool _isPremium = false;
+  bool _isCheckingPremium = true;
+  late UserService _userService;
   
   @override
   void initState() {
     super.initState();
     _prefUtils = PrefUtils();
-    _initializeTimer();
+    _userService = UserService();
+    _checkPremiumStatus();
+  }
+  
+  Future<void> _checkPremiumStatus() async {
+    setState(() {
+      _isCheckingPremium = true;
+    });
+    
+    try {
+      // Check if user has premium access
+      bool isPremium = await _userService.hasPremiumAccess();
+      
+      setState(() {
+        _isPremium = isPremium;
+        _isCheckingPremium = false;
+      });
+      
+      // Only initialize timer for non-premium users
+      if (!_isPremium) {
+        _initializeTimer();
+      }
+      
+    } catch (e) {
+      print('Error checking premium status: $e');
+      setState(() {
+        _isCheckingPremium = false;
+        _isPremium = false;
+      });
+      
+      // Initialize timer on error (default to free tier behavior)
+      _initializeTimer();
+    }
   }
   
   Future<void> _initializeTimer() async {
@@ -114,30 +150,31 @@ class _VocabularyPageState extends State<VocabularyPage> {
       width: double.maxFinite,
       child: Column(
         children: [
-          Container(
-            width: double.maxFinite,
-            decoration: AppDecoration.fillGray,
-            child: Column(
-              children: [
-                CustomElevatedButton(
-                  height: 22.h,
-                  width: 122.h,
-                  text: "Trial time ${_formatTime()}".tr,
-                  leftIcon: Container(
-                    margin: EdgeInsets.only(right: 4.h),
-                    child: CustomImageView(
-                      imagePath: ImageConstant.imgClock,
-                      height: 16.h,
-                      width: 16.h,
-                      fit: BoxFit.contain,
+          if (!_isPremium && !_isCheckingPremium) // Only show timer for non-premium users
+            Container(
+              width: double.maxFinite,
+              decoration: AppDecoration.fillGray,
+              child: Column(
+                children: [
+                  CustomElevatedButton(
+                    height: 22.h,
+                    width: 122.h,
+                    text: "Trial time ${_formatTime()}".tr,
+                    leftIcon: Container(
+                      margin: EdgeInsets.only(right: 4.h),
+                      child: CustomImageView(
+                        imagePath: ImageConstant.imgClock,
+                        height: 16.h,
+                        width: 16.h,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
-                  buttonStyle: CustomButtonStyles.fillDeepOrangeA,
-                  buttonTextStyle: CustomTextStyles.labelLargeDeeporangeA200_1,
-                )
-              ],
+                    buttonStyle: CustomButtonStyles.fillDeepOrangeA,
+                    buttonTextStyle: CustomTextStyles.labelLargeDeeporangeA200_1,
+                  )
+                ],
+              ),
             ),
-          ),
           Container(
             width: double.maxFinite,
             padding: EdgeInsets.symmetric(vertical: 6.h),

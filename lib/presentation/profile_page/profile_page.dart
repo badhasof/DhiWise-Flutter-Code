@@ -10,6 +10,7 @@ import 'models/profile_model.dart'; // ignore_for_file: must_be_immutable
 import 'package:firebase_auth/firebase_auth.dart';
 import '../settings_screen/settings_screen.dart';
 import '../../services/user_service.dart';
+import '../../services/user_stats_manager.dart';
 import '../subscription_screen/subscription_screen.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -45,85 +46,115 @@ class _ProfilePageContent extends StatefulWidget {
 }
 
 class _ProfilePageContentState extends State<_ProfilePageContent> {
-  // User service instance
+  // Services
   final UserService _userService = UserService();
-  bool _isPremium = false;
-  String _subscriptionType = "";
-  bool _isCheckingSubscription = true;
+  late final UserStatsManager _statsManager;
+  
+  // UI refresh control
+  bool _isRefreshing = false;
   
   @override
   void initState() {
     super.initState();
-    _checkSubscriptionStatus();
+    _statsManager = UserStatsManager();
+    
+    // Immediately load user data into form fields
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Initial update of text fields with available user data
+      context.read<ProfileBloc>().add(UpdateUserDataEvent(
+        email: user.email,
+        displayName: user.displayName,
+      ));
+    }
+    
+    // Then refresh data if needed in the background
+    if (!_statsManager.isUserDataLoaded || _statsManager.isUserDataStale || 
+        !_statsManager.isPremiumChecked) {
+      _refreshDataIfNeeded();
+    }
   }
   
-  Future<void> _checkSubscriptionStatus() async {
+  // Refresh data if it's stale or not loaded
+  Future<void> _refreshDataIfNeeded() async {
+    // Skip refresh if data is already fresh and loaded
+    if (_statsManager.isUserDataLoaded && !_statsManager.isUserDataStale && 
+        _statsManager.isPremiumChecked) {
+      return;
+    }
+    
+    await _statsManager.fetchIfNeeded();
+    
+    // Update profile fields with user data
+    if (mounted && _statsManager.userData != null) {
+      final user = FirebaseAuth.instance.currentUser;
+      context.read<ProfileBloc>().add(UpdateUserDataEvent(
+        email: user?.email,
+        displayName: user?.displayName,
+      ));
+    }
+    
+    if (mounted) setState(() {});
+  }
+
+  // Handle manual refresh
+  Future<void> _handleRefresh() async {
+    if (_isRefreshing) return;
+    
     setState(() {
-      _isCheckingSubscription = true;
+      _isRefreshing = true;
     });
     
     try {
-      final userData = await _userService.getUserData();
-      final isPremium = await _userService.hasPremiumAccess();
-      
-      String subscriptionType = "";
-      if (userData != null && userData.containsKey('subscription')) {
-        final subscription = userData['subscription'];
-        if (subscription != null && subscription.containsKey('type')) {
-          subscriptionType = subscription['type'] == 'monthly' ? 'Monthly' : 'Lifetime';
-        }
+      await _statsManager.refreshAll();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
       }
-      
-      setState(() {
-        _isPremium = isPremium;
-        _subscriptionType = subscriptionType;
-        _isCheckingSubscription = false;
-      });
-    } catch (e) {
-      print('Error checking subscription: $e');
-      setState(() {
-        _isCheckingSubscription = false;
-      });
     }
+    
+    return;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Attempt to get user data from Firebase
-    _fetchUserData(context);
-    
     return Scaffold(
       backgroundColor: appTheme.gray50,
       body: SafeArea(
         child: SizedBox(
           width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildTrialTimeColumn(context),
-                _buildProfileTitleColumn(context),
-                SizedBox(height: 16.h),
-                _buildProfileAvatar(context),
-                SizedBox(height: 10.h),
-                _buildChangeAvatarRow(context),
-                SizedBox(height: 22.h),
-                
-                // Subscription status section
-                _buildSubscriptionStatusSection(context),
-                SizedBox(height: 22.h),
-                
-                _buildNameFieldColumn(context),
-                SizedBox(height: 14.h),
-                _buildUsernameFieldColumn(context),
-                SizedBox(height: 16.h),
-                _buildPasswordField(context),
-                SizedBox(height: 14.h),
-                _buildEmailFieldColumn(context),
-                SizedBox(height: 24.h),
-                _buildDeleteAccountButton(context),
-                SizedBox(height: 24.h), // Add extra space at the bottom to prevent overflow
-              ],
+          child: RefreshIndicator(
+            onRefresh: _handleRefresh,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTrialTimeColumn(context),
+                  _buildProfileTitleColumn(context),
+                  SizedBox(height: 16.h),
+                  _buildProfileAvatar(context),
+                  SizedBox(height: 10.h),
+                  _buildChangeAvatarRow(context),
+                  SizedBox(height: 22.h),
+                  
+                  // Subscription status section
+                  _buildSubscriptionStatusSection(context),
+                  SizedBox(height: 22.h),
+                  
+                  _buildNameFieldColumn(context),
+                  SizedBox(height: 14.h),
+                  _buildUsernameFieldColumn(context),
+                  SizedBox(height: 16.h),
+                  _buildPasswordField(context),
+                  SizedBox(height: 14.h),
+                  _buildEmailFieldColumn(context),
+                  SizedBox(height: 24.h),
+                  _buildDeleteAccountButton(context),
+                  SizedBox(height: 24.h), // Add extra space at the bottom to prevent overflow
+                ],
+              ),
             ),
           ),
         ),
@@ -191,6 +222,12 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
 
   /// Section Widget
   Widget _buildTrialTimeColumn(BuildContext context) {
+    // If premium, return a zero height container to avoid layout shifts
+    if (_statsManager.isPremium) {
+      return SizedBox.shrink();
+    }
+    
+    // Otherwise show the trial time widget
     return Container(
       width: double.maxFinite,
       decoration: AppDecoration.fillGray,
@@ -206,66 +243,66 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
       width: double.maxFinite,
       padding: EdgeInsets.symmetric(vertical: 4.h),
       decoration: AppDecoration.outlinePrimary12,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.only(left: 40.h),
-              child: Text(
-                "Profile",
-                style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
-              ),
-            ),
+          // Centered title
+          Text(
+            "Profile",
+            style: CustomTextStyles.titleMediumOnPrimaryExtraBold,
+            textAlign: TextAlign.center,
           ),
-          ),
-          BlocBuilder<ProfileBloc, ProfileState>(
-            builder: (context, state) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Edit/Save toggle button
-                  GestureDetector(
-                    onTap: () {
-                      if (state.isEditing) {
-                        // If we're in edit mode, save changes
-                        _saveUserData(context);
-                      }
-                      // Toggle edit mode
-                      context.read<ProfileBloc>().add(ToggleEditModeEvent());
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 16.h),
-                      child: Icon(
-                        state.isEditing ? Icons.check : Icons.edit,
-                        color: appTheme.deepOrangeA200,
-                        size: 24.h,
+          
+          // Right buttons container
+          Positioned(
+            right: 0,
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Edit/Save toggle button
+                    GestureDetector(
+                      onTap: () {
+                        if (state.isEditing) {
+                          // If we're in edit mode, save changes
+                          _saveUserData(context);
+                        }
+                        // Toggle edit mode
+                        context.read<ProfileBloc>().add(ToggleEditModeEvent());
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 16.h),
+                        child: Icon(
+                          state.isEditing ? Icons.check : Icons.edit,
+                          color: appTheme.deepOrangeA200,
+                          size: 24.h,
+                        ),
                       ),
                     ),
-                  ),
-                  // Settings button
-          GestureDetector(
-            onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SettingsScreen.builder(context),
+                    // Settings button
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SettingsScreen.builder(context),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 16.h),
+                        child: Icon(
+                          Icons.settings,
+                          color: appTheme.deepOrangeA200,
+                          size: 24.h,
                         ),
-                      );
-            },
-            child: Padding(
-              padding: EdgeInsets.only(right: 16.h),
-              child: Icon(
-                Icons.settings,
-                color: appTheme.deepOrangeA200,
-                size: 24.h,
-              ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-                  ),
-                ],
-              );
-            },
           ),
         ],
       ),
@@ -330,19 +367,22 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
         return BlocSelector<ProfileBloc, ProfileState, bool>(
           selector: (state) => state.isEditing,
           builder: (context, isEditing) {
+            // Check if controller has text to float the label
+            final hasText = nameFieldController != null && nameFieldController.text.isNotEmpty;
+            
             return Stack(
               children: [
                 Opacity(
                   opacity: isEditing ? 1.0 : 0.7,
                   child: CustomFloatingTextField(
-          width: double.infinity,
-          controller: nameFieldController,
-          labelText: "Name",
-          labelStyle: CustomTextStyles.titleMediumOnPrimary,
-          hintText: "Name",
-          contentPadding: EdgeInsets.all(12.h),
-          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-          filled: false,
+                    width: double.infinity,
+                    controller: nameFieldController,
+                    labelText: "Name",
+                    labelStyle: CustomTextStyles.titleMediumOnPrimary,
+                    hintText: "Name",
+                    contentPadding: EdgeInsets.all(12.h),
+                    borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+                    filled: false,
                     readOnly: !isEditing,
                   ),
                 ),
@@ -388,19 +428,22 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
         return BlocSelector<ProfileBloc, ProfileState, bool>(
           selector: (state) => state.isEditing,
           builder: (context, isEditing) {
+            // Check if controller has text to float the label
+            final hasText = usernameFieldController != null && usernameFieldController.text.isNotEmpty;
+            
             return Stack(
               children: [
                 Opacity(
                   opacity: isEditing ? 1.0 : 0.7,
                   child: CustomFloatingTextField(
-          width: double.infinity,
-          controller: usernameFieldController,
-          labelText: "Username",
-          labelStyle: CustomTextStyles.titleMediumOnPrimary,
-          hintText: "Username",
-          contentPadding: EdgeInsets.all(12.h),
-          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-          filled: false,
+                    width: double.infinity,
+                    controller: usernameFieldController,
+                    labelText: "Username",
+                    labelStyle: CustomTextStyles.titleMediumOnPrimary,
+                    hintText: "Username",
+                    contentPadding: EdgeInsets.all(12.h),
+                    borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+                    filled: false,
                     readOnly: !isEditing,
                   ),
                 ),
@@ -457,21 +500,24 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
               return BlocSelector<ProfileBloc, ProfileState, bool>(
                 selector: (state) => state.isEditing,
                 builder: (context, isEditing) {
+                  // Check if controller has text to float the label
+                  final hasText = passwordFieldController != null && passwordFieldController.text.isNotEmpty;
+                  
                   return Stack(
                     children: [
                       Opacity(
                         opacity: isEditing ? 1.0 : 0.7,
                         child: CustomFloatingTextField(
-                width: double.infinity,
-                controller: passwordFieldController,
-                labelText: "Password",
-                labelStyle: CustomTextStyles.titleMediumOnPrimary,
-                hintText: "Password",
-                textInputType: TextInputType.visiblePassword,
-                obscureText: true,
-                contentPadding: EdgeInsets.all(12.h),
-                borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-                filled: false,
+                          width: double.infinity,
+                          controller: passwordFieldController,
+                          labelText: "Password",
+                          labelStyle: CustomTextStyles.titleMediumOnPrimary,
+                          hintText: "Password",
+                          textInputType: TextInputType.visiblePassword,
+                          obscureText: true,
+                          contentPadding: EdgeInsets.all(12.h),
+                          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+                          filled: false,
                           readOnly: !isEditing,
                         ),
                       ),
@@ -503,21 +549,24 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
         return BlocSelector<ProfileBloc, ProfileState, bool>(
           selector: (state) => state.isEditing,
           builder: (context, isEditing) {
+            // Check if controller has text to float the label
+            final hasText = emailFieldController != null && emailFieldController.text.isNotEmpty;
+            
             return Stack(
               children: [
                 Opacity(
                   opacity: isEditing ? 1.0 : 0.7,
                   child: CustomFloatingTextField(
-          width: double.infinity,
-          controller: emailFieldController,
-          labelText: "Email",
-          labelStyle: CustomTextStyles.titleMediumOnPrimary,
-          hintText: "Email",
-          textInputAction: TextInputAction.done,
-          textInputType: TextInputType.emailAddress,
-          contentPadding: EdgeInsets.all(12.h),
-          borderDecoration: FloatingTextFormFieldStyleHelper.custom,
-          filled: false,
+                    width: double.infinity,
+                    controller: emailFieldController,
+                    labelText: "Email",
+                    labelStyle: CustomTextStyles.titleMediumOnPrimary,
+                    hintText: "Email",
+                    textInputAction: TextInputAction.done,
+                    textInputType: TextInputType.emailAddress,
+                    contentPadding: EdgeInsets.all(12.h),
+                    borderDecoration: FloatingTextFormFieldStyleHelper.custom,
+                    filled: false,
                     readOnly: !isEditing,
                   ),
                 ),
@@ -757,26 +806,11 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
     }
   }
 
-  void _fetchUserData(BuildContext context) {
-    // Get the Firebase auth instance
-    try {
-      final auth = FirebaseAuth.instance;
-      final user = auth.currentUser;
-      
-      if (user != null) {
-        // Update the text controllers with user data
-        context.read<ProfileBloc>().add(UpdateUserDataEvent(
-          email: user.email,
-          displayName: user.displayName,
-        ));
-      }
-    } catch (e) {
-      print('Error fetching user data: $e');
-    }
-  }
-
   /// Subscription Status Section Widget
   Widget _buildSubscriptionStatusSection(BuildContext context) {
+    // Check if data loading is in progress
+    bool isCheckingSubscription = _isRefreshing || !_statsManager.isPremiumChecked;
+    
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
       child: Column(
@@ -809,10 +843,10 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                     Row(
                       children: [
                         Icon(
-                          _isPremium 
+                          _statsManager.isPremium 
                             ? Icons.star_rounded 
                             : Icons.star_border_rounded,
-                          color: _isPremium 
+                          color: _statsManager.isPremium 
                             ? appTheme.deepOrangeA200 
                             : appTheme.gray500,
                           size: 24.h,
@@ -822,28 +856,28 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isCheckingSubscription
+                              isCheckingSubscription
                                 ? "Checking status..."
-                                : _isPremium 
+                                : _statsManager.isPremium 
                                   ? "Premium Access" 
                                   : "Basic Access",
                               style: CustomTextStyles.titleMediumOnPrimary.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: _isPremium 
+                                color: _statsManager.isPremium 
                                   ? appTheme.deepOrangeA200 
                                   : appTheme.gray800,
                               ),
                             ),
-                            if (_isPremium && _subscriptionType.isNotEmpty)
+                            if (_statsManager.isPremium && _statsManager.subscriptionType.isNotEmpty)
                               Text(
-                                _subscriptionType,
+                                _statsManager.subscriptionType,
                                 style: CustomTextStyles.bodyMediumGray600,
                               ),
                           ],
                         ),
                       ],
                     ),
-                    _isCheckingSubscription
+                    isCheckingSubscription
                         ? SizedBox(
                             width: 20.h,
                             height: 20.h,
@@ -856,15 +890,7 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                           )
                         : TextButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SubscriptionScreen.builder(context),
-                                ),
-                              ).then((_) {
-                                // Check subscription status again when returning from subscription screen
-                                _checkSubscriptionStatus();
-                              });
+                              _navigateToSubscriptionScreen(context);
                             },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.symmetric(
@@ -881,7 +907,7 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                               backgroundColor: Colors.white,
                             ),
                             child: Text(
-                              _isPremium ? "Manage" : "Upgrade",
+                              _statsManager.isPremium ? "Manage" : "Upgrade",
                               style: TextStyle(
                                 color: appTheme.deepOrangeA200,
                                 fontWeight: FontWeight.w600,
@@ -897,5 +923,38 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
         ],
       ),
     );
+  }
+
+  // Subscription Navigation with smart refresh
+  void _navigateToSubscriptionScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SubscriptionScreen.builder(context),
+      ),
+    ).then((_) {
+      // Only check subscription status again when returning from subscription screen
+      // Don't reload all data unnecessarily
+      _checkSubscriptionStatusOnly();
+    });
+  }
+  
+  // Check just the subscription status without full refresh
+  Future<void> _checkSubscriptionStatusOnly() async {
+    if (mounted) {
+      setState(() {
+        _isRefreshing = true;
+      });
+    }
+    
+    try {
+      await _statsManager.checkPremiumStatus();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
   }
 }

@@ -8,6 +8,7 @@ import 'firebase_options.dart';
 import 'core/app_export.dart';
 import 'services/subscription_service.dart';
 import 'services/user_service.dart';
+import 'services/user_stats_manager.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() async {
@@ -53,6 +54,11 @@ Future<void> _initializeServices() async {
   final userService = UserService();
   if (userService.isLoggedIn) {
     await userService.initializeUserDataIfNeeded();
+    
+    // Pre-fetch user stats and profile data
+    print('🔄 Pre-fetching user data...');
+    await UserStatsManager().initialize();
+    print('✅ User data pre-fetched successfully');
   }
 }
 

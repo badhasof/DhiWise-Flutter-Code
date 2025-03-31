@@ -9,6 +9,7 @@ import '../../core/utils/pref_utils.dart';
 import '../../services/user_reading_service.dart';
 import '../../services/user_service.dart';
 import '../../services/subscription_service.dart';
+import '../../services/user_stats_manager.dart';
 import 'bloc/progress_bloc.dart';
 import 'models/progress_model.dart'; // ignore_for_file: must_be_immutable
 
@@ -42,11 +43,13 @@ class _ProgressPageState extends State<ProgressPage> {
   late UserReadingService _userReadingService;
   late UserService _userService;
   late SubscriptionService _subscriptionService;
+  late UserStatsManager _statsManager;
   ScrollController? _scrollController;
   
   // Completed stories count
   int _completedStoriesCount = 0;
-  bool _isLoadingStats = true;
+  bool _isLoadingStats = false;
+  bool _hasLoadedStatsOnce = false;
   List<Map<String, dynamic>> _recentCompletedStories = [];
   
   // Level calculation variables
@@ -60,6 +63,9 @@ class _ProgressPageState extends State<ProgressPage> {
   bool _isCheckingPremium = true;
   String _subscriptionType = "";
   
+  // For UI refresh control
+  bool _isRefreshing = false;
+  
   @override
   void initState() {
     super.initState();
@@ -69,54 +75,46 @@ class _ProgressPageState extends State<ProgressPage> {
     _userService = UserService();
     _subscriptionService = SubscriptionService();
     _prefUtils = PrefUtils();
+    _statsManager = UserStatsManager();
     _scrollController = ScrollController();
     
     // Record today's login for streak tracking
     _prefUtils.recordTodayLogin();
     
-    // Check premium status
-    _checkPremiumStatus();
+    // Initialize timer if needed
+    if (!_statsManager.isPremiumChecked) {
+      // If premium status hasn't been checked yet, check it
+      _checkPremiumStatus();
+    } else if (!_statsManager.isPremium) {
+      // If already checked and not premium, initialize timer
+      _initializeTimer();
+    }
     
-    // Load user stats
-    _loadUserStats();
+    // Refresh stats if needed
+    _refreshStatsIfNeeded();
+    
+    // Set up real-time listeners for automatic UI updates
+    _setupRealTimeListeners();
   }
   
   Future<void> _checkPremiumStatus() async {
-    setState(() {
-      _isCheckingPremium = true;
-    });
-    
     try {
-      // Check if user has premium access
-      bool isPremium = await _userService.hasPremiumAccess();
-      
-      if (isPremium) {
-        // Get subscription type
-        var userData = await _userService.getUserData();
-        if (userData != null && userData.containsKey('subscriptionType')) {
-          setState(() {
-            _subscriptionType = userData['subscriptionType'] ?? "";
-          });
-        }
+      // Check if user has premium access (using the stats manager)
+      if (!_statsManager.isPremiumChecked) {
+        await _statsManager.checkPremiumStatus();
       }
       
-      setState(() {
-        _isPremium = isPremium;
-        _isCheckingPremium = false;
-      });
+      if (mounted) {
+        setState(() {});
+      }
       
       // Only initialize timer for non-premium users
-      if (!_isPremium) {
+      if (!_statsManager.isPremium) {
         _initializeTimer();
       }
       
-      debugPrint('Premium status: $_isPremium, Type: $_subscriptionType');
     } catch (e) {
       debugPrint('Error checking premium status: $e');
-      setState(() {
-        _isCheckingPremium = false;
-        _isPremium = false;
-      });
       
       // Initialize timer on error (default to free tier behavior)
       _initializeTimer();
@@ -150,9 +148,13 @@ class _ProgressPageState extends State<ProgressPage> {
   
   Future<void> _loadUserStats() async {
     try {
-      setState(() {
-        _isLoadingStats = true;
-      });
+      // Only set loading state if we've already loaded stats once 
+      // This prevents UI flicker on initial load
+      if (_hasLoadedStatsOnce) {
+        setState(() {
+          _isLoadingStats = true;
+        });
+      }
       
       // Get the total number of completed stories
       final totalStories = await _userReadingService.getTotalCompletedStories();
@@ -164,18 +166,24 @@ class _ProgressPageState extends State<ProgressPage> {
       // Calculate the user's level and progress
       _calculateLevelStats(totalStories);
       
-      setState(() {
-        _completedStoriesCount = totalStories;
-        _recentCompletedStories = limitedRecentStories;
-        _isLoadingStats = false;
-      });
+      // Only update UI after all data is loaded
+      if (mounted) {
+        setState(() {
+          _completedStoriesCount = totalStories;
+          _recentCompletedStories = limitedRecentStories;
+          _isLoadingStats = false;
+          _hasLoadedStatsOnce = true;
+        });
+      }
       
       debugPrint('✅ Loaded user stats: $_completedStoriesCount completed stories, Level: $_currentLevel');
     } catch (e) {
       debugPrint('❌ Error loading user stats: $e');
-      setState(() {
-        _isLoadingStats = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingStats = false;
+        });
+      }
     }
   }
   
@@ -217,9 +225,55 @@ class _ProgressPageState extends State<ProgressPage> {
     return totalStories;
   }
   
+  // Refresh stats if they're stale or not loaded yet
+  Future<void> _refreshStatsIfNeeded() async {
+    if (_statsManager.isDataStale) {
+      await _statsManager.fetchUserStats();
+      if (mounted) setState(() {});
+    }
+  }
+  
+  // Set up real-time listeners
+  void _setupRealTimeListeners() {
+    // Set up the real-time Firebase listeners
+    _statsManager.setupRealTimeListeners();
+    
+    // Register a setState callback to update the UI when data changes
+    _statsManager.addListener(() {
+      if (mounted) {
+        setState(() {
+          // UI will be updated with the latest data from the statsManager
+          debugPrint('🔄 ProgressPage: Updating UI with real-time data');
+        });
+      }
+    });
+  }
+  
+  // Handle manual refresh by user
+  Future<void> _handleRefresh() async {
+    if (_isRefreshing) return;
+    
+    setState(() {
+      _isRefreshing = true;
+    });
+    
+    try {
+      // This will trigger manual refresh, but any future changes will be caught by listeners
+      await _statsManager.refreshAll();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
+    
+    return;
+  }
+  
   void _navigateToFeedbackIfNeeded() {
     // Don't navigate to feedback page if user is premium
-    if (_isPremium) return;
+    if (_statsManager.isPremium) return;
     
     if (!_hasNavigatedToFeedback && mounted) {
       _hasNavigatedToFeedback = true;
@@ -235,17 +289,25 @@ class _ProgressPageState extends State<ProgressPage> {
   
   @override
   void dispose() {
+    // Clean up the real-time listeners
+    _statsManager.removeListener(() {
+      if (mounted) setState(() {});
+    });
     _timer?.cancel();
+    _scrollController?.dispose();
     super.dispose();
   }
   
   // Get the individual digits for the time display
   List<String> _getTimeDigits() {
-    int minutes = _remainingSeconds ~/ 60;
-    int seconds = _remainingSeconds % 60;
+    // Ensure remaining seconds is not negative
+    int seconds = _remainingSeconds > 0 ? _remainingSeconds : 0;
+    
+    int minutes = seconds ~/ 60;
+    int remainingSeconds = seconds % 60;
     
     String minutesStr = minutes.toString().padLeft(2, '0');
-    String secondsStr = seconds.toString().padLeft(2, '0');
+    String secondsStr = remainingSeconds.toString().padLeft(2, '0');
     
     return [
       minutesStr[0],
@@ -269,7 +331,7 @@ class _ProgressPageState extends State<ProgressPage> {
                   _buildTopBar(context),
                   Expanded(
                     child: RefreshIndicator(
-                      onRefresh: _loadUserStats,
+                      onRefresh: _handleRefresh,
                       child: SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 20.h),
@@ -319,7 +381,7 @@ class _ProgressPageState extends State<ProgressPage> {
           ),
           
           // Only show trial time container for non-premium users
-          if (!_isPremium)
+          if (_statsManager.isPremiumChecked && !_statsManager.isPremium)
             Container(
               width: double.maxFinite,
               margin: EdgeInsets.symmetric(horizontal: 16.h, vertical: 8.h),
@@ -620,78 +682,73 @@ class _ProgressPageState extends State<ProgressPage> {
   }
 
   Widget _buildDayColumn(String day, bool isChecked, {
-    bool isActive = false, 
+    bool isActive = false,
     required int weekday,
     required int today,
-    required String? dayNumber
+    String? dayNumber,
   }) {
-    final isPastDay = weekday < today;
-    final isFutureDay = weekday > today;
-    final isToday = weekday == today;
+    bool isPastDay = weekday < today;
+    bool isFutureDay = weekday > today;
     
-    // For past days, show day number if not logged in, checkmark if logged in
-    // For today, always show checkmark if logged in
-    // For future days, always show day number
-    final showNumber = (isPastDay && !isChecked) || isFutureDay;
+    Color dotColor = Colors.transparent;
+    Color textColor = appTheme.gray600;
+    
+    if (isActive) {
+      // Today
+      dotColor = appTheme.deepOrangeA200;
+      textColor = appTheme.deepOrangeA200;
+    } else if (isChecked) {
+      // Past day with login
+      dotColor = appTheme.deepOrangeA200;
+    } else if (isPastDay) {
+      // Past day without login
+      dotColor = Colors.white;
+    } 
     
     return Column(
       children: [
-        Text(
-          day,
-          style: TextStyle(
-            color: isActive ? appTheme.gray70001 : appTheme.gray70001.withOpacity(0.8),
-            fontSize: 14.fSize,
-            fontFamily: 'Be Vietnam Pro',
-            fontWeight: FontWeight.w500,
+        Container(
+          width: 8.h,
+          height: 8.h,
+          decoration: BoxDecoration(
+            color: dotColor,
+            shape: BoxShape.circle,
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 4.h),
         Container(
           width: 30.h,
           height: 30.h,
           decoration: BoxDecoration(
-            gradient: isChecked && !showNumber
-                ? LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      appTheme.deepOrangeA200,
-                      appTheme.deepOrangeA100,
-                    ],
-                  )
-                : null,
-            color: showNumber 
-                ? appTheme.gray70001.withOpacity(0.1) // Same opacity for both past and future days
-                : !isChecked
-                    ? appTheme.gray50
-                    : null,
-            borderRadius: BorderRadius.circular(88.h),
-            boxShadow: isChecked && !showNumber ? [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                offset: Offset(0, 2),
-                blurRadius: 16,
-              ),
-            ] : null,
+            color: isActive 
+                ? appTheme.deepOrangeA200 
+                : Colors.white.withOpacity(0.25),
+            shape: BoxShape.circle,
           ),
           child: Center(
-            child: showNumber && dayNumber != null
-                ? Text(
-                    dayNumber,
-                    style: TextStyle(
-                      color: appTheme.gray70001, // Same color for both past and future days
-                      fontSize: 14.fSize,
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )
-                : isChecked
-                    ? Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16.h,
-                      )
-                    : null,
+            child: Text(
+              day,
+              style: TextStyle(
+                color: isActive 
+                    ? Colors.white 
+                    : isPastDay
+                        ? appTheme.gray600 
+                        : appTheme.gray800,
+                fontSize: 14.fSize,
+                fontFamily: 'Be Vietnam Pro',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          dayNumber ?? "",
+          style: TextStyle(
+            color: textColor,
+            fontSize: 12.fSize,
+            fontFamily: 'Be Vietnam Pro',
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -710,7 +767,10 @@ class _ProgressPageState extends State<ProgressPage> {
                 icon: ImageConstant.imgDartIcon,
                 iconBgColor: Color(0xFFCDEDFE),
                 title: "Stories Read",
-                value: _isLoadingStats ? "Loading..." : "$_completedStoriesCount",
+                value: _statsManager.isDataLoaded 
+                    ? "${_statsManager.completedStoriesCount}" 
+                    : "—",
+                isLoading: !_statsManager.isDataLoaded,
               ),
             ),
           ],
@@ -724,6 +784,7 @@ class _ProgressPageState extends State<ProgressPage> {
     required Color iconBgColor,
     required String title,
     required String value,
+    bool isLoading = false,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -772,14 +833,18 @@ class _ProgressPageState extends State<ProgressPage> {
                     ),
                   ),
                   SizedBox(height: 2.h),
-                  _isLoadingStats && title == "Stories Read"
-                      ? SizedBox(
-                          height: 16.h,
-                          width: 16.h,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.h,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              appTheme.deepOrangeA200,
+                  isLoading
+                      ? Container(
+                          height: 20.h,
+                          width: 30.h,
+                          color: Colors.transparent,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              color: appTheme.gray800.withOpacity(0.5),
+                              fontSize: 20.fSize,
+                              fontFamily: 'Be Vietnam Pro',
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         )
@@ -803,9 +868,9 @@ class _ProgressPageState extends State<ProgressPage> {
 
   Widget _buildNextLevelCard(BuildContext context) {
     // Calculate progress percentage for the progress bar
-    double progressPercentage = _isLoadingStats 
+    double progressPercentage = !_statsManager.isDataLoaded
         ? 0.0 
-        : _progressToNextLevel / _totalStoriesForCurrentLevel;
+        : _statsManager.progressToNextLevel / _statsManager.totalStoriesForCurrentLevel;
     
     // Calculate the progress bar width (max 100%)
     double progressWidth = MediaQuery.of(context).size.width - 112.h;
@@ -858,9 +923,13 @@ class _ProgressPageState extends State<ProgressPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _isLoadingStats ? "Loading..." : "Level $_currentLevel",
+                            !_statsManager.isDataLoaded 
+                                ? "Level —" 
+                                : "Level ${_statsManager.currentLevel}",
                             style: TextStyle(
-                              color: appTheme.gray900,
+                              color: !_statsManager.isDataLoaded 
+                                  ? appTheme.gray900.withOpacity(0.5) 
+                                  : appTheme.gray900,
                               fontSize: 16.fSize,
                               fontFamily: 'Lato',
                               fontWeight: FontWeight.w700,
@@ -876,11 +945,13 @@ class _ProgressPageState extends State<ProgressPage> {
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        _isLoadingStats 
-                            ? "Loading..." 
-                            : "$_progressToNextLevel/$_totalStoriesForCurrentLevel stories",
+                        !_statsManager.isDataLoaded
+                            ? "—/— stories" 
+                            : "${_statsManager.progressToNextLevel}/${_statsManager.totalStoriesForCurrentLevel} stories",
                         style: TextStyle(
-                          color: appTheme.blueGray400,
+                          color: !_statsManager.isDataLoaded 
+                              ? appTheme.blueGray400.withOpacity(0.5) 
+                              : appTheme.blueGray400,
                           fontSize: 14.fSize,
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w500,
@@ -897,7 +968,7 @@ class _ProgressPageState extends State<ProgressPage> {
                         child: Row(
                           children: [
                             Container(
-                              width: _isLoadingStats ? 0 : filledWidth,
+                              width: !_statsManager.isDataLoaded ? 0 : filledWidth,
                               height: 10.h,
                               decoration: BoxDecoration(
                                 color: Color(0xFF59CC03),
@@ -943,18 +1014,23 @@ class _ProgressPageState extends State<ProgressPage> {
             ),
           ),
           SizedBox(height: 16.h),
-          if (_isLoadingStats)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    appTheme.deepOrangeA200,
-                  ),
-                ),
+          if (!_statsManager.isDataLoaded || _isRefreshing)
+            // Show placeholder items while loading
+            Column(
+              children: List.generate(3, (index) => 
+                Column(
+                  children: [
+                    _buildPlaceholderStoryItem(),
+                    if (index < 2) 
+                      Divider(
+                        color: appTheme.gray10001,
+                        height: 16.h,
+                      ),
+                  ],
+                )
               ),
             )
-          else if (_recentCompletedStories.isEmpty)
+          else if (_statsManager.recentCompletedStories.isEmpty)
             Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 24.h),
@@ -974,13 +1050,13 @@ class _ProgressPageState extends State<ProgressPage> {
             ListView.separated(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: _recentCompletedStories.length,
+              itemCount: _statsManager.recentCompletedStories.length,
               separatorBuilder: (context, index) => Divider(
                 color: appTheme.gray10001,
                 height: 16.h,
               ),
               itemBuilder: (context, index) {
-                final story = _recentCompletedStories[index];
+                final story = _statsManager.recentCompletedStories[index];
                 final title = story['titleEn'] ?? 'Unknown Story';
                 final completedAt = story['completedAt'] as Timestamp?;
                 final completedDate = completedAt != null 
@@ -992,11 +1068,11 @@ class _ProgressPageState extends State<ProgressPage> {
                 
                 // Calculate which story number this was in the user's progression
                 // This helps us display the proper level tag
-                int storyNumber = _completedStoriesCount - index;
+                int storyNumber = _statsManager.completedStoriesCount - index;
                 if (storyNumber < 1) storyNumber = 1;
                 
                 // Calculate the level this story was completed at
-                int storyLevel = _calculateLevelForStoryNumber(storyNumber);
+                int storyLevel = _statsManager.calculateLevelForStoryNumber(storyNumber);
                 String levelDisplay = story['level'] ?? "Level $storyLevel";
                 
                 return Row(
@@ -1069,22 +1145,68 @@ class _ProgressPageState extends State<ProgressPage> {
     );
   }
   
-  // Calculate the level for a specific story number
-  int _calculateLevelForStoryNumber(int storyNumber) {
-    int storiesRequired = 0;
-    int level = 1;
-    int storiesForThisLevel = 3; // Level 2 requires 3 stories
-    
-    while (storyNumber > storiesRequired) {
-      storiesRequired += storiesForThisLevel;
-      if (storyNumber <= storiesRequired) {
-        return level;
-      }
-      level++;
-      storiesForThisLevel++;
-    }
-    
-    return level;
+  // Helper method to build a placeholder story item while loading
+  Widget _buildPlaceholderStoryItem() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40.h,
+          height: 40.h,
+          decoration: BoxDecoration(
+            color: Color(0xFFCDEDFE).withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8.h),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.book,
+              color: appTheme.deepOrangeA200.withOpacity(0.5),
+              size: 20.h,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.h),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 150.h,
+                height: 14.h,
+                decoration: BoxDecoration(
+                  color: appTheme.gray50,
+                  borderRadius: BorderRadius.circular(4.h),
+                ),
+              ),
+              SizedBox(height: 6.h),
+              Container(
+                width: 80.h,
+                height: 10.h,
+                decoration: BoxDecoration(
+                  color: appTheme.gray50,
+                  borderRadius: BorderRadius.circular(4.h),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.h, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: appTheme.deepOrangeA200.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16.h),
+          ),
+          child: Container(
+            width: 36.h,
+            height: 10.h,
+            decoration: BoxDecoration(
+              color: appTheme.gray50,
+              borderRadius: BorderRadius.circular(4.h),
+            ),
+          ),
+        ),
+      ],
+    );
   }
   
   // Helper method to get the day name
@@ -1118,5 +1240,340 @@ class _ProgressPageState extends State<ProgressPage> {
       case 12: return 'Dec';
       default: return '';
     }
+  }
+
+  // Milestone Card Widget
+  Widget _buildMilestoneCard(BuildContext context) {
+    // Calculate stories needed for next level
+    final int storiesForNextLevel = _statsManager.storiesForNextLevel;
+    final int storiesLeft = storiesForNextLevel - _statsManager.progressToNextLevel;
+    
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.h),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.onPrimaryContainer,
+        borderRadius: BorderRadius.circular(12.h),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    color: appTheme.deepOrangeA200,
+                    size: 24.h,
+                  ),
+                  SizedBox(width: 8.h),
+                  Text(
+                    "Next Milestone",
+                    style: CustomTextStyles.titleMediumGray900,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.all(16.h),
+            decoration: BoxDecoration(
+              color: appTheme.gray50,
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Level ${_statsManager.currentLevel + 1}",
+                  style: CustomTextStyles.titleMediumGray900.copyWith(
+                    color: appTheme.deepOrangeA200,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  storiesLeft > 0 
+                    ? "Complete $storiesLeft more ${storiesLeft == 1 ? 'story' : 'stories'} to reach Level ${_statsManager.currentLevel + 1}"
+                    : "You've reached Level ${_statsManager.currentLevel + 1}!",
+                  style: CustomTextStyles.bodyMediumGray700,
+                ),
+                SizedBox(height: 12.h),
+                CustomElevatedButton(
+                  text: storiesLeft > 0 ? "Keep Reading" : "Congratulations!",
+                  margin: EdgeInsets.zero,
+                  height: 40.h,
+                  buttonStyle: CustomButtonStyles.fillDeepOrangeA,
+                  onPressed: storiesLeft > 0 ? () {
+                    Navigator.pushNamed(context, AppRoutes.homeScreen);
+                  } : null,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Format seconds into hours:minutes:seconds format
+  String _formatTime(int seconds) {
+    int hours = seconds ~/ 3600;
+    int minutes = (seconds % 3600) ~/ 60;
+    int remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}m ${remainingSeconds}s';
+    } else if (minutes > 0) {
+      return '${minutes}m ${remainingSeconds}s';
+    } else {
+      return '${remainingSeconds}s';
+    }
+  }
+
+  // Statistics Card Widget
+  Widget _buildStatisticsCard(BuildContext context) {
+    // Get streak from preferences
+    final streak = _prefUtils.getStreakCount();
+    
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.h),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.onPrimaryContainer,
+        borderRadius: BorderRadius.circular(12.h),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.insights,
+                    color: appTheme.deepOrangeA200,
+                    size: 24.h,
+                  ),
+                  SizedBox(width: 8.h),
+                  Text(
+                    "Statistics",
+                    style: CustomTextStyles.titleMediumGray900,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(16.h),
+                  decoration: BoxDecoration(
+                    color: appTheme.gray50,
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "${_statsManager.completedStoriesCount}",
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: appTheme.deepOrangeA200,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        "Stories",
+                        style: CustomTextStyles.bodyMediumGray600,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.h),
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(16.h),
+                  decoration: BoxDecoration(
+                    color: appTheme.gray50,
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "$streak",
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: appTheme.deepOrangeA200,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        "Day Streak",
+                        style: CustomTextStyles.bodyMediumGray600,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(16.h),
+                  decoration: BoxDecoration(
+                    color: appTheme.gray50,
+                    borderRadius: BorderRadius.circular(12.h),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "${_statsManager.currentLevel}",
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: appTheme.deepOrangeA200,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        "Level",
+                        style: CustomTextStyles.bodyMediumGray600,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Subscription Status Card Widget
+  Widget _buildSubscriptionStatusCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.h),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.onPrimaryContainer,
+        borderRadius: BorderRadius.circular(12.h),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    _statsManager.isPremium 
+                      ? Icons.star 
+                      : Icons.star_border,
+                    color: appTheme.deepOrangeA200,
+                    size: 24.h,
+                  ),
+                  SizedBox(width: 8.h),
+                  Text(
+                    "Subscription",
+                    style: CustomTextStyles.titleMediumGray900,
+                  ),
+                ],
+              ),
+              CustomElevatedButton(
+                height: 32.h,
+                width: 100.h,
+                text: _statsManager.isPremium ? "Manage" : "Upgrade",
+                margin: EdgeInsets.zero,
+                buttonStyle: CustomButtonStyles.fillDeepOrangeA,
+                buttonTextStyle: CustomTextStyles.titleMediumOnPrimary,
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.all(16.h),
+            decoration: BoxDecoration(
+              color: appTheme.gray50,
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _statsManager.isPremium 
+                    ? Icons.check_circle 
+                    : Icons.access_time,
+                  color: _statsManager.isPremium 
+                    ? Colors.green 
+                    : appTheme.deepOrangeA200,
+                  size: 24.h,
+                ),
+                SizedBox(width: 12.h),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _statsManager.isPremium 
+                          ? "Premium Access" 
+                          : "Free Trial",
+                        style: CustomTextStyles.titleMediumGray900.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        _statsManager.isPremium 
+                          ? _statsManager.subscriptionType.isNotEmpty
+                            ? "${_statsManager.subscriptionType} Plan" 
+                            : "Premium Plan"
+                          : _remainingSeconds > 0 
+                            ? "${_formatTime(_remainingSeconds)} remaining" 
+                            : "Trial expired",
+                        style: CustomTextStyles.bodyMediumGray600,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 
