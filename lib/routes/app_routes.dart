@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../presentation/app_navigation_screen/app_navigation_screen.dart';
 import '../presentation/create_profile_screen/create_profile_screen.dart';
 import '../presentation/create_profile_one_screen/create_profile_one_screen.dart';
 import '../presentation/create_profile_two_screen/create_profile_two_screen.dart';
@@ -53,8 +52,6 @@ class AppRoutes {
 
   static const String signUpScreen = '/sign_up_screen';
 
-  static const String appNavigationScreen = '/app_navigation_screen';
-
   static const String initialRoute = '/initialRoute';
   
   static const String homeInitialPage = '/home_initial_page';
@@ -105,7 +102,6 @@ class AppRoutes {
         createProfileTwoScreen: CreateProfileTwoScreen.builder,
         signInScreen: SignInScreen.builder,
         signUpScreen: SignUpScreen.builder,
-        appNavigationScreen: AppNavigationScreen.builder,
         initialRoute: OnboardimgScreen.builder,
         homeInitialPage: HomeInitialPage.builder,
         vocabularyPage: VocabularyPage.builder,
