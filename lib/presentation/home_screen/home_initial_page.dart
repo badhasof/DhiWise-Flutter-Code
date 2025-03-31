@@ -241,13 +241,6 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       );
     }
     
-    // Debug print to verify the stories are filtered correctly
-    print('Fiction selected: $_isFictionSelected');
-    print('Sub-genre selected: $_selectedSubGenre');
-    print('Number of stories: ${filteredStories.length}');
-    print('Available sub-genres: $_availableSubGenres');
-    print('Current dialect: $_currentDialect');
-    
     setState(() {
       _availableSubGenres = subGenres;
       _displayedStories = filteredStories;

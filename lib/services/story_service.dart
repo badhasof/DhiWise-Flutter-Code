@@ -129,17 +129,12 @@ class StoryService {
     final Set<String> foundPaths = {};
     
     for (var story in stories) {
-      // Print the ID and image path
-      print('Story ID: ${story.id}');
-      print('Image path: ${story.imagePath}');
-      
+      // Process story image paths without printing
       if (story.genre.toLowerCase() == 'nonfiction' || 
           story.genre.toLowerCase() == 'non-fiction') {
-        // Check if the story ID matches any nonfiction image filenames
-        print('Checking nonfiction image: ${story.id}.png');
+        // Check nonfiction image
       } else {
-        // Check if the story ID matches any fiction image filenames
-        print('Checking fiction image: ${story.id}.png');
+        // Check fiction image
       }
     }
     
