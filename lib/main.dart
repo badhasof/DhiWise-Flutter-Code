@@ -15,23 +15,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    print('✅ Firebase successfully initialized');
-    
-    // Test Firestore connection
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    print('📊 Got Firestore instance');
-    
-    // Verify if a user is logged in
-    final user = FirebaseAuth.instance.currentUser;
-    print('👤 Current user: ${user?.uid ?? 'No user logged in'}');
-    
-  } catch (e) {
-    print('❌ Error initializing Firebase: $e');
-  }
+  await _initializeFirebase();
   
   // Initialize services
   await _initializeServices();
@@ -51,14 +35,32 @@ Future<void> _initializeServices() async {
   await subscriptionService.initialize();
   
   // Initialize user service and check for existing user data
-  final userService = UserService();
-  if (userService.isLoggedIn) {
-    await userService.initializeUserDataIfNeeded();
+  await _initUserData();
+  
+  // Pre-fetch user stats and profile data
+  await UserStatsManager().initialize();
+}
+
+Future<void> _initializeFirebase() async {
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
     
-    // Pre-fetch user stats and profile data
-    print('🔄 Pre-fetching user data...');
-    await UserStatsManager().initialize();
-    print('✅ User data pre-fetched successfully');
+    final user = FirebaseAuth.instance.currentUser;
+    
+  } catch (e) {
+    // Silently handle Firebase initialization error
+  }
+}
+
+Future<void> _initUserData() async {
+  try {
+    final userService = UserService();
+    if (userService.isLoggedIn) {
+      await userService.initializeUserDataIfNeeded();
+    }
+  } catch (e) {
+    // Silently handle user data initialization error
   }
 }
 

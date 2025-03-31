@@ -148,33 +148,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
         _storiesCompletedInCurrentLevel = levelData['storiesCompletedInCurrentLevel'] ?? 0;
       });
     } catch (e) {
-      print('Error loading user level: $e');
+      // Error silently handled
     }
-  }
-  
-  // Calculate detailed level information including progress
-  Map<String, int> _calculateLevelAndProgress(int completedStories) {
-    int storiesRequired = 0;
-    int level = 1;
-    int storiesForThisLevel = 3; // Level 2 requires 3 stories
-    
-    // Start at level 1, requiring 0 stories
-    while (completedStories >= storiesRequired + storiesForThisLevel) {
-      // Move to the next level
-      level++;
-      storiesRequired += storiesForThisLevel;
-      storiesForThisLevel++; // Each level requires one more story
-    }
-    
-    // Calculate progress within current level
-    int storiesCompletedInCurrentLevel = completedStories - storiesRequired;
-    
-    return {
-      'level': level,
-      'storiesForNextLevel': storiesForThisLevel,
-      'storiesCompletedInCurrentLevel': storiesCompletedInCurrentLevel,
-      'totalStoriesRequired': storiesRequired
-    };
   }
   
   // Load user data from Firebase
@@ -190,7 +165,7 @@ class HomeInitialPageState extends State<HomeInitialPage> {
         });
       }
     } catch (e) {
-      print('Error loading user data: $e');
+      // Error silently handled
     }
   }
   
@@ -209,10 +184,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
         
         // Set the dialect in the story service
         _storyService.setDialect(_currentDialect);
-        print('Loaded saved dialect: $_currentDialect with flag: $_selectedFlag');
       }
     } catch (e) {
-      print('Error loading saved dialect: $e');
+      // Error silently handled
     }
   }
   
@@ -222,9 +196,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_dialectPrefsKey, dialect);
       await prefs.setString(_flagPrefsKey, flag);
-      print('Saved dialect preference: $dialect with flag: $flag');
     } catch (e) {
-      print('Error saving dialect preference: $e');
+      // Error silently handled
     }
   }
   
@@ -306,13 +279,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     // Get the dialect for the selected flag
     final newDialect = _flagToDialect[flag] ?? "msa";
     
-    print('Flag selected: $flag');
-    print('Current dialect: $_currentDialect');
-    print('New dialect: $newDialect');
-    
     // If dialect hasn't changed, do nothing
     if (newDialect == _currentDialect) {
-      print('Dialect unchanged, not reloading stories');
       return;
     }
     
@@ -330,12 +298,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     
     // Update the dialect in the story service
     _storyService.setDialect(newDialect);
-    print('Set dialect in story service to: $newDialect');
     
     // Reload stories with the new dialect
     await _loadStories();
-    print('Stories reloaded for dialect: $newDialect');
-    print('Displayed stories count: ${_displayedStories.length}');
     
     // Show a snackbar to indicate the dialect change
     ScaffoldMessenger.of(context).showSnackBar(
@@ -869,7 +834,6 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                   onTap: () {
                                     setState(() {
                                       _isFictionSelected = true;
-                                      print("Fiction selected: $_isFictionSelected");
                                     });
                                     _updateDisplayedStories();
                                   },
@@ -921,7 +885,6 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                   onTap: () {
                                     setState(() {
                                       _isFictionSelected = false;
-                                      print("Non-Fiction selected: ${!_isFictionSelected}");
                                     });
                                     _updateDisplayedStories();
                                   },
@@ -1145,5 +1108,39 @@ class HomeInitialPageState extends State<HomeInitialPage> {
         ],
       ),
     );
+  }
+
+  // Calculate detailed level information including progress
+  Map<String, int> _calculateLevelAndProgress(int completedStories) {
+    int storiesRequired = 0;
+    int level = 1;
+    int storiesForThisLevel = 3; // Level 2 requires 3 stories
+    
+    // Start at level 1, requiring 0 stories
+    while (completedStories >= storiesRequired + storiesForThisLevel) {
+      // Move to the next level
+      level++;
+      storiesRequired += storiesForThisLevel;
+      storiesForThisLevel++; // Each level requires one more story
+    }
+    
+    // Calculate progress within current level
+    int storiesCompletedInCurrentLevel = completedStories - storiesRequired;
+    
+    return {
+      'level': level,
+      'storiesForNextLevel': storiesForThisLevel,
+      'storiesCompletedInCurrentLevel': storiesCompletedInCurrentLevel,
+      'totalStoriesRequired': storiesRequired
+    };
+  }
+
+  void _handleFictionNonFictionToggle(bool isFiction) {
+    setState(() {
+      _isFictionSelected = isFiction;
+      _selectedSubGenre = "All Stories";
+    });
+    
+    _updateDisplayedStories();
   }
 }

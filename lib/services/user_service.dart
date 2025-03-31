@@ -29,7 +29,6 @@ class UserService {
     try {
       return await _subscriptionService.checkSubscriptionStatus();
     } catch (e) {
-      debugPrint('Error checking premium access: $e');
       return false;
     }
   }
@@ -44,7 +43,6 @@ class UserService {
       
       return doc.data();
     } catch (e) {
-      debugPrint('Error getting user data: $e');
       return null;
     }
   }
@@ -59,25 +57,22 @@ class UserService {
         SetOptions(merge: true),
       );
     } catch (e) {
-      debugPrint('Error updating user data: $e');
+      // Error silently handled
     }
   }
   
   // Initialize user data in Firestore if it doesn't exist
   Future<void> initializeUserDataIfNeeded() async {
     if (!isLoggedIn) {
-      debugPrint('⚠️ Cannot initialize user data: No user is logged in');
       return;
     }
     
     try {
       final userId = currentUser!.uid;
-      debugPrint('🔍 Checking if user data exists for UID: $userId');
       
       final doc = await _firestore.collection('users').doc(userId).get();
       
       if (!doc.exists) {
-        debugPrint('📝 Creating new user document in Firestore');
         // Initialize basic user data
         await _firestore.collection('users').doc(userId).set({
           'email': currentUser!.email,
@@ -90,26 +85,20 @@ class UserService {
             'lastCompletedAt': null,
           }
         });
-        debugPrint('✅ User document created successfully');
       } else {
-        debugPrint('🔍 User document already exists, checking for stats field');
         // Check if stats field exists and initialize if needed
         final data = doc.data();
         if (data != null && !data.containsKey('stats')) {
-          debugPrint('📊 Adding stats field to existing user document');
           await _firestore.collection('users').doc(userId).update({
             'stats': {
               'totalStoriesCompleted': 0,
               'lastCompletedAt': null,
             }
           });
-          debugPrint('✅ Added stats field to user document');
-        } else {
-          debugPrint('✅ User document already has stats field');
         }
       }
     } catch (e) {
-      debugPrint('❌ Error initializing user data: $e');
+      // Error silently handled
     }
   }
   
@@ -118,7 +107,7 @@ class UserService {
     try {
       await _auth.signOut();
     } catch (e) {
-      debugPrint('Error signing out: $e');
+      // Error silently handled
     }
   }
 } 

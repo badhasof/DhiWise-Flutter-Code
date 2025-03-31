@@ -141,7 +141,6 @@ class QuizOneScreen extends StatelessWidget {
                    current.quizOneModelObj?.optionslistItemList;
           },
           builder: (context, state) {
-            print("Building options list"); // Debug print
             return ListView.separated(
               physics: BouncingScrollPhysics(),
               shrinkWrap: true,
@@ -156,7 +155,6 @@ class QuizOneScreen extends StatelessWidget {
                 return OptionslistItemWidget(
                   model,
                   onTapOption: (option) {
-                    print("Option tapped: ${option.id}"); // Debug print
                     context.read<QuizOneBloc>().add(SelectOptionEvent(option));
                   },
                 );

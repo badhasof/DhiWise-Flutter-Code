@@ -57,54 +57,43 @@ class Story extends Equatable {
     // Determine dialect code from dialect name
     if (dialect.contains('Egyptian')) {
       dialectCode = 'egyptian';
-      print('Detected Egyptian dialect story: ${json['id']}');
     } else if (dialect.contains('Jordanian')) {
       dialectCode = 'jordanian';
-      print('Detected Jordanian dialect story: ${json['id']}');
     } else if (dialect.contains('Moroccan')) {
       dialectCode = 'moroccan';
-      print('Detected Moroccan dialect story: ${json['id']}');
     }
     
     // Check for fiction-style audio paths (using snake_case)
     if (json['audio_ar_male'] != null) {
       audioArMale = json['audio_ar_male'] as String?;
-      print('Using audio_ar_male: $audioArMale');
     } 
     // Check for nonfiction-style audio paths (using camelCase)
     else if (json['audioArMale'] != null) {
       audioArMale = json['audioArMale'] as String?;
-      print('Using audioArMale: $audioArMale');
     }
     // Check for dialect-specific audio paths
     else if (json['audio_${dialectCode}_male'] != null) {
       audioArMale = json['audio_${dialectCode}_male'] as String?;
-      print('Using audio_${dialectCode}_male: $audioArMale');
     }
     // Check for dialect-specific nonfiction audio paths
     else if (json['audio_${dialectCode}_nonfiction_male'] != null) {
       audioArMale = json['audio_${dialectCode}_nonfiction_male'] as String?;
-      print('Using audio_${dialectCode}_nonfiction_male: $audioArMale');
     }
     
     // Same for female audio
     if (json['audio_ar_female'] != null) {
       audioArFemale = json['audio_ar_female'] as String?;
-      print('Using audio_ar_female: $audioArFemale');
     } 
     else if (json['audioArFemale'] != null) {
       audioArFemale = json['audioArFemale'] as String?;
-      print('Using audioArFemale: $audioArFemale');
     }
     // Check for dialect-specific audio paths
     else if (json['audio_${dialectCode}_female'] != null) {
       audioArFemale = json['audio_${dialectCode}_female'] as String?;
-      print('Using audio_${dialectCode}_female: $audioArFemale');
     }
     // Check for dialect-specific nonfiction audio paths
     else if (json['audio_${dialectCode}_nonfiction_female'] != null) {
       audioArFemale = json['audio_${dialectCode}_nonfiction_female'] as String?;
-      print('Using audio_${dialectCode}_nonfiction_female: $audioArFemale');
     }
     
     // Handle story content field variations
@@ -122,10 +111,8 @@ class Story extends Equatable {
     String imagePath;
     if (genre.toLowerCase() == 'nonfiction' || genre.toLowerCase() == 'non-fiction') {
       imagePath = 'assets/nonfiction_images/$id.png';
-      print('Using nonfiction image path: $imagePath');
     } else {
       imagePath = 'assets/story_images/$id.png';
-      print('Using fiction image path: $imagePath');
     }
     
     // Create the story object
@@ -195,19 +182,13 @@ class Story extends Equatable {
       
   // Debug method to print audio paths
   void printAudioPaths() {
-    print('Story ID: $id, Dialect: $dialect');
-    print('audioAr: $audioAr');
-    print('audioEn: $audioEn');
-    print('audioArMale: $audioArMale');
-    print('audioArFemale: $audioArFemale');
-    print('imagePath: $imagePath');
+    // Method kept but implementation removed
   }
   
   // Helper method to verify if the image path exists
   bool imageExists() {
     final file = File(imagePath);
     final exists = file.existsSync();
-    print('Checking if image exists at path: $imagePath - ${exists ? 'Exists' : 'Not found'}');
     return exists;
   }
 } 

@@ -79,16 +79,12 @@ class StoryService {
   Future<List<Story>> getStories() async {
     // Return cached stories if available for current dialect
     if (_cachedStories.containsKey(_currentDialect)) {
-      print('Using cached stories for dialect: $_currentDialect');
       return _cachedStories[_currentDialect]!;
     }
     
     try {
       // Get file paths for current dialect
       final paths = _getFilePathsForDialect(_currentDialect);
-      print('Loading stories for dialect: $_currentDialect');
-      print('Fiction path: ${paths['fiction']}');
-      print('Non-fiction path: ${paths['nonfiction']}');
       
       // Load both JSON files
       final String fictionJsonString = await rootBundle.loadString(paths['fiction']!);
@@ -101,9 +97,6 @@ class StoryService {
       final List<dynamic> fictionStoriesJson = fictionJsonData['stories'];
       final List<dynamic> nonfictionStoriesJson = nonfictionJsonData['stories'];
       
-      print('Fiction stories count: ${fictionStoriesJson.length}');
-      print('Non-fiction stories count: ${nonfictionStoriesJson.length}');
-      
       // Combine the stories from both sources
       final List<Story> fictionStories = fictionStoriesJson.map((json) => Story.fromJson(json)).toList();
       final List<Story> nonfictionStories = nonfictionStoriesJson.map((json) => Story.fromJson(json)).toList();
@@ -111,14 +104,11 @@ class StoryService {
       final allStories = [...fictionStories, ...nonfictionStories];
       _cachedStories[_currentDialect] = allStories;
       
-      print('Total stories loaded for $_currentDialect: ${_cachedStories[_currentDialect]!.length}');
-      
       // Validate that all story images exist
       validateStoryImages(allStories);
       
       return _cachedStories[_currentDialect]!;
     } catch (e) {
-      print('Error loading stories for dialect $_currentDialect: $e');
       return [];
     }
   }
@@ -135,8 +125,6 @@ class StoryService {
   
   // Check if image assets exist for stories
   void validateStoryImages(List<Story> stories) {
-    print('Validating image paths for ${stories.length} stories...');
-    
     final Set<String> missingPaths = {};
     final Set<String> foundPaths = {};
     
@@ -155,12 +143,8 @@ class StoryService {
       }
     }
     
-    print('Validation complete. Found: ${foundPaths.length}, Missing: ${missingPaths.length}');
     if (missingPaths.isNotEmpty) {
-      print('Missing image paths:');
-      for (var path in missingPaths) {
-        print(' - $path');
-      }
+      // Missing image paths handled silently
     }
   }
   
