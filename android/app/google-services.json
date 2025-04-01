@@ -31,10 +31,10 @@
               "client_type": 3
             },
             {
-              "client_id": "861015223952-bp6a6en3rtf4d2jrvk1l1jf2765q47et.apps.googleusercontent.com",
+              "client_id": "861015223952-6q93dn2oq3b9s6u34m9ro8vt5d6mvr2c.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.linguax.app.testProject"
+                "bundle_id": "com.linguax.app"
               }
             }
           ]

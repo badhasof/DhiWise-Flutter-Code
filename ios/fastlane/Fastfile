@@ -12,11 +12,11 @@ platform :ios do
     
     # Upload to Firebase App Distribution
     firebase_app_distribution(
-      app: "1:861015223952:ios:1cc6655b81382d9470b215",
+      app: "1:861015223952:ios:cbb83c24aada42a670b215",
       groups: "testers",
       release_notes: ENV["RELEASE_NOTES"] || "Test build for LinguaX app",
       firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"],
       debug: true
     )
   end
-end 
+end

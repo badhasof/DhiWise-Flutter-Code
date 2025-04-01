@@ -59,11 +59,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBwRurBsgkPqnz6ds7nLADwuhb8wS6jHvc',
-    appId: '1:861015223952:ios:1cc6655b81382d9470b215',
+    appId: '1:861015223952:ios:cbb83c24aada42a670b215',
     messagingSenderId: '861015223952',
     projectId: 'linguax-9b060',
     storageBucket: 'linguax-9b060.firebasestorage.app',
-    iosClientId: '861015223952-bp6a6en3rtf4d2jrvk1l1jf2765q47et.apps.googleusercontent.com',
+    iosClientId: '861015223952-6q93dn2oq3b9s6u34m9ro8vt5d6mvr2c.apps.googleusercontent.com',
     iosBundleId: 'com.linguax.app',
   );
+
 }
