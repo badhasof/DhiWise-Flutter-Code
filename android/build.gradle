@@ -8,6 +8,15 @@ buildscript {
         classpath 'com.google.gms:google-services:4.4.1'
         classpath 'com.google.firebase:firebase-appdistribution-gradle:4.2.0'
     }
+    
+    // Gradle memory settings
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+            options.fork = true
+            options.forkOptions.memoryMaximumSize = "2g"
+        }
+    }
 }
 
 allprojects {
@@ -20,6 +29,14 @@ allprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    
+    // Global memory configurations per project
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android.dexOptions.preDexLibraries = true
+            project.android.dexOptions.javaMaxHeapSize = "4g"
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(':app')
