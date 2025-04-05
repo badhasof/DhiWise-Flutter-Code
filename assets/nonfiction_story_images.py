@@ -25,4 +25,13 @@ def get_nonfiction_story_titles():
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Error reading {path}: {e}")
     
-    return titles 
+    return titles
+
+# Recommended prompt for nonfiction image generation (replaces the old one):
+"""
+Create a generic, artistic illustration related to the nonfiction topic '{title}'. 
+The image should be simple, minimalist, and visually appealing. 
+DO NOT include any text, words, or labels in the image.
+Use colors and abstract symbolism to represent the concept rather than detailed literal scenes.
+Make the imagery generic enough that it could apply to various interpretations of the topic.
+""" 

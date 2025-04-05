@@ -28,4 +28,13 @@ def get_story_titles():
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Error reading {path}: {e}")
     
-    return titles 
+    return titles
+
+# Recommended prompt for image generation (replaces the old one):
+"""
+Create a generic, artistic illustration related to the story theme '{title}'. 
+The image should be simple, minimalist, and visually appealing. 
+DO NOT include any text or words in the image.
+Use colors and abstract imagery to convey the general mood rather than detailed scenes.
+Make the imagery generic enough that it could apply to various interpretations of the title.
+""" 
