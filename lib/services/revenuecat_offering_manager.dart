@@ -19,10 +19,6 @@ class RevenueCatOfferingManager {
   // Entitlement ID for your subscription
   static const String entitlementId = 'Premium';
   
-  // Offering IDs
-  static const String monthlyOfferingId = 'monthly_subscription';
-  static const String lifetimeOfferingId = 'lifetime_access';
-  
   // Fetch and display offerings
   Future<Offerings?> fetchAndDisplayOfferings() async {
     try {
@@ -71,86 +67,96 @@ class RevenueCatOfferingManager {
   
   // Get monthly subscription package if available
   Package? getMonthlyPackage() {
-    if (_currentOfferings == null) return null;
+    if (_currentOfferings == null || _currentOfferings!.current == null) {
+       debugPrint('❌ No current offering available when looking for monthly package');
+      return null;
+    }
+
+    // Search within the current offering's packages
+    debugPrint('🔍 Searching for monthly package within current offering: ${_currentOfferings!.current!.identifier}');
     
-    // Try to get the monthly offering first
-    final monthlyOffering = _currentOfferings!.all[monthlyOfferingId];
-    if (monthlyOffering != null && monthlyOffering.availablePackages.isNotEmpty) {
-      debugPrint('✅ Found monthly package in dedicated offering');
-      return monthlyOffering.availablePackages.first;
+    // First, let's debug all available packages to see what we're working with
+    debugPrint('📋 All available packages in current offering:');
+    for (var package in _currentOfferings!.current!.availablePackages) {
+      debugPrint('   - ID: ${package.identifier}, Product ID: ${package.storeProduct.identifier}, Title: ${package.storeProduct.title}');
     }
     
-    // Fallback: try to find a package with "monthly" in the identifier in any offering
-    debugPrint('⚠️ Monthly offering not found, searching in all offerings');
-    for (final offering in _currentOfferings!.all.values) {
-      try {
-        final monthlyPackage = offering.availablePackages.firstWhere(
-          (package) => package.identifier.toLowerCase().contains('monthly'),
-        );
-        debugPrint('✅ Found monthly package in offering: ${offering.identifier}');
-        return monthlyPackage;
-      } catch (_) {
-        // Continue to next offering
-      }
+    try {
+      final monthlyPackage = _currentOfferings!.current!.availablePackages.firstWhere(
+        (package) {
+          // Check package identifier or product identifier for "monthly" or "$rc_monthly"
+          final lowerId = package.identifier.toLowerCase();
+          final lowerProdId = package.storeProduct.identifier.toLowerCase();
+          final lowerTitle = package.storeProduct.title.toLowerCase();
+          
+          debugPrint('  - Checking package: ${package.identifier} (Product: ${package.storeProduct.identifier})');
+          
+          // More comprehensive checks for monthly package
+          bool isMonthlyPackage = 
+              lowerId.contains('monthly') || 
+              lowerProdId.contains('monthly') || 
+              lowerTitle.contains('monthly') ||
+              lowerId == '\$rc_monthly' || 
+              lowerId.startsWith('\$rc_') && lowerId.endsWith('monthly') ||
+              lowerId.endsWith('_monthly');
+              
+          debugPrint('    Result: ${isMonthlyPackage ? "MATCHED MONTHLY" : "Not monthly"}');
+          return isMonthlyPackage;
+        }
+      );
+      debugPrint('✅ Found monthly package: ${monthlyPackage.identifier}');
+      return monthlyPackage;
+    } catch (_) {
+       debugPrint('❌ No monthly package found in current offering: ${_currentOfferings!.current!.identifier}');
+      return null;
     }
-    
-    // If all else fails, use the default offering's first package
-    if (_currentOfferings!.current != null && 
-        _currentOfferings!.current!.availablePackages.isNotEmpty) {
-      debugPrint('⚠️ No monthly package found, using first package from current offering');
-      return _currentOfferings!.current!.availablePackages.first;
-    }
-    
-    debugPrint('❌ No monthly package found in any offering');
-    return null;
   }
   
   // Get lifetime access package if available
   Package? getLifetimePackage() {
-    if (_currentOfferings == null) {
-      debugPrint('❌ No offerings available when looking for lifetime package');
+     if (_currentOfferings == null || _currentOfferings!.current == null) {
+       debugPrint('❌ No current offering available when looking for lifetime package');
       return null;
     }
+
+    // Search within the current offering's packages
+    debugPrint('🔍 Searching for lifetime package within current offering: ${_currentOfferings!.current!.identifier}');
     
-    // Debug all available packages to help troubleshoot
-    debugPrint('🔍 Searching for lifetime package among all offerings:');
-    _currentOfferings!.all.forEach((offeringId, offering) {
-      offering.availablePackages.forEach((package) {
-        debugPrint('  - Offering: $offeringId, Package: ${package.identifier}, Product: ${package.storeProduct.identifier}');
-      });
-    });
-    
-    // Try to get the lifetime offering first
-    final lifetimeOffering = _currentOfferings!.all[lifetimeOfferingId];
-    if (lifetimeOffering != null && lifetimeOffering.availablePackages.isNotEmpty) {
-      debugPrint('✅ Found lifetime package in dedicated offering');
-      return lifetimeOffering.availablePackages.first;
+    // First, let's debug all available packages to see what we're working with
+    debugPrint('📋 All available packages in current offering:');
+    for (var package in _currentOfferings!.current!.availablePackages) {
+      debugPrint('   - ID: ${package.identifier}, Product ID: ${package.storeProduct.identifier}, Title: ${package.storeProduct.title}');
     }
     
-    // Fallback: try to find a package with "lifetime" in the identifier in any offering
-    debugPrint('⚠️ Lifetime offering not found, searching in all offerings');
-    for (final offering in _currentOfferings!.all.values) {
-      for (final package in offering.availablePackages) {
-        // Check both package identifier and product identifier for "lifetime"
-        if (package.identifier.toLowerCase().contains('lifetime') ||
-            package.storeProduct.identifier.toLowerCase().contains('lifetime') ||
-            package.storeProduct.title.toLowerCase().contains('lifetime')) {
-          debugPrint('✅ Found lifetime package: ${package.identifier} in offering: ${offering.identifier}');
-          return package;
+    try {
+      final lifetimePackage = _currentOfferings!.current!.availablePackages.firstWhere(
+        (package) {
+           // Check package identifier, product identifier, or title for "lifetime" or "$rc_lifetime"
+          final lowerId = package.identifier.toLowerCase();
+          final lowerProdId = package.storeProduct.identifier.toLowerCase();
+          final lowerTitle = package.storeProduct.title.toLowerCase();
+          
+          debugPrint('  - Checking package: ${package.identifier} (Product: ${package.storeProduct.identifier})');
+          
+          // More comprehensive checks for lifetime package
+          bool isLifetimePackage = 
+              lowerId.contains('lifetime') || 
+              lowerProdId.contains('lifetime') || 
+              lowerTitle.contains('lifetime') ||
+              lowerId == '\$rc_lifetime' || 
+              lowerId.startsWith('\$rc_') && lowerId.endsWith('lifetime') ||
+              lowerId.endsWith('_lifetime');
+              
+          debugPrint('    Result: ${isLifetimePackage ? "MATCHED LIFETIME" : "Not lifetime"}');
+          return isLifetimePackage;
         }
-      }
+      );
+      debugPrint('✅ Found lifetime package: ${lifetimePackage.identifier}');
+      return lifetimePackage;
+    } catch (_) {
+       debugPrint('❌ No lifetime package found in current offering: ${_currentOfferings!.current!.identifier}');
+      return null;
     }
-    
-    // Last resort: check if current offering has only one package and it might be lifetime
-    if (_currentOfferings!.current != null && 
-        _currentOfferings!.current!.availablePackages.length == 1) {
-      final package = _currentOfferings!.current!.availablePackages.first;
-      debugPrint('⚠️ Using single package from current offering as potential lifetime: ${package.identifier}');
-      return package;
-    }
-    
-    debugPrint('❌ No lifetime package found in any offering');
-    return null;
   }
   
   // Implementation of Task 3.1: Purchase Flow

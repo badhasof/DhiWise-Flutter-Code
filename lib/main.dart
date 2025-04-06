@@ -15,6 +15,7 @@ import 'services/revenuecat_service.dart';
 import 'services/revenuecat_offering_manager.dart';
 import 'services/demo_timer_service.dart';
 import 'presentation/app_navigation_screen/app_navigation_screen.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() {
@@ -103,47 +104,53 @@ Future<void> _initializeServices() async {
   }
 }
 
-/// Fetch RevenueCat offerings in the background
+/// Fetch RevenueCat offerings in the background after initialization.
 Future<void> _fetchRevenueCatOfferings() async {
+  print('🔄 Initiating background pre-fetch of RevenueCat offerings...');
+  final offeringManager = RevenueCatOfferingManager();
+
   try {
-    print('🔄 Pre-fetching RevenueCat offerings in background...');
-    final offeringManager = RevenueCatOfferingManager();
-    final offerings = await offeringManager.fetchAndDisplayOfferings();
-    
-    if (offerings != null) {
-      print('✅ RevenueCat offerings pre-fetched successfully');
-      
-      // Check if the offerings have packages
-      if (offerings.current != null) {
-        print('📦 Current offering: ${offerings.current!.identifier}');
-        print('📦 Available packages: ${offerings.current!.availablePackages.length}');
-        
-        // Log product details for each package
-        for (var package in offerings.current!.availablePackages) {
-          print('   - ${package.identifier}: ${package.storeProduct.priceString}');
-        }
-      } else {
-        print('⚠️ No current offering available');
-      }
-      
-      // Check individual offering IDs
-      final monthlyOffering = offerings.all[RevenueCatOfferingManager.monthlyOfferingId];
-      final lifetimeOffering = offerings.all[RevenueCatOfferingManager.lifetimeOfferingId];
-      
-      print('📦 Monthly offering exists: ${monthlyOffering != null}');
-      print('📦 Lifetime offering exists: ${lifetimeOffering != null}');
-      
-      // Pre-fetch the specific packages
-      final monthlyPackage = offeringManager.getMonthlyPackage();
-      final lifetimePackage = offeringManager.getLifetimePackage();
-      
-      print('📦 Monthly package found: ${monthlyPackage != null}');
-      print('📦 Lifetime package found: ${lifetimePackage != null}');
-    } else {
-      print('⚠️ Failed to pre-fetch RevenueCat offerings');
+    // Fetch all offerings. This also populates the internal cache in RevenueCatOfferingManager.
+    final Offerings? offerings = await offeringManager.fetchAndDisplayOfferings();
+
+    if (offerings == null) {
+      print('⚠️ Failed to fetch offerings in background. Result was null.');
+      return; // Exit if fetching failed
     }
+
+    print('✅ RevenueCat offerings fetched successfully in background.');
+
+    // Check the current offering specifically (e.g., the one marked "default")
+    final Offering? currentOffering = offerings.current;
+    if (currentOffering == null) {
+      print('   ⚠️ No "Current" offering found in fetched data.');
+    } else {
+      print('   📦 Current Offering ID: ${currentOffering.identifier}');
+      print('   📦 Packages available in Current Offering: ${currentOffering.availablePackages.length}');
+      if (currentOffering.availablePackages.isEmpty) {
+        print('      ⚠️ The Current offering has no packages attached.');
+      } else {
+         for (var package in currentOffering.availablePackages) {
+          print('      - Package: ${package.identifier}');
+          print('        Product: ${package.storeProduct.identifier} (${package.storeProduct.title})');
+          print('        Price: ${package.storeProduct.priceString}');
+        }
+      }
+    }
+
+    // Attempt to retrieve specific packages using the manager's logic
+    // This tests if the expected packages can be found within the current offering
+    print('   ℹ️ Attempting to locate specific packages using RevenueCatOfferingManager...');
+    final Package? monthlyPackage = offeringManager.getMonthlyPackage();
+    final Package? lifetimePackage = offeringManager.getLifetimePackage();
+
+    print('   📦 Result of getMonthlyPackage(): ${monthlyPackage != null ? 'Found (${monthlyPackage.identifier})' : 'Not Found'}');
+    print('   📦 Result of getLifetimePackage(): ${lifetimePackage != null ? 'Found (${lifetimePackage.identifier})' : 'Not Found'}');
+
+  } on PlatformException catch (e) {
+    print('❌ PlatformException during background offerings pre-fetch: ${e.message} (Code: ${e.code})');
   } catch (e) {
-    print('⚠️ RevenueCat offerings pre-fetch failed: $e');
+    print('❌ Unexpected error during background offerings pre-fetch: $e');
   }
 }
 

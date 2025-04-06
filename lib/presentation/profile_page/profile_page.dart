@@ -891,21 +891,6 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Force Refresh button (hidden in regular view, for debug only)
-                              if (_statsManager.isPremium)
-                                IconButton(
-                                  onPressed: _forceFullRefresh,
-                                  icon: Icon(
-                                    Icons.refresh,
-                                    color: appTheme.gray500,
-                                    size: 18.h,
-                                  ),
-                                  tooltip: "Force Refresh",
-                                  padding: EdgeInsets.zero,
-                                  constraints: BoxConstraints(),
-                                  splashRadius: 16.h,
-                                ),
-                              SizedBox(width: 8.h),
                               // Manage/Upgrade button
                               TextButton(
                                 onPressed: () {
