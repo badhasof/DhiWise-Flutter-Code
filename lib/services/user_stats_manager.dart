@@ -221,9 +221,8 @@ class UserStatsManager {
       }
       
       debugPrint('✅ UserStatsManager: Subscription status: ${_isPremium ? 'PREMIUM' : 'FREE'}, Type: $_subscriptionType');
+      debugPrint('✅ UserStatsManager: Using subscription type from SubscriptionStatusManager: $subscriptionType');
       _isPremiumChecked = true;
-      
-      // No need to sync with SubscriptionStatusManager since we're getting data from there
       
     } catch (e) {
       debugPrint('❌ UserStatsManager: Unexpected error checking premium status: $e');

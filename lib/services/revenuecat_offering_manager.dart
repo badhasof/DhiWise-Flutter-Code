@@ -19,6 +19,10 @@ class RevenueCatOfferingManager {
   // Entitlement ID for your subscription
   static const String entitlementId = 'Lifetime Access';
   
+  // Offering IDs
+  static const String monthlyOfferingId = 'monthly';
+  static const String lifetimeOfferingId = 'lifetime';
+  
   // Fetch and display offerings
   Future<Offerings?> fetchAndDisplayOfferings() async {
     try {
@@ -31,28 +35,32 @@ class RevenueCatOfferingManager {
       }
       
       // Log current offering information
-      debugPrint('Current Offering: ${_currentOfferings!.current}');
+      debugPrint('Current Offering: ${_currentOfferings!.current?.identifier ?? "none"}');
+      debugPrint('All Offerings: ${_currentOfferings!.all.keys.join(", ")}');
       
-      if (_currentOfferings!.current != null && 
-          _currentOfferings!.current!.availablePackages.isNotEmpty) {
+      // Log details of all available offerings
+      _currentOfferings!.all.forEach((offeringId, offering) {
+        debugPrint('Offering: $offeringId');
         
-        debugPrint('Available Packages:');
-        for (var package in _currentOfferings!.current!.availablePackages) {
-          debugPrint('  - ${package.identifier}: ${package.storeProduct.title}');
-          debugPrint('    Price: ${package.storeProduct.priceString}');
-          debugPrint('    Description: ${package.storeProduct.description}');
+        if (offering.availablePackages.isNotEmpty) {
+          debugPrint('  Available Packages:');
+          for (var package in offering.availablePackages) {
+            debugPrint('  - ${package.identifier}: ${package.storeProduct.title}');
+            debugPrint('    Price: ${package.storeProduct.priceString}');
+            debugPrint('    Description: ${package.storeProduct.description}');
+          }
+          
+          // Check for and log any metadata in the offering
+          if (offering.metadata.isNotEmpty) {
+            debugPrint('  Offering Metadata:');
+            offering.metadata.forEach((key, value) {
+              debugPrint('    - $key: $value');
+            });
+          }
+        } else {
+          debugPrint('  No packages available in this offering');
         }
-        
-        // Check for and log any metadata in the offering
-        if (_currentOfferings!.current!.metadata.isNotEmpty) {
-          debugPrint('Offering Metadata:');
-          _currentOfferings!.current!.metadata.forEach((key, value) {
-            debugPrint('  - $key: $value');
-          });
-        }
-      } else {
-        debugPrint('No packages available in the current offering');
-      }
+      });
       
       return _currentOfferings;
     } catch (e) {
@@ -63,28 +71,67 @@ class RevenueCatOfferingManager {
   
   // Get monthly subscription package if available
   Package? getMonthlyPackage() {
-    if (_currentOfferings?.current == null) return null;
+    if (_currentOfferings == null) return null;
     
-    // Try to find a package with "monthly" in the identifier
-    return _currentOfferings!.current!.availablePackages.firstWhere(
-      (package) => package.identifier.toLowerCase().contains('monthly'),
-      orElse: () => _currentOfferings!.current!.availablePackages.first,
-    );
+    // Try to get the monthly offering first
+    final monthlyOffering = _currentOfferings!.all[monthlyOfferingId];
+    if (monthlyOffering != null && monthlyOffering.availablePackages.isNotEmpty) {
+      debugPrint('✅ Found monthly package in dedicated offering');
+      return monthlyOffering.availablePackages.first;
+    }
+    
+    // Fallback: try to find a package with "monthly" in the identifier in any offering
+    debugPrint('⚠️ Monthly offering not found, searching in all offerings');
+    for (final offering in _currentOfferings!.all.values) {
+      try {
+        final monthlyPackage = offering.availablePackages.firstWhere(
+          (package) => package.identifier.toLowerCase().contains('monthly'),
+        );
+        debugPrint('✅ Found monthly package in offering: ${offering.identifier}');
+        return monthlyPackage;
+      } catch (_) {
+        // Continue to next offering
+      }
+    }
+    
+    // If all else fails, use the default offering's first package
+    if (_currentOfferings!.current != null && 
+        _currentOfferings!.current!.availablePackages.isNotEmpty) {
+      debugPrint('⚠️ No monthly package found, using first package from current offering');
+      return _currentOfferings!.current!.availablePackages.first;
+    }
+    
+    debugPrint('❌ No monthly package found in any offering');
+    return null;
   }
   
   // Get lifetime access package if available
   Package? getLifetimePackage() {
-    if (_currentOfferings?.current == null) return null;
+    if (_currentOfferings == null) return null;
     
-    // Try to find a package with "lifetime" in the identifier
-    try {
-      return _currentOfferings!.current!.availablePackages.firstWhere(
-        (package) => package.identifier.toLowerCase().contains('lifetime'),
-      );
-    } catch (e) {
-      // Return null if no lifetime package is found
-      return null;
+    // Try to get the lifetime offering first
+    final lifetimeOffering = _currentOfferings!.all[lifetimeOfferingId];
+    if (lifetimeOffering != null && lifetimeOffering.availablePackages.isNotEmpty) {
+      debugPrint('✅ Found lifetime package in dedicated offering');
+      return lifetimeOffering.availablePackages.first;
     }
+    
+    // Fallback: try to find a package with "lifetime" in the identifier in any offering
+    debugPrint('⚠️ Lifetime offering not found, searching in all offerings');
+    for (final offering in _currentOfferings!.all.values) {
+      try {
+        final lifetimePackage = offering.availablePackages.firstWhere(
+          (package) => package.identifier.toLowerCase().contains('lifetime'),
+        );
+        debugPrint('✅ Found lifetime package in offering: ${offering.identifier}');
+        return lifetimePackage;
+      } catch (_) {
+        // Continue to next offering
+      }
+    }
+    
+    debugPrint('❌ No lifetime package found in any offering');
+    return null;
   }
   
   // Implementation of Task 3.1: Purchase Flow

@@ -84,25 +84,128 @@ class SubscriptionStatusManager {
   
   // Update subscription status and type from customer info
   void _updateSubscriptionFromCustomerInfo(CustomerInfo customerInfo) {
-    final entitlement = customerInfo.entitlements.all[RevenueCatOfferingManager.entitlementId];
-    final bool isActive = entitlement?.isActive ?? false;
-    
-    debugPrint('🔑 Entitlement status: ${isActive ? 'ACTIVE' : 'INACTIVE'}');
-    
-    // Determine subscription type
+    // Check for active entitlements and active subscriptions
+    bool isActive = false;
+    bool hasActiveMonthly = false;
+    bool hasActiveLifetime = false;
     SubscriptionType newType = SubscriptionType.none;
     
-    if (isActive && entitlement != null) {
-      // Check if this is a lifetime subscription
-      final productId = entitlement.productIdentifier.toLowerCase();
-      if (productId.contains('lifetime')) {
-        newType = SubscriptionType.lifetime;
-        debugPrint('💎 Detected LIFETIME subscription');
+    // Log all active subscriptions for diagnosis
+    final activeSubscriptions = customerInfo.activeSubscriptions;
+    debugPrint('📊 Active subscriptions: ${activeSubscriptions.join(', ')}');
+    
+    // Check if we have active subscriptions that indicate specific types
+    final bool hasMonthlySubscriptionProduct = activeSubscriptions.any(
+      (subId) => subId.toLowerCase().contains('monthly') || 
+                 subId.toLowerCase().contains('month')
+    );
+    
+    final bool hasLifetimeSubscriptionProduct = activeSubscriptions.any(
+      (subId) => subId.toLowerCase().contains('lifetime') || 
+                 subId.toLowerCase().contains('life')
+    );
+    
+    // First, check if the Monthly Subscription entitlement is active
+    final monthlyEntitlement = customerInfo.entitlements.all["Monthly Subscription"];
+    if (monthlyEntitlement != null && monthlyEntitlement.isActive) {
+      hasActiveMonthly = true;
+      isActive = true;
+      
+      debugPrint('🔍 Found active monthly entitlement: Monthly Subscription');
+      debugPrint('   - Product ID: ${monthlyEntitlement.productIdentifier}');
+      debugPrint('   - Expires: ${monthlyEntitlement.expirationDate ?? 'No expiration'}');
+      debugPrint('   - Will Renew: ${monthlyEntitlement.willRenew}');
+    }
+    
+    // Then check if the Lifetime Access entitlement is active
+    final lifetimeEntitlement = customerInfo.entitlements.all["Lifetime Access"];
+    if (lifetimeEntitlement != null && lifetimeEntitlement.isActive) {
+      hasActiveLifetime = true;
+      isActive = true;
+      
+      debugPrint('🔍 Found active lifetime entitlement: Lifetime Access');
+      debugPrint('   - Product ID: ${lifetimeEntitlement.productIdentifier}');
+      debugPrint('   - Expires: ${lifetimeEntitlement.expirationDate ?? 'No expiration (lifetime)'}');
+      debugPrint('   - Will Renew: ${lifetimeEntitlement.willRenew}');
+    }
+    
+    // Log if we found conflicting entitlements (should not happen with new configuration)
+    if (hasActiveMonthly && hasActiveLifetime) {
+      debugPrint('⚠️ WARNING: Both monthly and lifetime entitlements are active!');
+      debugPrint('⚠️ This might indicate a RevenueCat configuration issue.');
+      
+      // Log subscription details for diagnosis
+      if (hasMonthlySubscriptionProduct && !hasLifetimeSubscriptionProduct) {
+        debugPrint('✅ User has a monthly subscription product - will prioritize MONTHLY');
+      } else if (!hasMonthlySubscriptionProduct && hasLifetimeSubscriptionProduct) {
+        debugPrint('✅ User has a lifetime subscription product - will prioritize LIFETIME');
+      } else if (hasMonthlySubscriptionProduct && hasLifetimeSubscriptionProduct) {
+        debugPrint('⚠️ User has BOTH monthly and lifetime subscription products!');
       } else {
-        newType = SubscriptionType.monthly;
-        debugPrint('📅 Detected MONTHLY subscription');
+        debugPrint('⚠️ Could not determine subscription type from product IDs');
       }
     }
+    
+    // Now determine the subscription type based on what's active
+    // Priority: 
+    // 1. Use active subscription product if clear
+    // 2. If conflicting entitlements, prioritize based on actual subscription product
+    // 3. Otherwise use the entitlement that's active
+    
+    if (hasActiveMonthly && hasActiveLifetime) {
+      // We have both - need to resolve the conflict
+      if (hasMonthlySubscriptionProduct && !hasLifetimeSubscriptionProduct) {
+        // User has monthly subscription product - prioritize that
+        newType = SubscriptionType.monthly;
+        debugPrint('🔄 Resolving conflict: User has monthly subscription product');
+      } else if (!hasMonthlySubscriptionProduct && hasLifetimeSubscriptionProduct) {
+        // User has lifetime subscription product - prioritize that
+        newType = SubscriptionType.lifetime;
+        debugPrint('🔄 Resolving conflict: User has lifetime subscription product');
+      } else {
+        // Cannot determine from product - use monthly as default
+        newType = SubscriptionType.monthly;
+        debugPrint('🔄 Resolving conflict: Using monthly as default');
+      }
+    } else if (hasActiveMonthly) {
+      // Only monthly is active, no conflict
+      newType = SubscriptionType.monthly;
+      debugPrint('📅 Setting subscription type to MONTHLY');
+    } else if (hasActiveLifetime) {
+      // Only lifetime is active, no conflict
+      newType = SubscriptionType.lifetime;
+      debugPrint('💎 Setting subscription type to LIFETIME');
+    }
+    
+    // Handle the case where the entitlements don't match the products
+    // This is a safety check for potential RevenueCat issues
+    if (hasMonthlySubscriptionProduct && !hasActiveMonthly && !hasActiveLifetime) {
+      debugPrint('⚠️ User has monthly subscription product but no active entitlements');
+      // Assume they should have monthly access
+      isActive = true;
+      newType = SubscriptionType.monthly;
+      debugPrint('🔄 Correcting status: Setting to MONTHLY based on subscription product');
+    } else if (hasLifetimeSubscriptionProduct && !hasActiveMonthly && !hasActiveLifetime) {
+      debugPrint('⚠️ User has lifetime subscription product but no active entitlements');
+      // Assume they should have lifetime access
+      isActive = true;
+      newType = SubscriptionType.lifetime;
+      debugPrint('🔄 Correcting status: Setting to LIFETIME based on subscription product');
+    }
+    
+    // Fallback for any other unhandled cases
+    if (!isActive) {
+      debugPrint('❌ No active entitlements or subscription products found');
+      newType = SubscriptionType.none;
+    }
+    
+    debugPrint('🔑 Final status determination:');
+    debugPrint('   - Subscription active: ${isActive ? 'YES' : 'NO'}');
+    debugPrint('   - Monthly entitlement active: ${hasActiveMonthly ? 'YES' : 'NO'}');
+    debugPrint('   - Lifetime entitlement active: ${hasActiveLifetime ? 'YES' : 'NO'}');
+    debugPrint('   - Has monthly product: ${hasMonthlySubscriptionProduct ? 'YES' : 'NO'}');
+    debugPrint('   - Has lifetime product: ${hasLifetimeSubscriptionProduct ? 'YES' : 'NO'}');
+    debugPrint('   - Final subscription type: $newType');
     
     // Update status if changed
     if (isActive != _isSubscribed) {

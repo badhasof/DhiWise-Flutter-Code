@@ -872,7 +872,9 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                             ),
                             if (_statsManager.isPremium && _statsManager.subscriptionType.isNotEmpty)
                               Text(
-                                _statsManager.subscriptionType,
+                                _statsManager.subscriptionType == 'Lifetime' 
+                                  ? "Lifetime" 
+                                  : "Monthly Subscription",
                                 style: CustomTextStyles.bodyMediumGray600,
                               ),
                           ],
@@ -890,32 +892,53 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                               ),
                             ),
                           )
-                        : TextButton(
-                            onPressed: () {
-                              _navigateToSubscriptionScreen(context);
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.h,
-                                vertical: 8.h,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.h),
-                                side: BorderSide(
-                                  color: appTheme.deepOrangeA200,
-                                  width: 1.h,
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Force Refresh button (hidden in regular view, for debug only)
+                              if (_statsManager.isPremium)
+                                IconButton(
+                                  onPressed: _forceFullRefresh,
+                                  icon: Icon(
+                                    Icons.refresh,
+                                    color: appTheme.gray500,
+                                    size: 18.h,
+                                  ),
+                                  tooltip: "Force Refresh",
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                  splashRadius: 16.h,
+                                ),
+                              SizedBox(width: 8.h),
+                              // Manage/Upgrade button
+                              TextButton(
+                                onPressed: () {
+                                  _navigateToSubscriptionScreen(context);
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.h,
+                                    vertical: 8.h,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.h),
+                                    side: BorderSide(
+                                      color: appTheme.deepOrangeA200,
+                                      width: 1.h,
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.white,
+                                ),
+                                child: Text(
+                                  _statsManager.isPremium ? "Manage" : "Upgrade",
+                                  style: TextStyle(
+                                    color: appTheme.deepOrangeA200,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14.fSize,
+                                  ),
                                 ),
                               ),
-                              backgroundColor: Colors.white,
-                            ),
-                            child: Text(
-                              _statsManager.isPremium ? "Manage" : "Upgrade",
-                              style: TextStyle(
-                                color: appTheme.deepOrangeA200,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14.fSize,
-                              ),
-                            ),
+                            ],
                           ),
                   ],
                 ),
@@ -950,16 +973,138 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
     }
     
     try {
-      // Check premium status through UserStatsManager
+      // Force RevenueCat to refresh its customer info first
+      try {
+        // Force a refresh of customer info from the RevenueCat servers
+        final customerInfo = await Purchases.getCustomerInfo();
+        debugPrint('✅ Forced refresh of customer info from RevenueCat');
+        debugPrint('✅ Active subscriptions: ${customerInfo.activeSubscriptions.join(', ')}');
+        debugPrint('✅ Entitlements: ${customerInfo.entitlements.all.keys.join(', ')}');
+      } catch (e) {
+        debugPrint('❌ Error refreshing customer info from RevenueCat: $e');
+      }
+      
+      // Check premium status through UserStatsManager with a small delay
+      await Future.delayed(Duration(milliseconds: 300));
       await _statsManager.checkPremiumStatus();
       
       // Force a refresh of subscription status in SubscriptionStatusManager as well
       try {
         // Force RevenueCat to refresh and update subscription status manager
-        await SubscriptionStatusManager.instance.checkSubscriptionStatus();
-        debugPrint('✅ Manually synchronized subscription status after check');
+        final isSubscribed = await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+        debugPrint('✅ Manually synchronized subscription status after check: ${isSubscribed ? "SUBSCRIBED" : "NOT SUBSCRIBED"}');
+        debugPrint('✅ Subscription type from manager: ${SubscriptionStatusManager.instance.subscriptionType}');
+        
+        // Wait a short delay to ensure the customer info has been properly updated
+        await Future.delayed(Duration(milliseconds: 500));
+        
+        // Check premium status one more time to ensure consistency
+        await _statsManager.checkPremiumStatus();
+        
+        debugPrint('✅ Final verified subscription type: ${_statsManager.subscriptionType}');
       } catch (e) {
         debugPrint('❌ Error manually syncing subscription status: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
+  }
+
+  // Add a force refresh feature that also clears RevenueCat's cache
+  Future<void> _forceFullRefresh() async {
+    if (mounted) {
+      setState(() {
+        _isRefreshing = true;
+      });
+    }
+    
+    try {
+      debugPrint('🔄 Performing full subscription refresh...');
+      
+      // First reset SubscriptionStatusManager's status
+      SubscriptionStatusManager.instance.updateSubscriptionType(SubscriptionType.none);
+      
+      // Wait a moment
+      await Future.delayed(Duration(milliseconds: 200));
+      
+      // Force RevenueCat to refresh its customer info
+      try {
+        // Try to log out and back in with RevenueCat to force a complete refresh
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          try {
+            // First log out from RevenueCat
+            await Purchases.logOut();
+            debugPrint('✅ Logged out from RevenueCat');
+            
+            // Wait a moment
+            await Future.delayed(Duration(milliseconds: 300));
+            
+            // Then log back in
+            final logInResult = await Purchases.logIn(user.uid);
+            debugPrint('✅ Logged back in to RevenueCat');
+            
+            // Get the refreshed customer info
+            final customerInfo = logInResult.customerInfo;
+            
+            // Log all active subscriptions and entitlements for debugging
+            debugPrint('📊 Active subscriptions after re-login: ${customerInfo.activeSubscriptions.join(', ')}');
+            debugPrint('📊 All entitlements after re-login: ${customerInfo.entitlements.all.keys.join(', ')}');
+            
+            // Log detailed status of each entitlement
+            customerInfo.entitlements.all.forEach((key, entitlement) {
+              debugPrint('📊 Entitlement "$key" after re-login: active=${entitlement.isActive}, willRenew=${entitlement.willRenew}');
+              debugPrint('   - Product: ${entitlement.productIdentifier}');
+              if (entitlement.expirationDate != null) {
+                debugPrint('   - Expires: ${entitlement.expirationDate}');
+              } else {
+                debugPrint('   - No expiration date');
+              }
+            });
+          } catch (e) {
+            debugPrint('❌ Error during RevenueCat logout/login cycle: $e');
+            
+            // Fall back to regular refresh if log out/in fails
+            final customerInfo = await Purchases.getCustomerInfo();
+            debugPrint('✅ Forced refresh of customer info from RevenueCat (fallback)');
+            
+            // Log all active subscriptions and entitlements for debugging
+            debugPrint('📊 Active subscriptions: ${customerInfo.activeSubscriptions.join(', ')}');
+            debugPrint('📊 All entitlements: ${customerInfo.entitlements.all.keys.join(', ')}');
+          }
+        } else {
+          // No user logged in, just refresh customer info
+          final customerInfo = await Purchases.getCustomerInfo();
+          debugPrint('✅ Forced refresh of customer info from RevenueCat');
+          
+          // Log all active subscriptions and entitlements for debugging
+          debugPrint('📊 Active subscriptions: ${customerInfo.activeSubscriptions.join(', ')}');
+          debugPrint('📊 All entitlements: ${customerInfo.entitlements.all.keys.join(', ')}');
+        }
+      } catch (e) {
+        debugPrint('❌ Error refreshing customer info from RevenueCat: $e');
+      }
+      
+      // Complete refresh of subscription status
+      await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+      await _statsManager.checkPremiumStatus();
+      
+      debugPrint('✅ Full subscription refresh completed');
+      debugPrint('✅ Final subscription type: ${_statsManager.subscriptionType}');
+      
+      // Show the result to the user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Subscription status refreshed: ${_statsManager.isPremium ? 'Premium' : 'Basic'} - ${_statsManager.subscriptionType}"),
+            duration: Duration(seconds: 2),
+            backgroundColor: _statsManager.isPremium ? Colors.green : Colors.blue,
+          ),
+        );
       }
     } finally {
       if (mounted) {
