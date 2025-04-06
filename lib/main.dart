@@ -13,6 +13,7 @@ import 'services/revenuecat_service.dart';
 import 'services/revenuecat_offering_manager.dart';
 import 'services/subscription_status_manager.dart';
 import 'services/demo_timer_service.dart';
+import 'presentation/app_navigation_screen/app_navigation_screen.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() async {
@@ -37,52 +38,71 @@ void main() async {
     print('❌ Error initializing Firebase: $e');
   }
   
-  // Initialize services
-  await _initializeServices();
+  // Initialize services in the background
+  _initializeServices();
   
-  Future.wait([
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-  ]).then((value) {
-    PrefUtils().init();
-    runApp(MyApp());
-  });
+  // Continue with app launch immediately
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await PrefUtils().init();
+  await DemoTimerService.instance.initialize();
+  runApp(MyApp());
 }
 
 /// Initialize all services needed at app startup
 Future<void> _initializeServices() async {
   // Initialize subscription services
+  try {
+    final revenueCatService = RevenueCatService();
+    await revenueCatService.initialize();
+    print('✅ RevenueCat service initialized');
+  } catch (e) {
+    print('⚠️ RevenueCat service initialization failed: $e');
+  }
   
-  // Initialize RevenueCat Service (new system)
-  final revenueCatService = RevenueCatService();
-  await revenueCatService.initialize();
-  print('✅ RevenueCat service initialized');
+  try {
+    final offeringManager = RevenueCatOfferingManager();
+    await offeringManager.fetchAndDisplayOfferings();
+    print('✅ RevenueCat offerings fetched');
+  } catch (e) {
+    print('⚠️ RevenueCat offerings fetch failed: $e');
+  }
   
-  // Fetch RevenueCat offerings
-  final offeringManager = RevenueCatOfferingManager();
-  await offeringManager.fetchAndDisplayOfferings();
-  print('✅ RevenueCat offerings fetched');
+  try {
+    final subscriptionStatusManager = SubscriptionStatusManager();
+    await subscriptionStatusManager.initialize();
+    print('✅ Subscription status manager initialized');
+  } catch (e) {
+    print('⚠️ Subscription status manager initialization failed: $e');
+  }
   
-  // Initialize subscription status manager for real-time subscription tracking
-  final subscriptionStatusManager = SubscriptionStatusManager();
-  await subscriptionStatusManager.initialize();
-  print('✅ Subscription status manager initialized');
+  try {
+    await DemoTimerService.instance.initialize();
+    print('✅ Demo timer service initialized');
+  } catch (e) {
+    print('⚠️ Demo timer service initialization failed: $e');
+  }
   
-  // Initialize global demo timer service for app-wide timer monitoring
-  await DemoTimerService.instance.initialize();
-  
-  // Initialize legacy subscription service (old system)
-  final subscriptionService = SubscriptionService();
-  await subscriptionService.initialize();
+  try {
+    final subscriptionService = SubscriptionService();
+    await subscriptionService.initialize();
+    print('✅ Legacy subscription service initialized');
+  } catch (e) {
+    print('⚠️ Legacy subscription service initialization failed: $e');
+  }
   
   // Initialize user service and check for existing user data
   final userService = UserService();
   if (userService.isLoggedIn) {
-    await userService.initializeUserDataIfNeeded();
-    
-    // Pre-fetch user stats and profile data
-    print('🔄 Pre-fetching user data...');
-    await UserStatsManager().initialize();
-    print('✅ User data pre-fetched successfully');
+    try {
+      await userService.initializeUserDataIfNeeded();
+      
+      // Pre-fetch user stats and profile data
+      print('🔄 Pre-fetching user data...');
+      await UserStatsManager().initialize();
+      print('✅ User data pre-fetched successfully');
+    } catch (e) {
+      print('⚠️ User data initialization failed: $e');
+    }
   }
 }
 
@@ -120,8 +140,30 @@ class MyApp extends StatelessWidget {
                 ],
                 locale: Locale('en', ''),
                 supportedLocales: [Locale('en', '')],
-                initialRoute: AppRoutes.initialRoute,
-                routes: AppRoutes.routes,
+                home: AppNavigationScreen.builder(context), // Use AppNavigationScreen as home
+                routes: AppRoutes.routes, // Add routes for navigation between screens
+                onGenerateRoute: (settings) {
+                  // Handle any routes that aren't explicitly defined
+                  print('⚠️ Attempting to navigate to undefined route: ${settings.name}');
+                  return MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: Text('Navigation Error')),
+                      body: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Could not navigate to: ${settings.name}'),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text('Go Back'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),

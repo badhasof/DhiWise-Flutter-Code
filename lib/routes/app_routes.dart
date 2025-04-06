@@ -106,7 +106,7 @@ class AppRoutes {
         signInScreen: SignInScreen.builder,
         signUpScreen: SignUpScreen.builder,
         appNavigationScreen: AppNavigationScreen.builder,
-        initialRoute: AppNavigationScreen.builder,
+        initialRoute: OnboardimgScreen.builder,
         homeInitialPage: HomeInitialPage.builder,
         vocabularyPage: VocabularyPage.builder,
         learningPage: LearningPage.builder,

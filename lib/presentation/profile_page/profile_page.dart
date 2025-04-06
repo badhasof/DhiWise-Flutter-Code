@@ -33,12 +33,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProfileBloc(ProfileState(
-        profileModelObj: ProfileModel(),
-      ))..add(ProfileInitialEvent()),
-      child: _ProfilePageContent(),
-    );
+    // Don't create a new BlocProvider here, use the one from builder
+    return _ProfilePageContent();
   }
 }
 

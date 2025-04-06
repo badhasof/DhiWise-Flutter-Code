@@ -14,5 +14,20 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
   _onInitialize(
     ProgressInitialEvent event,
     Emitter<ProgressState> emit,
-  ) async {}
+  ) async {
+    try {
+      // Initialize with an empty model if not already initialized
+      if (state.progressModelObj == null) {
+        emit(state.copyWith(
+          progressModelObj: ProgressModel(),
+        ));
+      }
+    } catch (e) {
+      print('Error in ProgressBloc initialization: $e');
+      // Fallback initialization
+      emit(state.copyWith(
+        progressModelObj: ProgressModel(),
+      ));
+    }
+  }
 } 

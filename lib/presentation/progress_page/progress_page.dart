@@ -124,29 +124,36 @@ class _ProgressPageState extends State<ProgressPage> {
   }
   
   Future<void> _initializeTimer() async {
-    // Get the DemoTimerService instance instead of initializing own timer
-    _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
-    if (mounted) setState(() {}); // Update UI with current time
-    
-    // Start the countdown timer that uses the central DemoTimerService
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {
-          // Get the most up-to-date remaining time from the DemoTimerService
-          _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
-          
-          if (_remainingSeconds <= 0) {
-            _timer?.cancel();
+    try {
+      // Get the DemoTimerService instance instead of initializing own timer
+      _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
+      if (mounted) setState(() {}); // Update UI with current time
+      
+      // Start the countdown timer that uses the central DemoTimerService
+      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (mounted) {
+          setState(() {
+            // Get the most up-to-date remaining time from the DemoTimerService
+            _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
             
-            // Ensure status is set to DONE when timer expires
-            DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
-            
-            // Handle timer expiration - navigate to feedback page
-            _navigateToFeedbackIfNeeded();
-          }
-        });
-      }
-    });
+            if (_remainingSeconds <= 0) {
+              _timer?.cancel();
+              
+              // Ensure status is set to DONE when timer expires
+              DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
+              
+              // Handle timer expiration - navigate to feedback page
+              _navigateToFeedbackIfNeeded();
+            }
+          });
+        }
+      });
+    } catch (e) {
+      print('Error initializing timer: $e');
+      // Set a default value
+      _remainingSeconds = 0;
+      if (mounted) setState(() {});
+    }
   }
   
   Future<void> _loadUserStats() async {

@@ -14,5 +14,20 @@ class LearningBloc extends Bloc<LearningEvent, LearningState> {
   _onInitialize(
     LearningInitialEvent event,
     Emitter<LearningState> emit,
-  ) async {}
+  ) async {
+    try {
+      // Initialize with an empty model if not already initialized
+      if (state.learningModelObj == null) {
+        emit(state.copyWith(
+          learningModelObj: LearningModel(),
+        ));
+      }
+    } catch (e) {
+      print('Error in LearningBloc initialization: $e');
+      // Fallback initialization
+      emit(state.copyWith(
+        learningModelObj: LearningModel(),
+      ));
+    }
+  }
 } 

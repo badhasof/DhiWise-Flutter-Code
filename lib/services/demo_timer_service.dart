@@ -17,7 +17,7 @@ class DemoTimerService {
   // Timer and state
   Timer? _timer;
   int _remainingSeconds = 0;
-  late PrefUtils _prefUtils;
+  PrefUtils? _prefUtils;
   bool _hasNavigatedToFeedback = false;
   bool _isPremium = false;
 
@@ -29,7 +29,7 @@ class DemoTimerService {
   // Initialize the service
   Future<void> initialize() async {
     _prefUtils = PrefUtils();
-    await _prefUtils.init(); // Ensure SharedPreferences is loaded
+    await _prefUtils!.init(); // Ensure SharedPreferences is loaded
     _subscriptionManager = SubscriptionStatusManager.instance;
     _userService = UserService();
     
@@ -72,11 +72,17 @@ class DemoTimerService {
     // Don't initialize if already premium
     if (_isPremium) return;
     
+    // Initialize PrefUtils if needed
+    if (_prefUtils == null) {
+      _prefUtils = PrefUtils();
+      await _prefUtils!.init();
+    }
+    
     // Ensure the timer is initialized locally if needed
-    await _prefUtils.initializeTimerIfNeeded();
+    await _prefUtils!.initializeTimerIfNeeded();
     
     // Get current remaining time
-    _remainingSeconds = _prefUtils.calculateRemainingTime();
+    _remainingSeconds = _prefUtils!.calculateRemainingTime();
     debugPrint('[DemoTimerService] Timer initializing with ${_remainingSeconds} seconds remaining (${_remainingSeconds/60} minutes)');
 
     // Safeguard: If remaining seconds is 0 or less immediately, 
@@ -98,7 +104,7 @@ class DemoTimerService {
     // Start the countdown timer
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       // Get the most up-to-date remaining time
-      _remainingSeconds = _prefUtils.calculateRemainingTime();
+      _remainingSeconds = _prefUtils!.calculateRemainingTime();
       
       // Log every 60 seconds for debugging
       if (timer.tick % 60 == 0) {
@@ -199,13 +205,15 @@ class DemoTimerService {
   // Check if timer is expired
   bool isTimerExpired() {
     if (_isPremium) return false;
-    return _prefUtils.hasTimerExpired();
+    if (_prefUtils == null) return false; // Avoid null error
+    return _prefUtils!.hasTimerExpired();
   }
   
   // Check if a timer was ever created - now also checks Firestore
   Future<bool> wasTimerCreated() async {
     // Check if timer was set in local preferences
-    bool localTimerCreated = _prefUtils.getTimerStartTime() > 0;
+    if (_prefUtils == null) return false; // Avoid null error
+    bool localTimerCreated = _prefUtils!.getTimerStartTime() > 0;
     
     // Also check Firestore if the user is logged in
     if (_userService.isLoggedIn) {
@@ -237,8 +245,24 @@ class DemoTimerService {
   
   // Refresh and get the latest remaining time
   int refreshRemainingTime() {
-    _remainingSeconds = _prefUtils.calculateRemainingTime();
-    return _remainingSeconds;
+    try {
+      // Initialize PrefUtils if it hasn't been initialized yet
+      if (_prefUtils == null) {
+        _prefUtils = PrefUtils();
+        // Don't wait for init() to complete, but start the initialization
+        _prefUtils!.init().then((_) {
+          debugPrint('✅ PrefUtils initialized during refreshRemainingTime call');
+        });
+        return 0; // Return default value while initializing
+      }
+      
+      _remainingSeconds = _prefUtils!.calculateRemainingTime();
+      return _remainingSeconds;
+    } catch (e) {
+      print('Error in refreshRemainingTime: $e');
+      // Return a default value to prevent late initialization errors
+      return 0;
+    }
   }
   
   // Dispose the service

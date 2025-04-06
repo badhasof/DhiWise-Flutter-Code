@@ -88,7 +88,7 @@ class OnboardimgScreen extends StatelessWidget {
               ),
               child: TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.quizScreen);
+                  NavigatorService.pushNamed(AppRoutes.quizScreen);
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
@@ -128,7 +128,7 @@ class OnboardimgScreen extends StatelessWidget {
               ),
               child: TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.signInScreen);
+                  NavigatorService.pushNamed(AppRoutes.signInScreen);
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),

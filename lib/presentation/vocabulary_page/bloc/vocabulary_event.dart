@@ -14,3 +14,13 @@ class VocabularyInitialEvent extends VocabularyEvent {
   @override
   List<Object?> get props => [];
 }
+
+/// Event that is dispatched when the timer needs to be updated.
+class VocabularyUpdateTimerEvent extends VocabularyEvent {
+  final int remainingTime;
+
+  VocabularyUpdateTimerEvent({required this.remainingTime});
+  
+  @override
+  List<Object?> get props => [remainingTime];
+}

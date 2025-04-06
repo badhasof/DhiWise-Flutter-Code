@@ -17,48 +17,73 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     ProfileInitialEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        nameFieldController: TextEditingController(),
-        usernameFieldController: TextEditingController(),
-        passwordFieldController: TextEditingController(),
-        emailFieldController: TextEditingController(),
-        isEditing: false,
-      ),
-    );
+    try {
+      emit(
+        state.copyWith(
+          nameFieldController: TextEditingController(),
+          usernameFieldController: TextEditingController(),
+          passwordFieldController: TextEditingController(),
+          emailFieldController: TextEditingController(),
+          profileModelObj: ProfileModel(), // Initialize with an empty model
+          isEditing: false,
+        ),
+      );
+    } catch (e) {
+      print('Error initializing profile: $e');
+      // Fallback initialization
+      emit(
+        state.copyWith(
+          nameFieldController: TextEditingController(),
+          usernameFieldController: TextEditingController(),
+          passwordFieldController: TextEditingController(),
+          emailFieldController: TextEditingController(),
+          profileModelObj: ProfileModel(), // Initialize with an empty model
+          isEditing: false,
+        ),
+      );
+    }
   }
 
   _onUpdateUserData(
     UpdateUserDataEvent event,
     Emitter<ProfileState> emit,
   ) {
-    final nameController = state.nameFieldController ?? TextEditingController();
-    final emailController = state.emailFieldController ?? TextEditingController();
-    final usernameController = state.usernameFieldController ?? TextEditingController();
+    try {
+      final nameController = state.nameFieldController ?? TextEditingController();
+      final emailController = state.emailFieldController ?? TextEditingController();
+      final usernameController = state.usernameFieldController ?? TextEditingController();
 
-    if (event.displayName != null) {
-      nameController.text = event.displayName!;
-      // Use displayName as username if username is not set
-      usernameController.text = event.displayName!.toLowerCase().replaceAll(' ', '_');
+      if (event.displayName != null) {
+        nameController.text = event.displayName!;
+        // Use displayName as username if username is not set
+        usernameController.text = event.displayName!.toLowerCase().replaceAll(' ', '_');
+      }
+
+      if (event.email != null) {
+        emailController.text = event.email!;
+      }
+
+      emit(state.copyWith(
+        nameFieldController: nameController,
+        emailFieldController: emailController,
+        usernameFieldController: usernameController,
+        profileModelObj: state.profileModelObj ?? ProfileModel(), // Ensure profileModelObj is not null
+      ));
+    } catch (e) {
+      print('Error updating user data: $e');
     }
-
-    if (event.email != null) {
-      emailController.text = event.email!;
-    }
-
-    emit(state.copyWith(
-      nameFieldController: nameController,
-      emailFieldController: emailController,
-      usernameFieldController: usernameController,
-    ));
   }
   
   _onToggleEditMode(
     ToggleEditModeEvent event,
     Emitter<ProfileState> emit,
   ) {
-    emit(state.copyWith(
-      isEditing: !state.isEditing,
-    ));
+    try {
+      emit(state.copyWith(
+        isEditing: !state.isEditing,
+      ));
+    } catch (e) {
+      print('Error toggling edit mode: $e');
+    }
   }
 }
