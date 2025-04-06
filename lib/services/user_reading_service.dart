@@ -65,14 +65,13 @@ class UserReadingService {
         await userRef.set({
           'email': currentUser!.email,
           'createdAt': FieldValue.serverTimestamp(),
-          'isPremium': false,
           'stats': {
             'totalStoriesCompleted': 0,
             'lastCompletedAt': null,
           }
         });
         
-        debugPrint('✅ Created user document');
+        debugPrint('✅ Created user document without subscription data');
       }
       
       // Add the story to the user's stats

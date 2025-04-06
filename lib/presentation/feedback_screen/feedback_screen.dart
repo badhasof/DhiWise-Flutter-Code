@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../services/demo_timer_service.dart';
+import '../../services/subscription_status_manager.dart';
+import '../../services/user_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({Key? key}) : super(key: key);
@@ -19,6 +22,71 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   TextEditingController _answer1Controller = TextEditingController();
   TextEditingController _answer2Controller = TextEditingController();
   TextEditingController _answer3Controller = TextEditingController();
+  bool _isTimerExpired = false;
+  bool _isDemoDone = false;
+  bool _isPremium = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    debugPrint('[FeedbackScreen] initState called.'); // Log initState
+    super.initState();
+    // Reset the navigation flag in the demo timer service
+    // This prevents duplicate navigations if the timer expires while on this screen
+    DemoTimerService.instance.resetNavigationFlag();
+    
+    // Check if timer is actually expired and if user is premium
+    _checkDemoStatus();
+  }
+  
+  Future<void> _checkDemoStatus() async {
+    debugPrint('[FeedbackScreen] _checkDemoStatus started.'); // Log start
+    // Check if demo timer is finished in Firebase
+    _isDemoDone = await DemoTimerService.instance.isDemoMarkedAsDone();
+    debugPrint('[FeedbackScreen] isDemoDone: $_isDemoDone');
+    
+    // Check if demo timer is expired locally
+    _isTimerExpired = await DemoTimerService.instance.isTimerExpired();
+    debugPrint('[FeedbackScreen] isTimerExpired: $_isTimerExpired');
+    
+    // Ensure demo status is updated to DONE if timer is expired but status isn't marked as done
+    if (_isTimerExpired && !_isDemoDone) {
+      debugPrint('[FeedbackScreen] Timer expired but status not marked as DONE. Forcing update...');
+      await DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
+      _isDemoDone = true;
+      debugPrint('[FeedbackScreen] Status updated to DONE');
+    }
+    
+    // Check if user has premium access
+    _isPremium = await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+    debugPrint('[FeedbackScreen] isPremium: $_isPremium');
+    
+    // Mark as no longer loading
+    if (mounted) {
+      debugPrint('[FeedbackScreen] Setting state: _isLoading = false');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+    
+    // If demo isn't marked as done in Firebase or user has premium, redirect to home
+    if (!_isDemoDone || _isPremium) {
+      debugPrint('[FeedbackScreen] Condition met for redirection. Redirecting to Home...');
+      // Short delay to allow screen to initialize
+      Future.delayed(Duration(milliseconds: 300), () {
+        if (mounted) {
+          debugPrint('[FeedbackScreen] Executing navigation to Home.');
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.homeScreen,
+            (route) => false,
+          );
+        }
+      });
+    } else {
+      debugPrint('[FeedbackScreen] Conditions not met for redirection. Staying on FeedbackScreen.');
+    }
+  }
 
   @override
   void dispose() {
@@ -32,6 +100,21 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[FeedbackScreen] build called. isLoading: $_isLoading, isDemoDone: $_isDemoDone, isPremium: $_isPremium'); // Log build
+    // If still loading or demo isn't done or user is premium, show loading indicator
+    if (_isLoading || !_isDemoDone || _isPremium) {
+      debugPrint('[FeedbackScreen] Building loading indicator.');
+      return Scaffold(
+        backgroundColor: Color(0xFFFFF9F4),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFFF6F3E),
+          ),
+        ),
+      );
+    }
+  
+    debugPrint('[FeedbackScreen] Building main content.');
     return Scaffold(
       backgroundColor: Color(0xFFFFF9F4),
       body: SafeArea(
@@ -274,19 +357,42 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           borderRadius: BorderRadius.circular(12.h),
         ),
         child: TextButton(
-          onPressed: () {
+          onPressed: () async {
+            // Double-check demo status before submitting
+            bool isDemoDone = await DemoTimerService.instance.isDemoMarkedAsDone();
+            if (!isDemoDone) {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.homeScreen,
+                (route) => false,
+              );
+              return;
+            }
+            
             // Submit feedback
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Feedback submitted. Thank you!')),
             );
             
-            // Navigate to subscription/pricing screen
+            // Check if user already has premium access
+            final bool isPremium = await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+            
+            // Navigate to subscription/pricing screen only if user doesn't have premium
             Future.delayed(Duration(milliseconds: 1500), () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.subscriptionScreen,
-                (route) => false,
-              );
+              if (!isPremium) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.subscriptionScreen,
+                  (route) => false,
+                );
+              } else {
+                // User already has premium, navigate to home screen instead
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.homeScreen,
+                  (route) => false,
+                );
+              }
             });
           },
           style: TextButton.styleFrom(

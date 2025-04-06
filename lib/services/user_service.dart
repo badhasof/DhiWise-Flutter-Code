@@ -3,6 +3,40 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'subscription_service.dart';
 
+// Demo status enum values
+enum DemoStatus {
+  NA,       // Demo has not been started
+  STARTED,  // Demo has been started but not completed
+  DONE      // Demo has been completed
+}
+
+// Extension for string conversion
+extension DemoStatusExtension on DemoStatus {
+  String get value {
+    switch (this) {
+      case DemoStatus.NA:
+        return 'N/A';
+      case DemoStatus.STARTED:
+        return 'started';
+      case DemoStatus.DONE:
+        return 'Done';
+    }
+  }
+  
+  static DemoStatus fromString(String? value) {
+    if (value == null) return DemoStatus.NA;
+    
+    switch (value) {
+      case 'started':
+        return DemoStatus.STARTED;
+      case 'Done':
+        return DemoStatus.DONE;
+      default:
+        return DemoStatus.NA;
+    }
+  }
+}
+
 class UserService {
   // Singleton pattern
   static final UserService _instance = UserService._internal();
@@ -22,16 +56,25 @@ class UserService {
   // Check if user is logged in
   bool get isLoggedIn => currentUser != null;
   
-  // Check if user has premium access
+  // Check if user has premium access (DEPRECATED - Use SubscriptionStatusManager)
+  @Deprecated('Use SubscriptionStatusManager.instance.isSubscribed instead')
   Future<bool> hasPremiumAccess() async {
+    // This method now always returns false or throws an error
+    // as it relies on the legacy Firestore subscription check.
+    debugPrint('⚠️ WARNING: UserService.hasPremiumAccess() is deprecated. Use SubscriptionStatusManager.instance.isSubscribed.');
+    // Return false to avoid potential issues where this might still be called.
+    return false;
+    /* 
     if (!isLoggedIn) return false;
     
     try {
-      return await _subscriptionService.checkSubscriptionStatus();
+      // Old logic - relies on legacy service and Firestore
+      return await _subscriptionService.checkSubscriptionStatus(); 
     } catch (e) {
       debugPrint('Error checking premium access: $e');
       return false;
     }
+    */
   }
   
   // Get user data from Firestore
@@ -63,6 +106,37 @@ class UserService {
     }
   }
   
+  // Get the current demo status for the user
+  Future<DemoStatus> getDemoStatus() async {
+    if (!isLoggedIn) return DemoStatus.NA;
+    
+    try {
+      final userData = await getUserData();
+      if (userData == null) return DemoStatus.NA;
+      
+      // Get the demo status string from user data
+      final demoStatusString = userData['demo'] as String?;
+      return DemoStatusExtension.fromString(demoStatusString);
+    } catch (e) {
+      debugPrint('Error getting demo status: $e');
+      return DemoStatus.NA;
+    }
+  }
+  
+  // Set the demo status for the user
+  Future<void> setDemoStatus(DemoStatus status) async {
+    if (!isLoggedIn) return;
+    
+    try {
+      await updateUserData({
+        'demo': status.value,
+      });
+      debugPrint('Demo status updated to: ${status.value}');
+    } catch (e) {
+      debugPrint('Error updating demo status: $e');
+    }
+  }
+  
   // Initialize user data in Firestore if it doesn't exist
   Future<void> initializeUserDataIfNeeded() async {
     if (!isLoggedIn) {
@@ -78,23 +152,34 @@ class UserService {
       
       if (!doc.exists) {
         debugPrint('📝 Creating new user document in Firestore');
-        // Initialize basic user data
+        // Initialize basic user data - REMOVE isPremium
         await _firestore.collection('users').doc(userId).set({
           'email': currentUser!.email,
           'displayName': currentUser!.displayName,
           'photoURL': currentUser!.photoURL,
           'createdAt': FieldValue.serverTimestamp(),
-          'isPremium': false,
+          'demo': DemoStatus.NA.value, // Initialize with N/A
           'stats': {
             'totalStoriesCompleted': 0,
             'lastCompletedAt': null,
           }
         });
-        debugPrint('✅ User document created successfully');
+        debugPrint('✅ User document created successfully (with demo status N/A)');
       } else {
-        debugPrint('🔍 User document already exists, checking for stats field');
-        // Check if stats field exists and initialize if needed
+        debugPrint('🔍 User document already exists, checking for demo field');
+        // Check if demo field exists and initialize if needed
         final data = doc.data();
+        if (data != null && !data.containsKey('demo')) {
+          debugPrint('📊 Adding demo field to existing user document');
+          await _firestore.collection('users').doc(userId).update({
+            'demo': DemoStatus.NA.value,
+          });
+          debugPrint('✅ Added demo field to user document');
+        } else {
+          debugPrint('✅ User document already has demo field');
+        }
+        
+        // Check if stats field exists and initialize if needed
         if (data != null && !data.containsKey('stats')) {
           debugPrint('📊 Adding stats field to existing user document');
           await _firestore.collection('users').doc(userId).update({

@@ -9,6 +9,10 @@ import 'core/app_export.dart';
 import 'services/subscription_service.dart';
 import 'services/user_service.dart';
 import 'services/user_stats_manager.dart';
+import 'services/revenuecat_service.dart';
+import 'services/revenuecat_offering_manager.dart';
+import 'services/subscription_status_manager.dart';
+import 'services/demo_timer_service.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() async {
@@ -46,7 +50,27 @@ void main() async {
 
 /// Initialize all services needed at app startup
 Future<void> _initializeServices() async {
-  // Initialize subscription service
+  // Initialize subscription services
+  
+  // Initialize RevenueCat Service (new system)
+  final revenueCatService = RevenueCatService();
+  await revenueCatService.initialize();
+  print('✅ RevenueCat service initialized');
+  
+  // Fetch RevenueCat offerings
+  final offeringManager = RevenueCatOfferingManager();
+  await offeringManager.fetchAndDisplayOfferings();
+  print('✅ RevenueCat offerings fetched');
+  
+  // Initialize subscription status manager for real-time subscription tracking
+  final subscriptionStatusManager = SubscriptionStatusManager();
+  await subscriptionStatusManager.initialize();
+  print('✅ Subscription status manager initialized');
+  
+  // Initialize global demo timer service for app-wide timer monitoring
+  await DemoTimerService.instance.initialize();
+  
+  // Initialize legacy subscription service (old system)
   final subscriptionService = SubscriptionService();
   await subscriptionService.initialize();
   

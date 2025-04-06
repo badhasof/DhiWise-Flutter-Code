@@ -109,14 +109,14 @@ class _StoriesOverviewScreenState extends State<StoriesOverviewScreen> {
       children: [
         // Status bar content (time, battery, etc.)
         // Trail time indicator
-        Container(
+        /* Container( // Remove this container
           width: double.infinity,
           alignment: Alignment.center,
           child: Container(
             margin: EdgeInsets.only(top: 4.h),
             child: CountdownTimerWidget(hideIfPremium: true),
           ),
-        ),
+        ), */
         // Navigation bar with back button, title, and favorite button
         Container(
           padding: EdgeInsets.fromLTRB(16.h, 4.h, 16.h, 12.h),

@@ -7,6 +7,8 @@ import 'models/demo_time_model.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/utils/pref_utils.dart';
+import '../../services/user_service.dart';
+import '../../services/demo_timer_service.dart';
 
 class DemoTimeScreen extends StatefulWidget {
   const DemoTimeScreen({Key? key}) : super(key: key);
@@ -339,7 +341,7 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
           borderRadius: BorderRadius.circular(12.h),
         ),
         child: TextButton(
-          onPressed: () {
+          onPressed: () async {
             // Store the selected demo time in minutes
             int selectedMinutes = (_sliderValue * 45).round();
             // Save to SharedPreferences
@@ -347,6 +349,12 @@ class _DemoTimeScreenState extends State<DemoTimeScreen> {
             
             // Reset the timer to start fresh with the selected duration
             PrefUtils().resetTimer();
+            
+            // Update the demo status to STARTED in Firestore
+            await UserService().setDemoStatus(DemoStatus.STARTED);
+            
+            // Restart the DemoTimerService with the new time
+            await DemoTimerService.instance.restartTimer();
             
             // Navigate to home screen and clear the navigation stack
             Navigator.pushNamedAndRemoveUntil(

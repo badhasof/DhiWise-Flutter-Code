@@ -5,6 +5,9 @@ import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_elevated_button.dart';
 import 'bloc/demo_bloc.dart';
 import 'models/demo_model.dart';
+import '../../services/user_service.dart';
+import '../../core/utils/pref_utils.dart';
+import '../../services/demo_timer_service.dart';
 
 class DemoScreen extends StatelessWidget {
   const DemoScreen({Key? key})
@@ -248,6 +251,26 @@ class DemoScreen extends StatelessWidget {
             text: "lbl_start_demo".tr,
             margin: EdgeInsets.only(bottom: 12.h),
             buttonStyle: CustomButtonStyles.fillDeepOrange,
+            onPressed: () async {
+              // Store a default demo time (15 minutes)
+              PrefUtils().setDemoTime(15);
+              
+              // Reset the timer to start fresh with the default duration
+              PrefUtils().resetTimer();
+              
+              // Update the demo status to STARTED in Firestore
+              await UserService().setDemoStatus(DemoStatus.STARTED);
+              
+              // Restart the DemoTimerService with the new time
+              await DemoTimerService.instance.restartTimer();
+              
+              // Navigate to home screen and clear the navigation stack
+              Navigator.pushNamedAndRemoveUntil(
+                context, 
+                AppRoutes.homeScreen, 
+                (route) => false
+              );
+            },
           )
         ],
       ),

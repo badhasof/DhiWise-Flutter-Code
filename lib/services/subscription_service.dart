@@ -515,7 +515,7 @@ class SubscriptionService {
     }
     
     // Create the subscription model
-    final SubscriptionModel subscription = SubscriptionModel(
+    /* final SubscriptionModel subscription = SubscriptionModel(
       id: purchaseDetails.purchaseID ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: subscriptionType == 'monthly' ? 'Monthly Subscription' : 'Lifetime Access',
       type: subscriptionType,
@@ -523,24 +523,39 @@ class SubscriptionService {
       status: 'active',
       startDate: now,
       endDate: endDate,
-    );
-    
+    ); */
+
     try {
       // Add/update the subscription in Firestore
-      await db.collection('users').doc(userId).set({
+      // REMOVED: Firestore update for subscription status
+      /* await db.collection('users').doc(userId).set({
         'subscription': subscription.toJson(),
         'isPremium': true,
         'lastUpdated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true)); */
+
+      // Instead, just log that this step is skipped
+      debugPrint('Firestore update for subscription skipped (handled by RevenueCat).');
       
-      debugPrint('User subscription updated successfully');
+      // Optional: Trigger a manual refresh of RevenueCat status if needed
+      // await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+
+      // debugPrint('User subscription updated successfully'); // No longer accurate
     } catch (e) {
-      debugPrint('Error updating user subscription: $e');
+      debugPrint('Error during Firestore update skip (expected): $e');
     }
   }
 
-  // Check if user has an active subscription
+  // Check if user has an active subscription (DEPRECATED - for legacy systems only)
+  @Deprecated('Use SubscriptionStatusManager.instance.isSubscribed instead')
   Future<bool> checkSubscriptionStatus() async {
+    debugPrint('⚠️ WARNING: SubscriptionService.checkSubscriptionStatus() is deprecated.');
+    debugPrint('⚠️ Use SubscriptionStatusManager.instance.isSubscribed instead.');
+    
+    // Return false as these fields have been removed from Firestore
+    return false;
+    
+    /* Original implementation relied on Firestore fields that no longer exist
     final User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       return false;
@@ -576,6 +591,7 @@ class SubscriptionService {
       debugPrint('Error checking subscription status: $e');
       return false;
     }
+    */
   }
 
   // Purchase a product

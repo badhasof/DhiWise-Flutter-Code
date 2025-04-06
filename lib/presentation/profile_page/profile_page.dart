@@ -12,6 +12,8 @@ import '../settings_screen/settings_screen.dart';
 import '../../services/user_service.dart';
 import '../../services/user_stats_manager.dart';
 import '../subscription_screen/subscription_screen.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import '../../services/subscription_status_manager.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key})
@@ -948,7 +950,17 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
     }
     
     try {
+      // Check premium status through UserStatsManager
       await _statsManager.checkPremiumStatus();
+      
+      // Force a refresh of subscription status in SubscriptionStatusManager as well
+      try {
+        // Force RevenueCat to refresh and update subscription status manager
+        await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+        debugPrint('✅ Manually synchronized subscription status after check');
+      } catch (e) {
+        debugPrint('❌ Error manually syncing subscription status: $e');
+      }
     } finally {
       if (mounted) {
         setState(() {

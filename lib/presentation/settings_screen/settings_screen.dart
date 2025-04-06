@@ -8,6 +8,11 @@ import '../sign_in_screen/sign_in_screen.dart';
 import 'bloc/settings_bloc.dart';
 import 'models/settings_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/subscription_status_manager.dart';
+import '../../widgets/app_bar/custom_app_bar.dart';
+import '../../widgets/app_bar/appbar_leading_image.dart';
+import '../../widgets/app_bar/appbar_title.dart';
+import '../../widgets/custom_outlined_button.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -232,30 +237,8 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: appTheme.gray100,
-            borderRadius: BorderRadius.circular(12.h),
-            border: Border(
-              top: BorderSide(color: Color(0xFFE0E0E0), width: 1),
-              left: BorderSide(color: Color(0xFFE0E0E0), width: 1),
-              right: BorderSide(color: Color(0xFFE0E0E0), width: 1),
-              bottom: BorderSide(color: Color(0xFFE0E0E0), width: 4),
-            ),
-          ),
-          child: Column(
-            children: [
-              _buildSettingItem(
-                context,
-                icon: ImageConstant.imgChooseAPlanIcon,
-                title: "Choose a plan",
-                onTap: () {},
-                isFirst: true,
-                isLast: true,
-              ),
-            ],
-          ),
-        ),
+        // Subscription status card
+        _buildSubscriptionStatusCard(context, SubscriptionStatusManager.instance.isSubscribed),
         SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
@@ -282,7 +265,39 @@ class SettingsScreen extends StatelessWidget {
               fontFamily: 'Lato',
               fontWeight: FontWeight.w700,
             ),
-            onPressed: () {},
+            onPressed: () async {
+              try {
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => Center(
+                    child: CircularProgressIndicator(
+                      color: appTheme.deepOrangeA200,
+                    ),
+                  ),
+                );
+                
+                // Restore purchases
+                final success = await SubscriptionStatusManager.instance.restorePurchases();
+                
+                // Close loading indicator and show appropriate message
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success 
+                      ? 'Subscription restored successfully' 
+                      : 'No purchases to restore'),
+                  ),
+                );
+              } catch (e) {
+                // Close loading indicator and show error message
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to restore subscription: ${e.toString()}')),
+                );
+              }
+            },
           ),
         ),
       ],
@@ -592,6 +607,256 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  // Display subscription status and management options
+  Widget _buildSubscriptionStatusCard(BuildContext context, bool isSubscribed) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.h),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10.h,
+            offset: Offset(0, 2.h),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Subscription status
+          Text(
+            "Status",
+            style: TextStyle(
+              color: Color(0xFF9E9E9E),
+              fontSize: 14.fSize,
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          StreamBuilder<SubscriptionType>(
+            stream: SubscriptionStatusManager.instance.subscriptionTypeStream,
+            initialData: SubscriptionStatusManager.instance.subscriptionType,
+            builder: (context, snapshot) {
+              final subscriptionType = snapshot.data ?? SubscriptionType.none;
+              
+              final String statusText;
+              final Color statusColor;
+              
+              switch (subscriptionType) {
+                case SubscriptionType.lifetime:
+                  statusText = "Lifetime Premium";
+                  statusColor = Color(0xFF4E8C6F); // Green for lifetime
+                  break;
+                case SubscriptionType.monthly:
+                  statusText = "Monthly Premium";
+                  statusColor = Color(0xFF1976D2); // Blue for monthly
+                  break;
+                case SubscriptionType.none:
+                  statusText = "Basic";
+                  statusColor = Color(0xFF9E9E9E); // Gray for basic
+                  break;
+              }
+              
+              return Row(
+                children: [
+                  Container(
+                    width: 12.h,
+                    height: 12.h,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 8.h),
+                  Text(
+                    statusText,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 16.fSize,
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              );
+            }
+          ),
+          
+          // Divider
+          SizedBox(height: 16.h),
+          Divider(color: Color(0xFFEFECEB)),
+          SizedBox(height: 16.h),
+          
+          // Manage subscription button
+          if (isSubscribed)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Additional info about subscription type
+                StreamBuilder<SubscriptionType>(
+                  stream: SubscriptionStatusManager.instance.subscriptionTypeStream,
+                  initialData: SubscriptionStatusManager.instance.subscriptionType,
+                  builder: (context, snapshot) {
+                    final subscriptionType = snapshot.data ?? SubscriptionType.none;
+                    
+                    if (subscriptionType == SubscriptionType.lifetime) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 16.h),
+                        child: Text(
+                          "You have lifetime access to all premium features. Thank you for your support!",
+                          style: TextStyle(
+                            color: appTheme.gray600,
+                            fontSize: 14.fSize,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      );
+                    } else if (subscriptionType == SubscriptionType.monthly) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 16.h),
+                        child: Text(
+                          "Your monthly subscription is active. You can manage your subscription below.",
+                          style: TextStyle(
+                            color: appTheme.gray600,
+                            fontSize: 14.fSize,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      );
+                    }
+                    
+                    return SizedBox.shrink();
+                  }
+                ),
+                
+                // Only show management buttons for monthly subscription
+                StreamBuilder<SubscriptionType>(
+                  stream: SubscriptionStatusManager.instance.subscriptionTypeStream,
+                  initialData: SubscriptionStatusManager.instance.subscriptionType,
+                  builder: (context, snapshot) {
+                    final subscriptionType = snapshot.data ?? SubscriptionType.none;
+                    
+                    if (subscriptionType == SubscriptionType.monthly) {
+                      return _buildManagementButton(
+                        context,
+                        "Manage Subscription",
+                        Icons.credit_card,
+                        () async {
+                          // Show loading
+                          _showLoadingDialog(context);
+                          
+                          // Try to open subscription management
+                          final success = await SubscriptionStatusManager.instance.openSubscriptionManagement();
+                          
+                          // Hide loading dialog
+                          Navigator.of(context, rootNavigator: true).pop();
+                          
+                          if (!success && context.mounted) {
+                            // Show error message if failed
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Could not open subscription management. Please try again later.'))
+                            );
+                          }
+                        },
+                      );
+                    }
+                    
+                    return SizedBox.shrink();
+                  }
+                ),
+              ],
+            )
+          else
+            _buildManagementButton(
+              context,
+              "Choose a plan",
+              Icons.shopping_cart_outlined,
+              () async {
+                // Check if user already has premium before showing subscription screen
+                bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
+                
+                // Only navigate if needed
+                if (shouldShow && context.mounted) {
+                  Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
+                }
+              },
+            ),
+            
+          // Restore purchases button
+          SizedBox(height: 12.h),
+          _buildManagementButton(
+            context,
+            "Restore purchases",
+            Icons.restore,
+            () async {
+              // Show loading
+              _showLoadingDialog(context);
+              
+              // Attempt to restore purchases
+              final success = await SubscriptionStatusManager.instance.restorePurchases();
+              
+              // Hide loading dialog
+              Navigator.of(context, rootNavigator: true).pop();
+              
+              if (context.mounted) {
+                // Show appropriate message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(
+                    success 
+                      ? 'Purchases restored successfully' 
+                      : 'No active purchases found to restore'
+                  ))
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Show loading dialog
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: CircularProgressIndicator(
+          color: appTheme.deepOrangeA200,
+        ),
+      ),
+    );
+  }
+
+  // Build management button
+  Widget _buildManagementButton(BuildContext context, String text, IconData icon, VoidCallback onPressed) {
+    return CustomElevatedButton(
+      height: 48.h,
+      text: text,
+      buttonStyle: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(Colors.white),
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.h),
+          ),
+        ),
+      ),
+      buttonTextStyle: TextStyle(
+        color: appTheme.deepOrangeA200,
+        fontSize: 16.fSize,
+        fontFamily: 'Lato',
+        fontWeight: FontWeight.w700,
+      ),
+      onPressed: onPressed,
     );
   }
 } 

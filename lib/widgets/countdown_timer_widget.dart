@@ -7,6 +7,8 @@ import '../widgets/custom_image_view.dart';
 import '../theme/custom_button_style.dart';
 import '../services/user_service.dart';
 import '../services/user_stats_manager.dart';
+import '../services/subscription_status_manager.dart';
+import '../services/demo_timer_service.dart';
 
 class CountdownTimerWidget extends StatefulWidget {
   final bool hideIfPremium;
@@ -22,69 +24,71 @@ class CountdownTimerWidget extends StatefulWidget {
 
 class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   Timer? _timer;
-  int _remainingSeconds = 0; // Initialize to 0, will be updated in initState
+  int _remainingSeconds = 0;
   late PrefUtils _prefUtils;
-  bool _hasNavigatedToFeedback = false;
   
-  // Stats manager for premium status
-  late UserStatsManager _statsManager;
+  // Subscription manager for premium status
+  late SubscriptionStatusManager _subscriptionManager;
+  bool _isPremium = false;
+  StreamSubscription? _subscriptionStatusSubscription;
   
   @override
   void initState() {
     super.initState();
     _prefUtils = PrefUtils();
-    _statsManager = UserStatsManager();
+    _subscriptionManager = SubscriptionStatusManager.instance;
     
-    // Only initialize timer if not premium - using pre-fetched status
-    if (!widget.hideIfPremium || !_statsManager.isPremium) {
-      _initializeTimer();
+    // Get initial subscription status and listen for changes
+    _checkSubscriptionStatus();
+    _subscriptionStatusSubscription = _subscriptionManager.subscriptionStatusStream.listen(_onSubscriptionStatusChanged);
+    
+    // Initialize UI updates
+    _startUIUpdates();
+  }
+  
+  Future<void> _checkSubscriptionStatus() async {
+    // Check current subscription status
+    _isPremium = await _subscriptionManager.checkSubscriptionStatus();
+    
+    if (mounted) {
+      setState(() {});
     }
   }
   
-  Future<void> _initializeTimer() async {
-    // Initialize the timer if it hasn't been started yet
-    await _prefUtils.initializeTimerIfNeeded();
+  void _onSubscriptionStatusChanged(bool isSubscribed) {
+    if (mounted) {
+      setState(() {
+        _isPremium = isSubscribed;
+      });
+    }
+  }
+  
+  void _startUIUpdates() {
+    // Start a timer to update the UI with the latest remaining time
+    _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
     
-    // Get current remaining time
-    _remainingSeconds = _prefUtils.calculateRemainingTime();
-    if (mounted) setState(() {}); // Update UI with current time
-    
-    // Start the countdown timer
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          // Get the most up-to-date remaining time
-          _remainingSeconds = _prefUtils.calculateRemainingTime();
+          _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
           
+          // If timer has reached zero, ensure status is updated to DONE
           if (_remainingSeconds <= 0) {
-            _timer?.cancel();
-            // Handle timer expiration - navigate to feedback page
-            _navigateToFeedbackIfNeeded();
+            // Check if timer has actually expired (not just zero due to calculation error)
+            if (DemoTimerService.instance.isTimerExpired()) {
+              // Update status to DONE if timer has expired
+              DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
+            }
           }
         });
       }
     });
   }
   
-  void _navigateToFeedbackIfNeeded() {
-    // Don't navigate if premium
-    if (_statsManager.isPremium) return;
-    
-    if (!_hasNavigatedToFeedback && mounted) {
-      _hasNavigatedToFeedback = true;
-      // Delay navigation slightly to prevent multiple navigations
-      Future.delayed(Duration(milliseconds: 500), () {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.feedbackScreen,
-          (route) => false,
-        );
-      });
-    }
-  }
-  
   @override
   void dispose() {
     _timer?.cancel();
+    _subscriptionStatusSubscription?.cancel();
     super.dispose();
   }
   
@@ -98,11 +102,11 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
   @override
   Widget build(BuildContext context) {
     // If user is premium and we want to hide the widget, return an empty SizedBox
-    if (_statsManager.isPremium && widget.hideIfPremium) {
+    if (_isPremium && widget.hideIfPremium) {
       return SizedBox.shrink();
     }
     
-    // Otherwise show the countdown timer
+    // Otherwise show the countdown timer (original UI design)
     return CustomElevatedButton(
       height: 22.h,
       width: 122.h,

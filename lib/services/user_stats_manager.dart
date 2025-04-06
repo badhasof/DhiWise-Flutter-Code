@@ -4,6 +4,9 @@ import 'dart:async';
 import 'user_reading_service.dart';
 import 'user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'subscription_status_manager.dart';
+import 'revenuecat_offering_manager.dart';
 
 class UserStatsManager {
   // Singleton pattern
@@ -104,24 +107,10 @@ class UserStatsManager {
       if (snapshot.exists) {
         final data = snapshot.data();
         if (data != null) {
-          // Update user data
+          // Update user data (general)
           _userData = data;
           _isUserDataLoaded = true;
           _lastUserDataFetchTime = DateTime.now();
-          
-          // Update premium status
-          if (data.containsKey('isPremium')) {
-            _isPremium = data['isPremium'] ?? false;
-            _isPremiumChecked = true;
-          }
-          
-          // Update subscription type
-          if (data.containsKey('subscription')) {
-            final subscription = data['subscription'];
-            if (subscription != null && subscription.containsKey('type')) {
-              _subscriptionType = subscription['type'] == 'monthly' ? 'Monthly' : 'Lifetime';
-            }
-          }
           
           // Update stats
           if (data.containsKey('stats')) {
@@ -208,30 +197,46 @@ class UserStatsManager {
         _isPremiumChecked = true;
         return;
       }
+
+      debugPrint('🔍 UserStatsManager: Checking RevenueCat subscription status');
       
-      // Check if user has premium access
-      bool isPremium = await _userService.hasPremiumAccess();
+      // Check status directly from RevenueCat's SubscriptionStatusManager
+      final bool isSubscribed = await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+      final subscriptionType = SubscriptionStatusManager.instance.subscriptionType;
       
-      if (isPremium) {
-        // Get subscription type
-        var userData = await _userService.getUserData();
-        if (userData != null && userData.containsKey('subscription')) {
-          final subscription = userData['subscription'];
-          if (subscription != null && subscription.containsKey('type')) {
-            _subscriptionType = subscription['type'] == 'monthly' ? 'Monthly' : 'Lifetime';
-          }
-        }
+      // Update local state
+      _isPremium = isSubscribed;
+      
+      // Set subscription type based on the enum from SubscriptionStatusManager
+      switch (subscriptionType) {
+        case SubscriptionType.lifetime:
+          _subscriptionType = 'Lifetime';
+          break;
+        case SubscriptionType.monthly:
+          _subscriptionType = 'Monthly';
+          break;
+        case SubscriptionType.none:
+          _subscriptionType = '';
+          break;
       }
       
-      _isPremium = isPremium;
+      debugPrint('✅ UserStatsManager: Subscription status: ${_isPremium ? 'PREMIUM' : 'FREE'}, Type: $_subscriptionType');
       _isPremiumChecked = true;
       
-      debugPrint('🔑 UserStatsManager: Premium status: $_isPremium, Type: $_subscriptionType');
+      // No need to sync with SubscriptionStatusManager since we're getting data from there
+      
     } catch (e) {
-      debugPrint('❌ UserStatsManager: Error checking premium status: $e');
+      debugPrint('❌ UserStatsManager: Unexpected error checking premium status: $e');
       _isPremium = false;
+      _subscriptionType = "";
       _isPremiumChecked = true;
     }
+  }
+  
+  // This method is no longer needed since we're getting data directly from SubscriptionStatusManager
+  // but keeping it for backward compatibility
+  void _syncWithSubscriptionStatusManager() {
+    // No implementation needed - we're now getting data from SubscriptionStatusManager directly
   }
   
   // Fetch user profile data

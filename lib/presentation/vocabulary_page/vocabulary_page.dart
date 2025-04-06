@@ -3,10 +3,13 @@ import 'dart:async';
 import '../../core/app_export.dart';
 import '../../theme/custom_button_style.dart';
 import '../../widgets/custom_elevated_button.dart';
+import '../../widgets/countdown_timer_widget.dart';
+import '../../widgets/custom_image_view.dart';
 import 'bloc/vocabulary_bloc.dart';
 import 'models/vocabulary_model.dart'; // ignore_for_file: must_be_immutable
 import '../../core/utils/pref_utils.dart';
 import '../../services/user_service.dart';
+import '../../services/demo_timer_service.dart';
 
 class VocabularyPage extends StatefulWidget {
   const VocabularyPage({Key? key})
@@ -29,8 +32,6 @@ class VocabularyPage extends StatefulWidget {
 }
 
 class _VocabularyPageState extends State<VocabularyPage> {
-  Timer? _timer;
-  int _remainingSeconds = 1800; // 30 minutes in seconds
   late PrefUtils _prefUtils;
   bool _isPremium = false;
   bool _isCheckingPremium = true;
@@ -58,56 +59,25 @@ class _VocabularyPageState extends State<VocabularyPage> {
         _isCheckingPremium = false;
       });
       
-      // Only initialize timer for non-premium users
-      if (!_isPremium) {
-        _initializeTimer();
-      }
-      
     } catch (e) {
       print('Error checking premium status: $e');
       setState(() {
         _isCheckingPremium = false;
         _isPremium = false;
       });
-      
-      // Initialize timer on error (default to free tier behavior)
-      _initializeTimer();
     }
-  }
-  
-  Future<void> _initializeTimer() async {
-    // Initialize the timer if it hasn't been started yet
-    await _prefUtils.initializeTimerIfNeeded();
-    
-    // Get current remaining time
-    _remainingSeconds = _prefUtils.calculateRemainingTime();
-    setState(() {}); // Update UI with current time
-    
-    // Start the countdown timer
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        // Get the most up-to-date remaining time
-        _remainingSeconds = _prefUtils.calculateRemainingTime();
-        
-        if (_remainingSeconds <= 0) {
-          _timer?.cancel();
-          // Handle timer expiration - could navigate to a different screen or show a dialog
-        }
-      });
-    });
   }
   
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
   }
   
   // Format seconds to mm:ss
-  String _formatTime() {
-    int minutes = _remainingSeconds ~/ 60;
-    int seconds = _remainingSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  String _formatTime(int seconds) {
+    int minutes = seconds ~/ 60;
+    int remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -156,22 +126,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
               decoration: AppDecoration.fillGray,
               child: Column(
                 children: [
-                  CustomElevatedButton(
-                    height: 22.h,
-                    width: 122.h,
-                    text: "Trial time ${_formatTime()}".tr,
-                    leftIcon: Container(
-                      margin: EdgeInsets.only(right: 4.h),
-                      child: CustomImageView(
-                        imagePath: ImageConstant.imgClock,
-                        height: 16.h,
-                        width: 16.h,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    buttonStyle: CustomButtonStyles.fillDeepOrangeA,
-                    buttonTextStyle: CustomTextStyles.labelLargeDeeporangeA200_1,
-                  )
+                  CountdownTimerWidget()
                 ],
               ),
             ),
@@ -221,3 +176,4 @@ class _VocabularyPageState extends State<VocabularyPage> {
     );
   }
 }
+

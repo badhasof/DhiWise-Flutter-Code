@@ -10,6 +10,8 @@ import '../../services/user_reading_service.dart';
 import '../../services/user_service.dart';
 import '../../services/subscription_service.dart';
 import '../../services/user_stats_manager.dart';
+import '../../services/subscription_status_manager.dart';
+import '../../services/demo_timer_service.dart';
 import 'bloc/progress_bloc.dart';
 import 'models/progress_model.dart'; // ignore_for_file: must_be_immutable
 
@@ -122,22 +124,23 @@ class _ProgressPageState extends State<ProgressPage> {
   }
   
   Future<void> _initializeTimer() async {
-    // Initialize the timer if it hasn't been started yet
-    await _prefUtils.initializeTimerIfNeeded();
-    
-    // Get current remaining time
-    _remainingSeconds = _prefUtils.calculateRemainingTime();
+    // Get the DemoTimerService instance instead of initializing own timer
+    _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
     if (mounted) setState(() {}); // Update UI with current time
     
-    // Start the countdown timer
+    // Start the countdown timer that uses the central DemoTimerService
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          // Get the most up-to-date remaining time
-          _remainingSeconds = _prefUtils.calculateRemainingTime();
+          // Get the most up-to-date remaining time from the DemoTimerService
+          _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
           
           if (_remainingSeconds <= 0) {
             _timer?.cancel();
+            
+            // Ensure status is set to DONE when timer expires
+            DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
+            
             // Handle timer expiration - navigate to feedback page
             _navigateToFeedbackIfNeeded();
           }
@@ -1518,8 +1521,40 @@ class _ProgressPageState extends State<ProgressPage> {
                 margin: EdgeInsets.zero,
                 buttonStyle: CustomButtonStyles.fillDeepOrangeA,
                 buttonTextStyle: CustomTextStyles.titleMediumOnPrimary,
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
+                onPressed: () async {
+                  if (_statsManager.isPremium) {
+                    // Show loading
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => Center(
+                        child: CircularProgressIndicator(
+                          color: appTheme.deepOrangeA200,
+                        ),
+                      ),
+                    );
+                    
+                    // Try to open subscription management
+                    final success = await SubscriptionStatusManager.instance.openSubscriptionManagement();
+                    
+                    // Hide loading dialog
+                    Navigator.of(context, rootNavigator: true).pop();
+                    
+                    if (!success && context.mounted) {
+                      // Show error message if failed
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Could not open subscription management. Please try again later.'))
+                      );
+                    }
+                  } else {
+                    // Check if user already has premium before showing subscription screen
+                    bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
+                    
+                    // Only navigate if needed
+                    if (shouldShow && context.mounted) {
+                      Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
+                    }
+                  }
                 },
               ),
             ],
