@@ -6,66 +6,78 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'core/app_export.dart';
-import 'services/subscription_service.dart';
+import 'package:get/get.dart' as GetX;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'services/subscription_status_manager.dart';
 import 'services/user_service.dart';
 import 'services/user_stats_manager.dart';
 import 'services/revenuecat_service.dart';
 import 'services/revenuecat_offering_manager.dart';
-import 'services/subscription_status_manager.dart';
 import 'services/demo_timer_service.dart';
 import 'presentation/app_navigation_screen/app_navigation_screen.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Firebase
-  try {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]).then((value) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print('✅ Firebase successfully initialized');
     
-    // Test Firestore connection
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    print('📊 Got Firestore instance');
+    // Initialize services
+    await initDependencies();
     
-    // Verify if a user is logged in
-    final user = FirebaseAuth.instance.currentUser;
-    print('👤 Current user: ${user?.uid ?? 'No user logged in'}');
+    await PrefUtils().init();
+    GetX.Get.put(PrefUtils());
+    PrefUtils prefUtils = GetX.Get.find<PrefUtils>();
+    UserStatsManager statsManager = UserStatsManager();
     
-  } catch (e) {
-    print('❌ Error initializing Firebase: $e');
-  }
-  
-  // Initialize services in the background
-  _initializeServices();
-  
-  // Continue with app launch immediately
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  await PrefUtils().init();
-  await DemoTimerService.instance.initialize();
-  runApp(MyApp());
+    // Log current configuration
+    debugPrint('🔄 Starting app with configuration:');
+    debugPrint('   Dark mode: ${prefUtils.getThemeData() == 'dark'}');
+    debugPrint('   Stats tracking: ${statsManager.isDataLoaded}');
+    debugPrint('   Demo timer started: ${prefUtils.getTimerStartTime() > 0}');
+    
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+    ));
+    runApp(MyApp());
+  });
+}
+
+/// Initialize services in the background to not block app launch
+void _initializeBackgroundServices() {
+  Future.microtask(() async {
+    try {
+      // Pre-warm RevenueCat service
+      final revenueCatService = RevenueCatService();
+      revenueCatService.initialize().timeout(
+        Duration(seconds: 20),
+        onTimeout: () {
+          print('⚠️ RevenueCat initialization timed out - will retry when needed');
+          return;
+        }
+      ).then((_) {
+        // Once initialized, pre-fetch offerings in the background
+        _fetchRevenueCatOfferings();
+      }).catchError((e) {
+        print('⚠️ RevenueCat initialization failed: $e');
+      });
+    } catch (e) {
+      print('⚠️ Background services initialization failed: $e');
+    }
+  });
 }
 
 /// Initialize all services needed at app startup
 Future<void> _initializeServices() async {
-  // Initialize subscription services
-  try {
-    final revenueCatService = RevenueCatService();
-    await revenueCatService.initialize();
-    print('✅ RevenueCat service initialized');
-  } catch (e) {
-    print('⚠️ RevenueCat service initialization failed: $e');
-  }
-  
-  try {
-    final offeringManager = RevenueCatOfferingManager();
-    await offeringManager.fetchAndDisplayOfferings();
-    print('✅ RevenueCat offerings fetched');
-  } catch (e) {
-    print('⚠️ RevenueCat offerings fetch failed: $e');
-  }
+  // This function is kept for backward compatibility
+  // All initialization is now done in _initializeBackgroundServices
+  print('⚙️ Initializing other services...');
   
   try {
     final subscriptionStatusManager = SubscriptionStatusManager();
@@ -73,21 +85,6 @@ Future<void> _initializeServices() async {
     print('✅ Subscription status manager initialized');
   } catch (e) {
     print('⚠️ Subscription status manager initialization failed: $e');
-  }
-  
-  try {
-    await DemoTimerService.instance.initialize();
-    print('✅ Demo timer service initialized');
-  } catch (e) {
-    print('⚠️ Demo timer service initialization failed: $e');
-  }
-  
-  try {
-    final subscriptionService = SubscriptionService();
-    await subscriptionService.initialize();
-    print('✅ Legacy subscription service initialized');
-  } catch (e) {
-    print('⚠️ Legacy subscription service initialization failed: $e');
   }
   
   // Initialize user service and check for existing user data
@@ -106,11 +103,75 @@ Future<void> _initializeServices() async {
   }
 }
 
+/// Fetch RevenueCat offerings in the background
+Future<void> _fetchRevenueCatOfferings() async {
+  try {
+    print('🔄 Pre-fetching RevenueCat offerings in background...');
+    final offeringManager = RevenueCatOfferingManager();
+    final offerings = await offeringManager.fetchAndDisplayOfferings();
+    
+    if (offerings != null) {
+      print('✅ RevenueCat offerings pre-fetched successfully');
+      
+      // Check if the offerings have packages
+      if (offerings.current != null) {
+        print('📦 Current offering: ${offerings.current!.identifier}');
+        print('📦 Available packages: ${offerings.current!.availablePackages.length}');
+        
+        // Log product details for each package
+        for (var package in offerings.current!.availablePackages) {
+          print('   - ${package.identifier}: ${package.storeProduct.priceString}');
+        }
+      } else {
+        print('⚠️ No current offering available');
+      }
+      
+      // Check individual offering IDs
+      final monthlyOffering = offerings.all[RevenueCatOfferingManager.monthlyOfferingId];
+      final lifetimeOffering = offerings.all[RevenueCatOfferingManager.lifetimeOfferingId];
+      
+      print('📦 Monthly offering exists: ${monthlyOffering != null}');
+      print('📦 Lifetime offering exists: ${lifetimeOffering != null}');
+      
+      // Pre-fetch the specific packages
+      final monthlyPackage = offeringManager.getMonthlyPackage();
+      final lifetimePackage = offeringManager.getLifetimePackage();
+      
+      print('📦 Monthly package found: ${monthlyPackage != null}');
+      print('📦 Lifetime package found: ${lifetimePackage != null}');
+    } else {
+      print('⚠️ Failed to pre-fetch RevenueCat offerings');
+    }
+  } catch (e) {
+    print('⚠️ RevenueCat offerings pre-fetch failed: $e');
+  }
+}
+
+Future<void> initDependencies() async {
+  // Initialize payment services
+  await RevenueCatService().initialize();
+  
+  // Initialize subscription status manager
+  await SubscriptionStatusManager.instance.initialize();
+  
+  // Initialize demo timer
+  await DemoTimerService().initialize();
+  
+  // Initialize user stats
+  await UserStatsManager().initialize();
+  
+  // Log dependencies initialized
+  debugPrint('♻️ Dependencies initialized');
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Sizer(
-      builder: (context, orientation, deviceType) {
+    return ScreenUtilInit(
+      designSize: const Size(360, 800),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
         return BlocProvider(
           create: (context) => ThemeBloc(
             ThemeState(

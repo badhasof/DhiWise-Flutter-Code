@@ -17,11 +17,11 @@ class RevenueCatOfferingManager {
   Offerings? _currentOfferings;
   
   // Entitlement ID for your subscription
-  static const String entitlementId = 'Lifetime Access';
+  static const String entitlementId = 'Premium';
   
   // Offering IDs
-  static const String monthlyOfferingId = 'monthly';
-  static const String lifetimeOfferingId = 'lifetime';
+  static const String monthlyOfferingId = 'monthly_subscription';
+  static const String lifetimeOfferingId = 'lifetime_access';
   
   // Fetch and display offerings
   Future<Offerings?> fetchAndDisplayOfferings() async {
@@ -107,7 +107,18 @@ class RevenueCatOfferingManager {
   
   // Get lifetime access package if available
   Package? getLifetimePackage() {
-    if (_currentOfferings == null) return null;
+    if (_currentOfferings == null) {
+      debugPrint('❌ No offerings available when looking for lifetime package');
+      return null;
+    }
+    
+    // Debug all available packages to help troubleshoot
+    debugPrint('🔍 Searching for lifetime package among all offerings:');
+    _currentOfferings!.all.forEach((offeringId, offering) {
+      offering.availablePackages.forEach((package) {
+        debugPrint('  - Offering: $offeringId, Package: ${package.identifier}, Product: ${package.storeProduct.identifier}');
+      });
+    });
     
     // Try to get the lifetime offering first
     final lifetimeOffering = _currentOfferings!.all[lifetimeOfferingId];
@@ -119,15 +130,23 @@ class RevenueCatOfferingManager {
     // Fallback: try to find a package with "lifetime" in the identifier in any offering
     debugPrint('⚠️ Lifetime offering not found, searching in all offerings');
     for (final offering in _currentOfferings!.all.values) {
-      try {
-        final lifetimePackage = offering.availablePackages.firstWhere(
-          (package) => package.identifier.toLowerCase().contains('lifetime'),
-        );
-        debugPrint('✅ Found lifetime package in offering: ${offering.identifier}');
-        return lifetimePackage;
-      } catch (_) {
-        // Continue to next offering
+      for (final package in offering.availablePackages) {
+        // Check both package identifier and product identifier for "lifetime"
+        if (package.identifier.toLowerCase().contains('lifetime') ||
+            package.storeProduct.identifier.toLowerCase().contains('lifetime') ||
+            package.storeProduct.title.toLowerCase().contains('lifetime')) {
+          debugPrint('✅ Found lifetime package: ${package.identifier} in offering: ${offering.identifier}');
+          return package;
+        }
       }
+    }
+    
+    // Last resort: check if current offering has only one package and it might be lifetime
+    if (_currentOfferings!.current != null && 
+        _currentOfferings!.current!.availablePackages.length == 1) {
+      final package = _currentOfferings!.current!.availablePackages.first;
+      debugPrint('⚠️ Using single package from current offering as potential lifetime: ${package.identifier}');
+      return package;
     }
     
     debugPrint('❌ No lifetime package found in any offering');

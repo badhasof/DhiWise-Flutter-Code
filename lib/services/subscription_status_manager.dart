@@ -105,87 +105,51 @@ class SubscriptionStatusManager {
                  subId.toLowerCase().contains('life')
     );
     
-    // First, check if the Monthly Subscription entitlement is active
-    final monthlyEntitlement = customerInfo.entitlements.all["Monthly Subscription"];
-    if (monthlyEntitlement != null && monthlyEntitlement.isActive) {
-      hasActiveMonthly = true;
+    // First check if the premium entitlement is active
+    final premiumEntitlement = customerInfo.entitlements.all["Premium"];
+    if (premiumEntitlement != null && premiumEntitlement.isActive) {
       isActive = true;
+      debugPrint('🔍 Found active Premium entitlement');
+      debugPrint('   - Product ID: ${premiumEntitlement.productIdentifier}');
+      debugPrint('   - Expires: ${premiumEntitlement.expirationDate ?? 'No expiration'}');
+      debugPrint('   - Will Renew: ${premiumEntitlement.willRenew}');
       
-      debugPrint('🔍 Found active monthly entitlement: Monthly Subscription');
-      debugPrint('   - Product ID: ${monthlyEntitlement.productIdentifier}');
-      debugPrint('   - Expires: ${monthlyEntitlement.expirationDate ?? 'No expiration'}');
-      debugPrint('   - Will Renew: ${monthlyEntitlement.willRenew}');
-    }
-    
-    // Then check if the Lifetime Access entitlement is active
-    final lifetimeEntitlement = customerInfo.entitlements.all["Lifetime Access"];
-    if (lifetimeEntitlement != null && lifetimeEntitlement.isActive) {
-      hasActiveLifetime = true;
-      isActive = true;
-      
-      debugPrint('🔍 Found active lifetime entitlement: Lifetime Access');
-      debugPrint('   - Product ID: ${lifetimeEntitlement.productIdentifier}');
-      debugPrint('   - Expires: ${lifetimeEntitlement.expirationDate ?? 'No expiration (lifetime)'}');
-      debugPrint('   - Will Renew: ${lifetimeEntitlement.willRenew}');
-    }
-    
-    // Log if we found conflicting entitlements (should not happen with new configuration)
-    if (hasActiveMonthly && hasActiveLifetime) {
-      debugPrint('⚠️ WARNING: Both monthly and lifetime entitlements are active!');
-      debugPrint('⚠️ This might indicate a RevenueCat configuration issue.');
-      
-      // Log subscription details for diagnosis
-      if (hasMonthlySubscriptionProduct && !hasLifetimeSubscriptionProduct) {
-        debugPrint('✅ User has a monthly subscription product - will prioritize MONTHLY');
-      } else if (!hasMonthlySubscriptionProduct && hasLifetimeSubscriptionProduct) {
-        debugPrint('✅ User has a lifetime subscription product - will prioritize LIFETIME');
-      } else if (hasMonthlySubscriptionProduct && hasLifetimeSubscriptionProduct) {
-        debugPrint('⚠️ User has BOTH monthly and lifetime subscription products!');
+      // Determine if it's monthly or lifetime based on product ID and expiration
+      if (premiumEntitlement.productIdentifier.toLowerCase().contains('lifetime') ||
+          premiumEntitlement.expirationDate == null) {
+        hasActiveLifetime = true;
+        debugPrint('💎 Premium access appears to be LIFETIME');
       } else {
-        debugPrint('⚠️ Could not determine subscription type from product IDs');
+        hasActiveMonthly = true;
+        debugPrint('📅 Premium access appears to be MONTHLY');
       }
     }
     
     // Now determine the subscription type based on what's active
     // Priority: 
-    // 1. Use active subscription product if clear
-    // 2. If conflicting entitlements, prioritize based on actual subscription product
-    // 3. Otherwise use the entitlement that's active
+    // 1. If product ID clearly indicates a type, use that
+    // 2. Otherwise use the entitlement that's active
     
     if (hasActiveMonthly && hasActiveLifetime) {
-      // We have both - need to resolve the conflict
-      if (hasMonthlySubscriptionProduct && !hasLifetimeSubscriptionProduct) {
-        // User has monthly subscription product - prioritize that
-        newType = SubscriptionType.monthly;
-        debugPrint('🔄 Resolving conflict: User has monthly subscription product');
-      } else if (!hasMonthlySubscriptionProduct && hasLifetimeSubscriptionProduct) {
-        // User has lifetime subscription product - prioritize that
-        newType = SubscriptionType.lifetime;
-        debugPrint('🔄 Resolving conflict: User has lifetime subscription product');
-      } else {
-        // Cannot determine from product - use monthly as default
-        newType = SubscriptionType.monthly;
-        debugPrint('🔄 Resolving conflict: Using monthly as default');
-      }
-    } else if (hasActiveMonthly) {
-      // Only monthly is active, no conflict
-      newType = SubscriptionType.monthly;
-      debugPrint('📅 Setting subscription type to MONTHLY');
+      // Prioritize lifetime if both are showing as active
+      newType = SubscriptionType.lifetime;
+      debugPrint('🔄 Both monthly and lifetime active - prioritizing LIFETIME');
     } else if (hasActiveLifetime) {
-      // Only lifetime is active, no conflict
       newType = SubscriptionType.lifetime;
       debugPrint('💎 Setting subscription type to LIFETIME');
+    } else if (hasActiveMonthly) {
+      newType = SubscriptionType.monthly;
+      debugPrint('📅 Setting subscription type to MONTHLY');
     }
     
     // Handle the case where the entitlements don't match the products
-    // This is a safety check for potential RevenueCat issues
-    if (hasMonthlySubscriptionProduct && !hasActiveMonthly && !hasActiveLifetime) {
+    if (hasMonthlySubscriptionProduct && !isActive) {
       debugPrint('⚠️ User has monthly subscription product but no active entitlements');
       // Assume they should have monthly access
       isActive = true;
       newType = SubscriptionType.monthly;
       debugPrint('🔄 Correcting status: Setting to MONTHLY based on subscription product');
-    } else if (hasLifetimeSubscriptionProduct && !hasActiveMonthly && !hasActiveLifetime) {
+    } else if (hasLifetimeSubscriptionProduct && !isActive) {
       debugPrint('⚠️ User has lifetime subscription product but no active entitlements');
       // Assume they should have lifetime access
       isActive = true;
@@ -244,24 +208,21 @@ class SubscriptionStatusManager {
     debugPrint('   - Original App User ID: ${customerInfo.originalAppUserId}');
     debugPrint('   - EntitlementIDs: ${customerInfo.entitlements.all.keys.join(', ')}');
     
-    final entitlement = customerInfo.entitlements.all[RevenueCatOfferingManager.entitlementId];
-    if (entitlement != null) {
-      debugPrint('   - Entitlement "${RevenueCatOfferingManager.entitlementId}":');
+    // Log all entitlements, not just a specific one
+    customerInfo.entitlements.all.forEach((key, entitlement) {
+      debugPrint('   - Entitlement "$key":');
       debugPrint('     - Active: ${entitlement.isActive}');
-      debugPrint('     - Product: ${entitlement.productIdentifier}');
+      debugPrint('     - Product ID: ${entitlement.productIdentifier}');
+      debugPrint('     - Expires: ${entitlement.expirationDate ?? 'No expiration'}');
       debugPrint('     - Will Renew: ${entitlement.willRenew}');
-      if (entitlement.expirationDate != null) {
-        debugPrint('     - Expires: ${entitlement.expirationDate}');
-      }
-    } else {
-      debugPrint('   - Entitlement "${RevenueCatOfferingManager.entitlementId}" not found');
-    }
+    });
     
-    debugPrint('   - Active subscriptions: ${customerInfo.activeSubscriptions.join(', ')}');
-    debugPrint('   - All purchased products: ${customerInfo.allPurchasedProductIdentifiers.join(', ')}');
+    // Also log all active and non-active subscriptions
+    debugPrint('   - Active Subscriptions: ${customerInfo.activeSubscriptions.join(', ')}');
+    debugPrint('   - All Purchased Products: ${customerInfo.allPurchasedProductIdentifiers.join(', ')}');
   }
   
-  // Check current subscription status (on-demand)
+  // Check subscription status using appropriate service
   Future<bool> checkSubscriptionStatus() async {
     try {
       debugPrint('🔍 Checking current subscription status directly from RevenueCat...');
@@ -297,30 +258,32 @@ class SubscriptionStatusManager {
   // Implementation of Task 4.2: Open subscription management URL
   Future<bool> openSubscriptionManagement() async {
     try {
+      debugPrint('🔍 Fetching customer info for management URL...');
       final customerInfo = await Purchases.getCustomerInfo();
-      final managementURL = customerInfo.managementURL;
+      final String? managementUrlString = customerInfo.managementURL;
       
-      if (managementURL != null) {
-        final Uri uri = Uri.parse(managementURL);
-        debugPrint('Opening management URL: $managementURL');
+      if (managementUrlString != null) {
+        debugPrint('Found management URL string: $managementUrlString');
+        final Uri managementUri = Uri.parse(managementUrlString);
         
-        // Launch the URL in external browser
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (await canLaunchUrl(managementUri)) {
+          await launchUrl(managementUri);
           return true;
         } else {
-          debugPrint('Could not launch management URL: $managementURL');
-          return false;
+         debugPrint('❌ Could not launch management URL: $managementUri');
+         // Optionally show an error message to the user here
+         return false;
         }
       } else {
-        debugPrint('No management URL available for this user');
+        debugPrint('⚠️ No management URL available for this user (may not have subscriptions or platform issue).');
+        // Optionally inform the user
         return false;
       }
     } on PlatformException catch (e) {
-      debugPrint('Error opening subscription management: ${e.message}');
+      debugPrint('❌ Error fetching customer info for management URL: ${e.message}');
       return false;
     } catch (e) {
-      debugPrint('Unexpected error opening subscription management: $e');
+      debugPrint('❌ Unexpected error opening subscription management: $e');
       return false;
     }
   }

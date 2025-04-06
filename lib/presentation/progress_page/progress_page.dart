@@ -8,9 +8,8 @@ import '../../widgets/custom_elevated_button.dart';
 import '../../core/utils/pref_utils.dart';
 import '../../services/user_reading_service.dart';
 import '../../services/user_service.dart';
-import '../../services/subscription_service.dart';
-import '../../services/user_stats_manager.dart';
 import '../../services/subscription_status_manager.dart';
+import '../../services/user_stats_manager.dart';
 import '../../services/demo_timer_service.dart';
 import 'bloc/progress_bloc.dart';
 import 'models/progress_model.dart'; // ignore_for_file: must_be_immutable
@@ -44,7 +43,7 @@ class _ProgressPageState extends State<ProgressPage> {
   // Services and controllers
   late UserReadingService _userReadingService;
   late UserService _userService;
-  late SubscriptionService _subscriptionService;
+  late SubscriptionStatusManager _subscriptionService;
   late UserStatsManager _statsManager;
   ScrollController? _scrollController;
   
@@ -75,7 +74,7 @@ class _ProgressPageState extends State<ProgressPage> {
     // Initialize services
     _userReadingService = UserReadingService();
     _userService = UserService();
-    _subscriptionService = SubscriptionService();
+    _subscriptionService = SubscriptionStatusManager();
     _prefUtils = PrefUtils();
     _statsManager = UserStatsManager();
     _scrollController = ScrollController();
@@ -130,22 +129,26 @@ class _ProgressPageState extends State<ProgressPage> {
       if (mounted) setState(() {}); // Update UI with current time
       
       // Start the countdown timer that uses the central DemoTimerService
-      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
         if (mounted) {
-          setState(() {
-            // Get the most up-to-date remaining time from the DemoTimerService
-            _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
+          // Get the most up-to-date remaining time from the DemoTimerService
+          _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
+          
+          if (_remainingSeconds <= 0) {
+            _timer?.cancel();
             
-            if (_remainingSeconds <= 0) {
-              _timer?.cancel();
-              
+            // Only update status to DONE if it's not already DONE
+            DemoStatus currentStatus = await _userService.getDemoStatus();
+            if (currentStatus != DemoStatus.DONE) {
               // Ensure status is set to DONE when timer expires
               DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
-              
-              // Handle timer expiration - navigate to feedback page
-              _navigateToFeedbackIfNeeded();
             }
-          });
+            
+            // Handle timer expiration - navigate to feedback page
+            _navigateToFeedbackIfNeeded();
+          }
+          
+          setState(() {}); // Update UI after all checks
         }
       });
     } catch (e) {

@@ -24,7 +24,7 @@ This guide provides instructions for setting up RevenueCat with App Store Connec
 2. Click the **+** button to add new in-app purchases
 3. For LinguaX, create the following products:
    - **Auto-Renewable Subscription**: Monthly Premium
-   - **Auto-Renewable Subscription**: Annual Premium
+   - **Non-Consumable**: Lifetime Access
 4. For each product, configure:
    - Reference Name (internal only)
    - Product ID (use the same IDs configured in RevenueCat)
@@ -36,7 +36,7 @@ This guide provides instructions for setting up RevenueCat with App Store Connec
 
 1. When creating the first auto-renewable subscription, you'll be prompted to create a Subscription Group
 2. Name the group "LinguaX Premium"
-3. Add both monthly and annual subscription options to this group
+3. Add the monthly subscription option to this group
 4. Set up subscription tiers if offering different levels of service
 
 ### 5. Set Up App Store Server Notifications
@@ -67,17 +67,16 @@ This guide provides instructions for setting up RevenueCat with App Store Connec
 ### 3. Configure IAP Products in Google Play Console
 
 1. In Google Play Console, go to **All apps** > **[Your App]** > **Monetize** > **Products** > **In-app products**
-2. Click **Create subscription** to add new subscription products
+2. Click **Create subscription** to add new subscription products and **Create managed product** for one-time purchases
 3. For LinguaX, create the following products:
    - Monthly Premium Subscription
-   - Annual Premium Subscription
+   - Lifetime Access (as a one-time purchase)
 4. For each product, configure:
    - Product ID (use the same IDs configured in RevenueCat)
    - Name
    - Description
    - Price
-   - Subscription period
-   - Free trial period (if applicable)
+   - Subscription period (for subscription)
 
 ### 4. Set Up Real-Time Developer Notifications
 
@@ -130,11 +129,11 @@ This guide provides instructions for setting up RevenueCat with App Store Connec
 For LinguaX, use the following product IDs:
 
 - iOS:
-  - Monthly: `com.linguax.app.monthly_premium`
-  - Annual: `com.linguax.app.annual_premium`
+  - Monthly: `com.linguax.subscription.monthly`
+  - Lifetime: `com.linguax.subscription.lifetimeaccess`
 
 - Android:
-  - Monthly: `com.linguax.app.monthly_premium`
-  - Annual: `com.linguax.app.annual_premium`
+  - Monthly: `com.linguax.subscription.monthly`
+  - Lifetime: `com.linguax.subscription.lifetimeaccess`
 
 These IDs should be consistent across both platforms and match the configuration in your RevenueCat dashboard. 

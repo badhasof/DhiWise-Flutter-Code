@@ -67,20 +67,23 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
     // Start a timer to update the UI with the latest remaining time
     _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
     
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (mounted) {
-        setState(() {
-          _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
-          
-          // If timer has reached zero, ensure status is updated to DONE
-          if (_remainingSeconds <= 0) {
-            // Check if timer has actually expired (not just zero due to calculation error)
-            if (DemoTimerService.instance.isTimerExpired()) {
-              // Update status to DONE if timer has expired
-              DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
-            }
+        // Get latest remaining time
+        _remainingSeconds = DemoTimerService.instance.refreshRemainingTime();
+        
+        // If timer has reached zero, ensure status is updated to DONE
+        if (_remainingSeconds <= 0) {
+          // Check if timer has actually expired (not just zero due to calculation error)
+          if (DemoTimerService.instance.isTimerExpired()) {
+            // Instead of updating directly, use the improved forceUpdateDemoStatus method
+            // that will check if status is already DONE before updating
+            DemoTimerService.instance.forceUpdateDemoStatus(DemoStatus.DONE);
           }
-        });
+        }
+        
+        // Update UI after all checks
+        setState(() {});
       }
     });
   }

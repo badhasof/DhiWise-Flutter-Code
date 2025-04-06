@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart'; // For PlatformException
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
 class RevenueCatService {
   // Singleton pattern
@@ -12,8 +13,8 @@ class RevenueCatService {
 
   // API keys
   static const String _iosApiKey = 'appl_cMlIZOukSOmYZWKJYEqGumIdNgu';
-  // Android API key - to be added later
-  static const String _androidApiKey = '';
+  // Android API key
+  static const String _androidApiKey = 'goog_ByHJNQbxPIcheDuRuSLYYlktEsq';
 
   // Flag to track initialization
   bool _isInitialized = false;
@@ -38,29 +39,47 @@ class RevenueCatService {
     }
 
     try {
+      debugPrint('⚙️ Initializing RevenueCat SDK...');
+      final initStopwatch = Stopwatch()..start();
+      
       // Enable debug logs during development
       await Purchases.setLogLevel(LogLevel.debug);
 
       // Configure the SDK with appropriate API key
       PurchasesConfiguration configuration;
       if (Platform.isIOS) {
+        debugPrint('🍎 Configuring RevenueCat for iOS with API key: ${_iosApiKey.substring(0, 8)}...');
         configuration = PurchasesConfiguration(_iosApiKey);
+      } else if (Platform.isAndroid) {
+        debugPrint('🤖 Configuring RevenueCat for Android with API key: ${_androidApiKey.substring(0, 8)}...');
+        configuration = PurchasesConfiguration(_androidApiKey);
       } else {
-        // We're focusing on iOS for now, but keeping the structure for Android
-        debugPrint('Android not configured yet');
+        debugPrint('⚠️ Unsupported platform for RevenueCat');
         return;
       }
 
-      // Initialize the SDK
-      await Purchases.configure(configuration);
+      // Initialize the SDK with timeout
+      await Purchases.configure(configuration).timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('RevenueCat configuration timed out after 10 seconds');
+        }
+      );
+      
+      initStopwatch.stop();
+      debugPrint('⏱️ RevenueCat configuration took ${initStopwatch.elapsedMilliseconds}ms');
+      
       _isInitialized = true;
-      debugPrint('RevenueCat initialized successfully');
+      debugPrint('✅ RevenueCat initialized successfully');
       
       // Set up listener for customer info updates to help with StoreKit issues
       if (Platform.isIOS) {
         Purchases.addCustomerInfoUpdateListener((info) {
-          debugPrint('Customer info updated - checking entitlements');
-          // This helps ensure all transactions are fully processed
+          debugPrint('👤 Customer info updated - checking entitlements');
+          // Log the entitlements for debugging
+          info.entitlements.all.forEach((key, entitlement) {
+            debugPrint('Entitlement: $key, isActive: ${entitlement.isActive}');
+          });
         });
       }
 
@@ -70,8 +89,10 @@ class RevenueCatService {
       // Get initial customer info
       await refreshCustomerInfo();
 
+    } on TimeoutException {
+      debugPrint('⏱️ RevenueCat initialization timed out - network may be slow or unavailable');
     } catch (e) {
-      debugPrint('Error initializing RevenueCat: $e');
+      debugPrint('❌ Error initializing RevenueCat: $e');
     }
   }
 
@@ -97,31 +118,60 @@ class RevenueCatService {
     }
   }
 
-  // Fetch and cache offerings
+  // Fetch available offerings from RevenueCat
   Future<Offerings?> fetchOfferings() async {
     if (!_isInitialized) {
-      debugPrint('RevenueCat not initialized');
-      return null;
+      debugPrint('⚠️ RevenueCat not initialized. Initializing now before fetching offerings...');
+      await initialize();
     }
-
+    
     try {
-      _offerings = await Purchases.getOfferings();
-      debugPrint('Offerings fetched successfully');
+      debugPrint('🔍 Fetching offerings from RevenueCat - START');
+      final stopwatch = Stopwatch()..start();
       
-      if (_offerings?.current != null) {
-        debugPrint('Current offering: ${_offerings?.current?.identifier}');
-        debugPrint('Available packages: ${_offerings?.current?.availablePackages.length}');
-        
-        for (var package in _offerings?.current?.availablePackages ?? []) {
-          debugPrint('Package: ${package.identifier}, ${package.storeProduct.priceString}');
+      // Add timeout to the Purchases.getOfferings call
+      final offerings = await Purchases.getOfferings().timeout(
+        Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('⏱️ TIMEOUT: RevenueCat offerings fetch took too long (15+ seconds)');
+          throw TimeoutException('RevenueCat offerings fetch timed out after 15 seconds');
         }
+      );
+      
+      stopwatch.stop();
+      debugPrint('⏱️ RevenueCat offerings fetch took ${stopwatch.elapsedMilliseconds}ms');
+      
+      // Debug offerings
+      if (offerings.current == null) {
+        debugPrint('❌ No current offering found');
       } else {
-        debugPrint('No current offering available');
+        debugPrint('✅ Current offering found: ${offerings.current!.identifier}');
       }
       
-      return _offerings;
+      if (offerings.all.isEmpty) {
+        debugPrint('❌ No offerings found in RevenueCat console');
+      } else {
+        debugPrint('✅ Found ${offerings.all.length} offerings: ${offerings.all.keys.join(', ')}');
+      }
+      
+      return offerings;
+    } on TimeoutException {
+      debugPrint('❌ RevenueCat offerings fetch timed out - check network connection and RevenueCat API status');
+      return null;
     } on PlatformException catch (e) {
-      debugPrint('Error fetching offerings: ${e.message}');
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      debugPrint('❌ Error fetching offerings: ${e.message}, code: $errorCode');
+      
+      // More detailed error diagnostics
+      if (errorCode == PurchasesErrorCode.networkError) {
+        debugPrint('💡 Network error - check device connectivity and RevenueCat status page');
+      } else if (errorCode == PurchasesErrorCode.configurationError) {
+        debugPrint('💡 Configuration error - verify API keys and project settings');
+      }
+      
+      return null;
+    } catch (e) {
+      debugPrint('❌ Unknown error fetching offerings: $e');
       return null;
     }
   }
@@ -136,6 +186,16 @@ class RevenueCatService {
     try {
       _customerInfo = await Purchases.getCustomerInfo();
       debugPrint('Customer info fetched successfully');
+      
+      // Debug output for entitlements
+      if (_customerInfo != null) {
+        debugPrint('Available entitlements: ${_customerInfo!.entitlements.all.keys.join(', ')}');
+        _customerInfo!.entitlements.all.forEach((key, entitlement) {
+          debugPrint('Entitlement: $key, isActive: ${entitlement.isActive}, identifier: ${entitlement.identifier}');
+          debugPrint('   productIdentifier: ${entitlement.productIdentifier}');
+        });
+      }
+      
       return _customerInfo;
     } on PlatformException catch (e) {
       debugPrint('Error fetching customer info: ${e.message}');
@@ -145,7 +205,12 @@ class RevenueCatService {
 
   // Check if user has active subscription
   bool hasActiveSubscription() {
-    return _customerInfo?.entitlements.all.isNotEmpty ?? false;
+    if (_customerInfo == null) return false;
+    
+    // Look for any active entitlement, primarily 'Premium'
+    final hasEntitlement = _customerInfo!.entitlements.all.values.any((entitlement) => entitlement.isActive);
+    debugPrint('hasActiveSubscription check: $hasEntitlement');
+    return hasEntitlement;
   }
 
   // Purchase a package with retry logic for StoreKit issues

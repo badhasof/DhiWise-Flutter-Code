@@ -273,7 +273,24 @@ class DemoTimerService {
   
   // Force update the demo status (can be called externally)
   Future<void> forceUpdateDemoStatus(DemoStatus status) async {
-    await _updateDemoStatus(status);
+    // Check current status first to avoid unnecessary updates
+    if (!_userService.isLoggedIn) return;
+    
+    try {
+      DemoStatus currentStatus = await _userService.getDemoStatus();
+      if (currentStatus == status) {
+        // Status is already set to the requested value, don't update
+        debugPrint('Demo status already set to ${status.value}, skipping update');
+        return;
+      }
+      
+      // Only update if the status is different
+      await _updateDemoStatus(status);
+    } catch (e) {
+      debugPrint('Error checking current demo status: $e');
+      // Continue with update on error
+      await _updateDemoStatus(status);
+    }
   }
   
   // Restart the timer with the newly selected demo time

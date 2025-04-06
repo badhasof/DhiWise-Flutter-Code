@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../core/app_export.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-// Keep legacy service for transition period
-import '../../services/subscription_service.dart';
-// Add new RevenueCat services
 import '../../services/revenuecat_service.dart';
 import '../../services/revenuecat_offering_manager.dart';
 import '../../services/subscription_status_manager.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 class SubscriptionScreen extends StatefulWidget {
@@ -29,9 +28,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _isProcessingPurchase = false;
   String _purchaseStatus = '';
   
-  // Legacy subscription service instance
-  final SubscriptionService _subscriptionService = SubscriptionService();
-  
   // New RevenueCat offering manager
   final RevenueCatOfferingManager _revenueCatManager = RevenueCatOfferingManager();
   
@@ -39,16 +35,28 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Package? _monthlyPackage;
   Package? _lifetimePackage;
   
-  // Flag to use new RevenueCat service instead of legacy
-  final bool _useRevenueCat = true;
-  
-  // Subscription for purchase status updates (legacy)
-  StreamSubscription<PurchaseStatus>? _purchaseStatusSubscription;
-
   @override
   void initState() {
     super.initState();
+    // Load products immediately when screen is displayed
     _initializeSubscriptions();
+    
+    // Set a timer to retry if initial loading fails
+    Future.delayed(Duration(seconds: 5), () {
+      if (mounted && (_monthlyPackage == null && _lifetimePackage == null) && _isProcessingPurchase) {
+        debugPrint('⚠️ Initial loading taking longer than expected, setting timeout...');
+        
+        // If still processing after 10 seconds, show retry option
+        Future.delayed(Duration(seconds: 5), () {
+          if (mounted && (_monthlyPackage == null && _lifetimePackage == null) && _isProcessingPurchase) {
+            setState(() {
+              _isProcessingPurchase = false;
+              _purchaseStatus = 'Product loading timed out. Please tap Retry to try again.';
+            });
+          }
+        });
+      }
+    });
   }
   
   Future<void> _initializeSubscriptions() async {
@@ -57,145 +65,139 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       _purchaseStatus = 'Loading products...';
     });
     
-    if (_useRevenueCat) {
-      // Initialize RevenueCat offerings
-      final offerings = await _revenueCatManager.fetchAndDisplayOfferings();
+    try {
+      debugPrint('🔄 Fetching subscription products...');
+      final stopwatch = Stopwatch()..start();
+      
+      // Add a timeout to the offerings fetch
+      final offerings = await _revenueCatManager.fetchAndDisplayOfferings().timeout(
+        Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('⏱️ TIMEOUT: Offerings fetch took too long');
+          throw TimeoutException('Offerings fetch timed out after 15 seconds');
+        }
+      );
+      
+      stopwatch.stop();
+      debugPrint('⏱️ Products fetch completed in ${stopwatch.elapsedMilliseconds}ms');
       
       if (offerings != null && offerings.current != null) {
+        // Get packages and check if they were successfully retrieved
+        final monthlyPackage = _revenueCatManager.getMonthlyPackage();
+        final lifetimePackage = _revenueCatManager.getLifetimePackage();
+        
+        // Debug packages found
+        debugPrint('📦 Monthly package: ${monthlyPackage?.identifier ?? "null"}');
+        debugPrint('📦 Lifetime package: ${lifetimePackage?.identifier ?? "null"}');
+        
         setState(() {
-          _monthlyPackage = _revenueCatManager.getMonthlyPackage();
-          _lifetimePackage = _revenueCatManager.getLifetimePackage();
+          _monthlyPackage = monthlyPackage;
+          _lifetimePackage = lifetimePackage;
           _isProcessingPurchase = false;
-          _purchaseStatus = _monthlyPackage == null && _lifetimePackage == null ? 
-            'No subscription products found. Pull down to refresh.' : '';
-        });
-      } else {
-        setState(() {
-          _isProcessingPurchase = false;
-          _purchaseStatus = 'No subscription products found. Pull down to refresh.';
-        });
-      }
-    } else {
-      // Legacy initialization
-      await _subscriptionService.initialize();
-      
-      setState(() {
-        _isProcessingPurchase = false;
-        _purchaseStatus = _subscriptionService.products.isEmpty ? 
-          'No subscription products found. Pull down to refresh.' : '';
-      });
-      
-      // Listen for purchase status updates (legacy)
-      _purchaseStatusSubscription = _subscriptionService.purchaseStatusStream.listen((status) {
-        setState(() {
-          _isProcessingPurchase = status == PurchaseStatus.pending;
           
-          // Update status message
-          switch(status) {
-            case PurchaseStatus.pending:
-              _purchaseStatus = 'Processing purchase...';
-              break;
-            case PurchaseStatus.purchased:
-              _purchaseStatus = 'Purchase successful!';
-              break;
-            case PurchaseStatus.restored:
-              _purchaseStatus = 'Purchase restored!';
-              break;
-            case PurchaseStatus.error:
-              // Check if we have detailed error information from our custom error stream
-              final errorDetails = _subscriptionService.lastErrorDetails;
-              if (errorDetails != null && 
-                  errorDetails.containsKey('domain') && 
-                  errorDetails.containsKey('code')) {
-                
-                // Handle specific error types with better messages
-                if (errorDetails['domain'] == 'ASDErrorDomain' && errorDetails['code'] == 500) {
-                  _purchaseStatus = 'Purchase could not be completed. Please check your App Store account settings and try again later.';
-                } else if (errorDetails['domain'] == 'SKErrorDomain') {
-                  // Handle SKErrorDomain errors with specific messages
-                  switch (errorDetails['code']) {
-                    case 0: // Unknown error
-                      _purchaseStatus = 'An unexpected error occurred. Please try again later.';
-                      break;
-                    case 2: // Payment cancelled
-                      _purchaseStatus = 'Purchase was cancelled.';
-                      break;
-                    case 4: // Payment not allowed
-                      _purchaseStatus = 'Your device is not allowed to make payments. Please check your restrictions.';
-                      break;
-                    default:
-                      _purchaseStatus = 'Error occurred during purchase. Please try again later.';
-                  }
-                } else {
-                  _purchaseStatus = 'Error occurred during purchase. Please try again later.';
-                }
-              } else {
-                _purchaseStatus = 'Error occurred during purchase. Please try again later.';
+          if (monthlyPackage == null && lifetimePackage == null) {
+            _purchaseStatus = 'No subscription products found. Try refreshing.';
+          } else {
+            _purchaseStatus = 'Products loaded successfully';
+            
+            // If only one type of package is available, pre-select it
+            if (monthlyPackage != null && lifetimePackage == null) {
+              _isMonthlySelected = true;
+            } else if (monthlyPackage == null && lifetimePackage != null) {
+              _isMonthlySelected = false;
+            }
+          }
+          
+          // Clear the status message after a delay if products were found
+          if (monthlyPackage != null || lifetimePackage != null) {
+            Future.delayed(Duration(seconds: 2), () {
+              if (mounted) {
+                setState(() {
+                  _purchaseStatus = '';
+                });
               }
-              break;
-            case PurchaseStatus.canceled:
-              _purchaseStatus = 'Purchase canceled.';
-              break;
+            });
           }
         });
-        
-        // Show success snackbar if purchase was successful
-        if (status == PurchaseStatus.purchased || status == PurchaseStatus.restored) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Subscription processed. Thank you!')),
-          );
-          
-          // Navigate back after successful purchase
-          Future.delayed(Duration(seconds: 2), () {
-            Navigator.pop(context);
-          });
-        } else if (status == PurchaseStatus.error) {
-          // Show error snackbar with more specific messaging
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(_purchaseStatus),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 5),
-              action: SnackBarAction(
-                label: 'Dismiss',
-                textColor: Colors.white,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                },
-              ),
-            ),
-          );
-        }
+      } else {
+        debugPrint('❌ No valid offerings found');
+        setState(() {
+          _isProcessingPurchase = false;
+          _purchaseStatus = 'No subscription products found. Tap Retry.';
+        });
+      }
+    } on TimeoutException {
+      debugPrint('⏱️ Product loading timed out');
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = 'Loading timed out. Please check your connection and tap Retry.';
+      });
+    } catch (e) {
+      debugPrint('❌ Error loading products: $e');
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = 'Error loading products. Please tap Retry.';
       });
     }
   }
   
   @override
   void dispose() {
-    _purchaseStatusSubscription?.cancel();
     super.dispose();
   }
 
   Future<void> _refreshProducts() async {
+    // Show progress immediately
     setState(() {
       _isProcessingPurchase = true;
       _purchaseStatus = 'Refreshing products...';
     });
     
-    if (_useRevenueCat) {
-      // Refresh RevenueCat offerings
-      final offerings = await _revenueCatManager.fetchAndDisplayOfferings();
+    try {
+      debugPrint('🔄 Refreshing subscription products...');
+      final stopwatch = Stopwatch()..start();
+      
+      // Add timeout to the refresh call
+      final offerings = await _revenueCatManager.fetchAndDisplayOfferings().timeout(
+        Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('⏱️ TIMEOUT: Refresh took too long');
+          throw TimeoutException('Product refresh timed out after 15 seconds');
+        }
+      );
+      
+      stopwatch.stop();
+      debugPrint('⏱️ Products refresh completed in ${stopwatch.elapsedMilliseconds}ms');
       
       if (offerings != null && offerings.current != null) {
+        // Get packages and check if they were successfully retrieved
+        final monthlyPackage = _revenueCatManager.getMonthlyPackage();
+        final lifetimePackage = _revenueCatManager.getLifetimePackage();
+        
+        // Debug packages found
+        debugPrint('📦 Refreshed monthly package: ${monthlyPackage?.identifier ?? "null"}');
+        debugPrint('📦 Refreshed lifetime package: ${lifetimePackage?.identifier ?? "null"}');
+        
         setState(() {
-          _monthlyPackage = _revenueCatManager.getMonthlyPackage();
-          _lifetimePackage = _revenueCatManager.getLifetimePackage();
+          _monthlyPackage = monthlyPackage;
+          _lifetimePackage = lifetimePackage;
           _isProcessingPurchase = false;
-          _purchaseStatus = _monthlyPackage == null && _lifetimePackage == null ? 
-            'No subscription products found. Try again later.' : 'Products refreshed';
+          
+          if (monthlyPackage == null && lifetimePackage == null) {
+            _purchaseStatus = 'No subscription products found. Try again later.';
+          } else {
+            _purchaseStatus = 'Products refreshed';
+            
+            // If only one type of package is available, pre-select it
+            if (monthlyPackage != null && lifetimePackage == null) {
+              _isMonthlySelected = true;
+            } else if (monthlyPackage == null && lifetimePackage != null) {
+              _isMonthlySelected = false;
+            }
+          }
           
           // Clear the status message after a delay if products were found
-          if (_monthlyPackage != null || _lifetimePackage != null) {
+          if (monthlyPackage != null || lifetimePackage != null) {
             Future.delayed(Duration(seconds: 2), () {
               if (mounted) {
                 setState(() {
@@ -211,25 +213,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _purchaseStatus = 'No subscription products found. Try again later.';
         });
       }
-    } else {
-      // Legacy refresh
-      await _subscriptionService.loadProducts();
-      
+    } on TimeoutException {
+      debugPrint('⏱️ Product refresh timed out');
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = _subscriptionService.products.isEmpty ? 
-          'No subscription products found. Try again later.' : 'Products refreshed';
-          
-        // Clear the status message after a delay if products were found
-        if (_subscriptionService.products.isNotEmpty) {
-          Future.delayed(Duration(seconds: 2), () {
-            if (mounted) {
-              setState(() {
-                _purchaseStatus = '';
-              });
-            }
-          });
-        }
+        _purchaseStatus = 'Refresh timed out. Please check your connection and try again.';
+      });
+    } catch (e) {
+      debugPrint('❌ Error refreshing products: $e');
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = 'Error refreshing products. Please try again.';
       });
     }
   }
@@ -433,26 +427,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     String lifetimePrice = "\$ 29.99";
     String monthlyPrice = "\$ 2.99/month";
     
-    if (_useRevenueCat) {
-      if (_lifetimePackage != null) {
-        lifetimePrice = _lifetimePackage!.storeProduct.priceString;
-      }
-      
-      if (_monthlyPackage != null) {
-        monthlyPrice = "${_monthlyPackage!.storeProduct.priceString}/month";
-      }
-    } else {
-      // Legacy pricing display
-      final lifetimeSub = _subscriptionService.lifetimeSubscription;
-      final monthlySub = _subscriptionService.monthlySubscription;
-      
-      if (lifetimeSub != null) {
-        lifetimePrice = lifetimeSub.price;
-      }
-      
-      if (monthlySub != null) {
-        monthlyPrice = "${monthlySub.price}/month";
-      }
+    if (_revenueCatManager.getLifetimePackage() != null) {
+      lifetimePrice = _revenueCatManager.getLifetimePackage()!.storeProduct.priceString;
+    }
+    
+    if (_revenueCatManager.getMonthlyPackage() != null) {
+      monthlyPrice = "${_revenueCatManager.getMonthlyPackage()!.storeProduct.priceString}/month";
     }
     
     return Column(
@@ -578,29 +558,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     // Extract just the price value (remove currency symbol)
     String price;
     
-    if (_useRevenueCat) {
-      if (_isMonthlySelected && _monthlyPackage != null) {
-        price = _monthlyPackage!.storeProduct.priceString;
-      } else if (!_isMonthlySelected && _lifetimePackage != null) {
-        price = _lifetimePackage!.storeProduct.priceString;
-      } else {
-        // Fallback
-        price = _isMonthlySelected ? "\$2.99" : "\$29.99";
-      }
+    if (_revenueCatManager.getMonthlyPackage() != null && _isMonthlySelected) {
+      price = _revenueCatManager.getMonthlyPackage()!.storeProduct.priceString;
+    } else if (_revenueCatManager.getLifetimePackage() != null && !_isMonthlySelected) {
+      price = _revenueCatManager.getLifetimePackage()!.storeProduct.priceString;
     } else {
-      // Legacy pricing
-      final productId = _isMonthlySelected 
-          ? SubscriptionService.monthlyProductId 
-          : SubscriptionService.lifetimeProductId;
-          
-      final product = _subscriptionService.products.firstWhere(
-        (p) => p.id == productId, 
-        orElse: () => _isMonthlySelected 
-            ? _subscriptionService.monthlySubscription!
-            : _subscriptionService.lifetimeSubscription!
-      );
-      
-      price = product.price;
+      // Fallback
+      price = _isMonthlySelected ? "\$2.99" : "\$29.99";
     }
     
     return Text(
@@ -699,105 +663,71 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         _isProcessingPurchase = true;
       });
       
-      if (_useRevenueCat) {
-        // RevenueCat Purchase Flow
-        
-        // Check if packages are available
-        Package? selectedPackage = _isMonthlySelected ? _monthlyPackage : _lifetimePackage;
-        
-        if (selectedPackage == null) {
-          setState(() {
-            _isProcessingPurchase = false;
-            _purchaseStatus = 'Selected product not available. Try refreshing.';
-          });
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Please refresh products before purchasing')),
-          );
-          return;
-        }
-        
-        // Check if this is a lifetime purchase
-        final bool isLifetime = !_isMonthlySelected;
-        
-        setState(() {
-          _purchaseStatus = 'Starting purchase flow...';
-        });
-        
-        // Purchase the selected package
-        final result = await _revenueCatManager.purchasePackage(selectedPackage, isLifetime);
-        
+      // RevenueCat Purchase Flow
+      
+      // Check if packages are available
+      Package? selectedPackage = _isMonthlySelected ? _monthlyPackage : _lifetimePackage;
+      
+      if (selectedPackage == null) {
         setState(() {
           _isProcessingPurchase = false;
-          _purchaseStatus = result.message;
+          _purchaseStatus = 'Selected product not available. Try refreshing.';
         });
         
-        if (result.success) {
-          // Verify the subscription status after purchase
-          await _verifySubscriptionStatusAfterPurchase(isLifetime);
-          
-          // Show success snackbar
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(isLifetime 
-              ? 'Lifetime access activated! Thank you for your support.'
-              : 'Subscription activated. Thank you for your support!'))
-          );
-          
-          // Navigate back after successful purchase
-          Future.delayed(Duration(seconds: 2), () {
-            Navigator.pop(context);
-          });
-        } else {
-          // Show error in snackbar if it's not just a cancellation
-          if (result.errorCode != PurchasesErrorCode.purchaseCancelledError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(result.message),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 5),
-                action: SnackBarAction(
-                  label: 'Dismiss',
-                  textColor: Colors.white,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  },
-                ),
-              ),
-            );
-          }
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please refresh products before purchasing')),
+        );
+        return;
+      }
+      
+      // Check if this is a lifetime purchase
+      final bool isLifetime = !_isMonthlySelected;
+      
+      setState(() {
+        _purchaseStatus = 'Starting purchase flow...';
+      });
+      
+      // Purchase the selected package
+      final result = await _revenueCatManager.purchasePackage(selectedPackage, isLifetime);
+      
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = result.message;
+      });
+      
+      if (result.success) {
+        // Verify the subscription status after purchase
+        await _verifySubscriptionStatusAfterPurchase(isLifetime);
+        
+        // Show success snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isLifetime 
+            ? 'Lifetime access activated! Thank you for your support.'
+            : 'Subscription activated. Thank you for your support!'))
+        );
+        
+        // Navigate back after successful purchase
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pop(context);
+        });
       } else {
-        // Legacy Purchase Flow
-        
-        // Check if products are available
-        if (_subscriptionService.products.isEmpty) {
-          setState(() {
-            _isProcessingPurchase = false;
-            _purchaseStatus = 'No products available. Try refreshing first.';
-          });
-          
-          // Show a toast or snackbar
+        // Show error in snackbar if it's not just a cancellation
+        if (result.errorCode != PurchasesErrorCode.purchaseCancelledError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Please refresh products before purchasing')),
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                textColor: Colors.white,
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
+            ),
           );
-          
-          return;
         }
-        
-        // Get the product ID based on selection
-        final String productId = _isMonthlySelected 
-            ? SubscriptionService.monthlyProductId 
-            : SubscriptionService.lifetimeProductId;
-        
-        setState(() {
-          _purchaseStatus = 'Starting purchase flow...';
-        });
-        
-        // Purchase the selected product
-        await _subscriptionService.purchaseProduct(productId);
-        
-        // We don't set _isProcessingPurchase to false here since 
-        // the purchase status listener will handle that
       }
     } catch (e) {
       setState(() {
@@ -820,22 +750,24 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     try {
       // Double-check with RevenueCat that entitlements are active
       final customerInfo = await Purchases.getCustomerInfo();
-      final isActive = customerInfo.entitlements.all[RevenueCatOfferingManager.entitlementId]?.isActive ?? false;
+      
+      // Look for the Premium entitlement
+      final isActive = customerInfo.entitlements.all['Premium']?.isActive ?? false;
       
       if (isActive) {
-        debugPrint('✅ Verification confirms subscription is active');
+        debugPrint('✅ Verification confirms Premium access is active');
         
-        // For lifetime purchases, check if the entitlement is properly set
+        // For lifetime purchases, check if the product ID indicates lifetime
         if (isLifetime) {
-          final entitlement = customerInfo.entitlements.all[RevenueCatOfferingManager.entitlementId];
+          final entitlement = customerInfo.entitlements.all['Premium'];
           if (entitlement != null) {
             final productId = entitlement.productIdentifier;
-            debugPrint('📝 Entitlement product: $productId');
+            debugPrint('📝 Premium entitlement product: $productId');
             
             if (productId.toLowerCase().contains('lifetime')) {
-              debugPrint('✅ Confirmed lifetime entitlement is active');
+              debugPrint('✅ Confirmed lifetime product type');
             } else {
-              debugPrint('⚠️ Entitlement is active but not showing as lifetime product');
+              debugPrint('⚠️ Product is active but does not appear to be lifetime');
             }
           }
         }
@@ -843,7 +775,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // Force refresh of subscription status throughout the app
         await SubscriptionStatusManager.instance.checkSubscriptionStatus();
       } else {
-        debugPrint('⚠️ Verification shows subscription is NOT active - attempting to refresh');
+        debugPrint('⚠️ Verification shows Premium access is NOT active - attempting to refresh');
         
         // One more attempt to refresh customer info
         await Future.delayed(Duration(seconds: 1));
@@ -863,37 +795,32 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         _isProcessingPurchase = true;
       });
       
-      if (_useRevenueCat) {
-        // RevenueCat restore flow
-        final result = await _revenueCatManager.restorePurchases();
+      // RevenueCat restore flow
+      final result = await _revenueCatManager.restorePurchases();
+      
+      setState(() {
+        _isProcessingPurchase = false;
+        _purchaseStatus = result.message;
+      });
+      
+      if (result.success) {
+        // Show success snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Purchases restored successfully!')),
+        );
         
-        setState(() {
-          _isProcessingPurchase = false;
-          _purchaseStatus = result.message;
+        // Navigate back after successful restoration
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pop(context);
         });
-        
-        if (result.success) {
-          // Show success snackbar
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Purchases restored successfully!')),
-          );
-          
-          // Navigate back after successful restoration
-          Future.delayed(Duration(seconds: 2), () {
-            Navigator.pop(context);
-          });
-        } else {
-          // Show notification about no purchases found
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: result.errorCode != null ? Colors.red : Colors.blue,
-            ),
-          );
-        }
       } else {
-        // Legacy restore
-        await _subscriptionService.restorePurchases();
+        // Show notification about no purchases found
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: result.errorCode != null ? Colors.red : Colors.blue,
+          ),
+        );
       }
     } catch (e) {
       setState(() {
