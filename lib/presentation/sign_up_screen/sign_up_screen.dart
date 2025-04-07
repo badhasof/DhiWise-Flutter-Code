@@ -13,6 +13,7 @@ import 'bloc/sign_up_bloc.dart';
 import 'models/sign_up_model.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../services/user_service.dart';
+import '../../services/user_feedback_service.dart';
 
 // ignore_for_file: must_be_immutable
 class SignUpScreen extends StatelessWidget {
@@ -667,6 +668,10 @@ class SignUpScreen extends StatelessWidget {
       final userService = UserService();
       await userService.initializeUserDataIfNeeded();
       
+      // Initialize feedback data
+      final feedbackService = UserFeedbackService();
+      await feedbackService.initializeFeedbackDataIfNeeded();
+      
       // Navigate to create profile screen
       Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);
       
@@ -713,6 +718,10 @@ class SignUpScreen extends StatelessWidget {
       final userService = UserService();
       await userService.initializeUserDataIfNeeded();
       
+      // Initialize feedback data
+      final feedbackService = UserFeedbackService();
+      await feedbackService.initializeFeedbackDataIfNeeded();
+      
       // Navigate to create profile screen
       Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);
       
@@ -746,6 +755,10 @@ class SignUpScreen extends StatelessWidget {
         // Initialize user data in Firestore
         final userService = UserService();
         await userService.initializeUserDataIfNeeded();
+        
+        // Initialize feedback data
+        final feedbackService = UserFeedbackService();
+        await feedbackService.initializeFeedbackDataIfNeeded();
         
         // Navigate to create profile screen
         Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);

@@ -14,6 +14,7 @@ import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/app_bar/appbar_title.dart';
 import '../../widgets/custom_outlined_button.dart';
 import '../subscription_screen/subscription_screen.dart';
+import '../feedback_screen/feedback_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -384,7 +385,14 @@ class SettingsScreen extends StatelessWidget {
                 icon: ImageConstant.imgFeedbackIcon,
                 title: "Feedback",
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.feedbackScreen);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FeedbackScreen(
+                        fromSettings: true,
+                      ),
+                    ),
+                  );
                 },
                 isLast: true,
               ),
@@ -591,6 +599,9 @@ class SettingsScreen extends StatelessWidget {
     bool isLast = false,
     bool isFirst = false,
   }) {
+    // Check if this item should have dark overlay (exclude specific items)
+    bool shouldHaveOverlay = !["Notifications", "Choose Plan", "Help Center", "Feedback"].contains(title);
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -609,41 +620,60 @@ class SettingsScreen extends StatelessWidget {
               )
             : null,
       ),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 12.h),
-          child: Row(
-            children: [
-              Container(
-                width: 24.h,
-                height: 24.h,
-                child: CustomImageView(
-                  imagePath: icon,
-                  color: appTheme.gray600,
-                ),
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 12.h),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24.h,
+                    height: 24.h,
+                    child: CustomImageView(
+                      imagePath: icon,
+                      color: appTheme.gray600,
+                    ),
+                  ),
+                  SizedBox(width: 16.h),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: appTheme.gray900,
+                        fontSize: 16.fSize,
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  CustomImageView(
+                    imagePath: ImageConstant.imgArrowRightIcon,
+                    height: 20.h,
+                    width: 20.h,
+                    color: appTheme.gray600,
+                  ),
+                ],
               ),
-              SizedBox(width: 16.h),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: appTheme.gray900,
-                    fontSize: 16.fSize,
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w700,
+            ),
+          ),
+          // Add dark overlay for buttons that should appear unselectable
+          if (shouldHaveOverlay)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.only(
+                    topLeft: isFirst ? Radius.circular(12.h) : Radius.zero,
+                    topRight: isFirst ? Radius.circular(12.h) : Radius.zero,
+                    bottomLeft: isLast ? Radius.circular(12.h) : Radius.zero,
+                    bottomRight: isLast ? Radius.circular(12.h) : Radius.zero,
                   ),
                 ),
               ),
-              CustomImageView(
-                imagePath: ImageConstant.imgArrowRightIcon,
-                height: 20.h,
-                width: 20.h,
-                color: appTheme.gray600,
-              ),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
     );
   }

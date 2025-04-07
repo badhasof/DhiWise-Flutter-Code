@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../services/user_service.dart';
+import '../../services/user_feedback_service.dart';
 import '../../core/app_export.dart';
 import '../../core/utils/validation_functions.dart';
 import '../../theme/custom_button_style.dart';
@@ -506,6 +507,10 @@ class SignInScreen extends StatelessWidget {
       final userService = UserService();
       await userService.initializeUserDataIfNeeded();
       
+      // Initialize feedback data
+      final feedbackService = UserFeedbackService();
+      await feedbackService.initializeFeedbackDataIfNeeded();
+      
       // Dismiss loading dialog
       Navigator.of(context, rootNavigator: true).pop();
       
@@ -588,6 +593,10 @@ class SignInScreen extends StatelessWidget {
       final userService = UserService();
       await userService.initializeUserDataIfNeeded();
       
+      // Initialize feedback data
+      final feedbackService = UserFeedbackService();
+      await feedbackService.initializeFeedbackDataIfNeeded();
+      
       // Dismiss loading dialog
       Navigator.of(context, rootNavigator: true).pop();
       
@@ -655,6 +664,10 @@ class SignInScreen extends StatelessWidget {
         // Initialize user data in Firestore
         final userService = UserService();
         await userService.initializeUserDataIfNeeded();
+        
+        // Initialize feedback data
+        final feedbackService = UserFeedbackService();
+        await feedbackService.initializeFeedbackDataIfNeeded();
         
         // Dismiss loading dialog
         Navigator.of(context, rootNavigator: true).pop();

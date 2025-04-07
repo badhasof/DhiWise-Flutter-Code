@@ -14,7 +14,10 @@ import 'services/user_stats_manager.dart';
 import 'services/revenuecat_service.dart';
 import 'services/revenuecat_offering_manager.dart';
 import 'services/demo_timer_service.dart';
+import 'services/user_feedback_service.dart';
 import 'presentation/app_navigation_screen/app_navigation_screen.dart';
+import 'presentation/feedback_screen/feedback_screen.dart';
+import 'presentation/subscription_screen/subscription_screen.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -167,13 +170,111 @@ Future<void> initDependencies() async {
   // Initialize user stats
   await UserStatsManager().initialize();
   
+  // Initialize services for logged in users
+  if (FirebaseAuth.instance.currentUser != null) {
+    debugPrint('📊 Initializing services for logged in user');
+    
+    // Initialize user feedback service
+    await UserFeedbackService().initializeFeedbackDataIfNeeded();
+    
+    // Debug: Check current feedback status
+    try {
+      final feedbackStatus = await UserFeedbackService().getFeedbackStatus();
+      debugPrint('📊 Current feedback status during app init: ${feedbackStatus.value}');
+    } catch (e) {
+      debugPrint('❌ Error checking status during init: $e');
+    }
+  } else {
+    debugPrint('📊 No user logged in, skipping user services initialization');
+  }
+  
   // Log dependencies initialized
   debugPrint('♻️ Dependencies initialized');
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // Flags to determine which screen to show initially
+  bool _shouldShowFeedback = false;
+  bool _shouldShowSubscription = false;
+  bool _isInitializing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInitialScreen();
+  }
+
+  Future<void> _checkInitialScreen() async {
+    // Only proceed with checks if a user is logged in
+    if (FirebaseAuth.instance.currentUser != null) {
+      try {
+        // First, check if feedback screen should be shown
+        bool shouldShowFeedback = await UserFeedbackService().shouldShowFeedback();
+        debugPrint('👉 Initial screen check: Should show feedback = $shouldShowFeedback');
+        
+        // Only check for subscription if feedback is not needed
+        bool shouldShowSubscription = false;
+        if (!shouldShowFeedback) {
+          // Simple check - if user doesn't have premium, show subscription
+          final isPremium = await SubscriptionStatusManager.instance.checkSubscriptionStatus();
+          debugPrint('👉 User premium status: $isPremium');
+          
+          // If not premium and feedback is completed, show subscription
+          shouldShowSubscription = !isPremium;
+          debugPrint('👉 Should show subscription = $shouldShowSubscription');
+        }
+        
+        if (mounted) {
+          setState(() {
+            _shouldShowFeedback = shouldShowFeedback;
+            _shouldShowSubscription = shouldShowSubscription;
+            _isInitializing = false;
+          });
+          
+          debugPrint('🔄 Final screen decision:');
+          debugPrint('   Show feedback: $_shouldShowFeedback');
+          debugPrint('   Show subscription: $_shouldShowSubscription');
+        }
+      } catch (e) {
+        debugPrint('❌ Error during initial screen check: $e');
+        if (mounted) {
+          setState(() {
+            _isInitializing = false;
+          });
+        }
+      }
+    } else {
+      // No user logged in, no need to show special screens
+      debugPrint('👉 No user logged in, skipping special screens');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      // Show loading screen while checking what initial screen to display
+      return MaterialApp(
+        home: Scaffold(
+          backgroundColor: Color(0xFFFFF9F4),
+          body: Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFFFF6F3E),
+            ),
+          ),
+        ),
+      );
+    }
+
     return ScreenUtilInit(
       designSize: const Size(360, 800),
       minTextAdapt: true,
@@ -208,8 +309,9 @@ class MyApp extends StatelessWidget {
                 ],
                 locale: Locale('en', ''),
                 supportedLocales: [Locale('en', '')],
-                home: AppNavigationScreen.builder(context), // Use AppNavigationScreen as home
-                routes: AppRoutes.routes, // Add routes for navigation between screens
+                // Determine which screen to show as the initial screen
+                home: _determineHomeScreen(),
+                routes: AppRoutes.routes,
                 onGenerateRoute: (settings) {
                   // Handle any routes that aren't explicitly defined
                   print('⚠️ Attempting to navigate to undefined route: ${settings.name}');
@@ -238,5 +340,21 @@ class MyApp extends StatelessWidget {
         );
       },
     );
+  }
+  
+  // Helper method to determine which screen to show
+  Widget _determineHomeScreen() {
+    // Priority order:
+    // 1. Feedback screen (if needed)
+    // 2. Subscription screen (if feedback completed and subscription needed)
+    // 3. Normal app navigation screen
+    
+    if (_shouldShowFeedback) {
+      return FeedbackScreen();
+    } else if (_shouldShowSubscription) {
+      return SubscriptionScreen();
+    } else {
+      return AppNavigationScreen.builder(context);
+    }
   }
 }

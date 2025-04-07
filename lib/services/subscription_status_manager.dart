@@ -82,7 +82,7 @@ class SubscriptionStatusManager {
     }
   }
   
-  // Update subscription status and type from customer info
+  // Update subscription status from RevenueCat customer info
   void _updateSubscriptionFromCustomerInfo(CustomerInfo customerInfo) {
     // Check for active entitlements and active subscriptions
     bool isActive = false;
@@ -172,16 +172,13 @@ class SubscriptionStatusManager {
     debugPrint('   - Final subscription type: $newType');
     
     // Update status if changed
-    if (isActive != _isSubscribed) {
-      debugPrint('📢 Subscription status changed to: ${isActive ? 'PREMIUM' : 'BASIC'}');
+    if (_isSubscribed != isActive || _subscriptionType != newType) {
+      debugPrint('🔄 Updating subscription status to ${isActive ? 'ACTIVE' : 'INACTIVE'}, type: $newType');
       _isSubscribed = isActive;
-      _subscriptionStatusController.add(_isSubscribed);
-    }
-    
-    // Update type if changed
-    if (newType != _subscriptionType) {
-      debugPrint('📢 Subscription type changed to: $newType');
       _subscriptionType = newType;
+      
+      // Notify listeners
+      _subscriptionStatusController.add(_isSubscribed);
       _subscriptionTypeController.add(_subscriptionType);
     }
   }

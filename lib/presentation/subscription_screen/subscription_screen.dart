@@ -268,116 +268,111 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFFFF9F4),
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Color(0xFF37251F)),
-          onPressed: () {
-            if (_fromFeedback) {
-              // If we came from feedback, navigate to home and clear the stack
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.homeScreen,
-                (route) => false,
-              );
-            } else {
-              // Normal navigation behavior
-              Navigator.pop(context);
-            }
-          },
+    return WillPopScope(
+      onWillPop: () async {
+        // If coming from feedback screen, prevent going back completely
+        if (_fromFeedback) {
+          return false;
+        }
+        // Otherwise allow normal back behavior
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Color(0xFFFFF9F4),
+        extendBodyBehindAppBar: true,
+        appBar: _fromFeedback ? null : AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          
+          title: null,
+          centerTitle: false,
         ),
-        title: null,
-        centerTitle: false,
-      ),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // Calculate spacing based on available height
-            final availableHeight = constraints.maxHeight;
-            final effectiveHeight = availableHeight - 8.h;
-            
-            // Adjust scaling factor based on screen height
-            final scaleFactor = effectiveHeight / 700;
-            final adjustedHeight = effectiveHeight > 700 ? 1.0 : 0.9;
-            
-            // Scale down spacing
-            final initialSpacing = (effectiveHeight > 700 ? 42.h : 32.h) * adjustedHeight;
-            final standardSpacing = (effectiveHeight > 700 ? 12.h : 8.h) * adjustedHeight;
-            
-            return Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                // Background wave SVG positioned at the top
-                Positioned(
-                  top: -20, // Move higher up to ensure it covers the top edge
-                  left: -200, // Move SVG 200px to the left
-                  right: 0,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width + 300,
-                    child: SvgPicture.asset(
-                      'assets/images/background_wave.svg',
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate spacing based on available height
+              final availableHeight = constraints.maxHeight;
+              final effectiveHeight = availableHeight - 8.h;
+              
+              // Adjust scaling factor based on screen height
+              final scaleFactor = effectiveHeight / 700;
+              final adjustedHeight = effectiveHeight > 700 ? 1.0 : 0.9;
+              
+              // Scale down spacing
+              final initialSpacing = (effectiveHeight > 700 ? 42.h : 32.h) * adjustedHeight;
+              final standardSpacing = (effectiveHeight > 700 ? 12.h : 8.h) * adjustedHeight;
+              
+              return Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  // Background wave SVG positioned at the top
+                  Positioned(
+                    top: -20, // Move higher up to ensure it covers the top edge
+                    left: -200, // Move SVG 200px to the left
+                    right: 0,
+                    child: Container(
                       width: MediaQuery.of(context).size.width + 300,
-                      fit: BoxFit.fill,
-                    ),
-                  ),
-                ),
-                // Confetti decoration
-                Positioned(
-                  top: 20,
-                  right: 0,
-                  left: 0,
-                  child: Center(
-                    child: SvgPicture.asset(
-                      'assets/images/confetti.svg',
-                      width: 480.h * adjustedHeight, // Increased from 450 to 480
-                      height: 480.h * adjustedHeight, // Increased from 450 to 480
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                // Main content
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
-                  child: Column(
-                    children: [
-                      SizedBox(height: initialSpacing),
-                      _buildHeaderText(adjustedHeight),
-                      SizedBox(height: standardSpacing),
-                      Container(
-                        child: _buildSubscriptionOptions(adjustedHeight),
+                      child: SvgPicture.asset(
+                        'assets/images/background_wave.svg',
+                        width: MediaQuery.of(context).size.width + 300,
+                        fit: BoxFit.fill,
                       ),
-                      SizedBox(height: standardSpacing),
-                      _buildSubscriptionNotice(),
-                      SizedBox(height: standardSpacing),
-                      _buildSubscribeButton(),
-                      SizedBox(height: 8.h * adjustedHeight),
-                      _buildSecurityNote(),
-                      
-                      // Status message
-                      if (_purchaseStatus.isNotEmpty) ...[
-                        SizedBox(height: 8.h * adjustedHeight),
-                        Text(
-                          _purchaseStatus,
-                          style: TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15.fSize * adjustedHeight,
-                            color: Color(0xFF80706B),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          }
+                  // Confetti decoration
+                  Positioned(
+                    top: 20,
+                    right: 0,
+                    left: 0,
+                    child: Center(
+                      child: SvgPicture.asset(
+                        'assets/images/confetti.svg',
+                        width: 480.h * adjustedHeight, // Increased from 450 to 480
+                        height: 480.h * adjustedHeight, // Increased from 450 to 480
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  // Main content
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
+                    child: Column(
+                      children: [
+                        SizedBox(height: initialSpacing),
+                        _buildHeaderText(adjustedHeight),
+                        SizedBox(height: standardSpacing),
+                        Container(
+                          child: _buildSubscriptionOptions(adjustedHeight),
+                        ),
+                        SizedBox(height: standardSpacing),
+                        _buildSubscriptionNotice(),
+                        SizedBox(height: standardSpacing),
+                        _buildSubscribeButton(),
+                        SizedBox(height: 8.h * adjustedHeight),
+                        _buildSecurityNote(),
+                        
+                        // Status message
+                        if (_purchaseStatus.isNotEmpty) ...[
+                          SizedBox(height: 8.h * adjustedHeight),
+                          Text(
+                            _purchaseStatus,
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15.fSize * adjustedHeight,
+                              color: Color(0xFF80706B),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+          ),
         ),
       ),
     );
@@ -719,9 +714,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             : 'Subscription activated. Thank you for your support!'))
         );
         
-        // Navigate back after successful purchase
+        // Navigate to home screen after successful purchase instead of popping context
         Future.delayed(Duration(seconds: 2), () {
-          Navigator.pop(context);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.homeScreen,
+            (route) => false,
+          );
         });
       } else {
         // Show error in snackbar if it's not just a cancellation

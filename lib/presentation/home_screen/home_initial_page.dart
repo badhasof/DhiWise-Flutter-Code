@@ -93,6 +93,9 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   bool _isLoading = true;
   bool _isFictionSelected = false; // Non-fiction selected by default
   String _selectedSubGenre = "All Stories"; // Track selected sub-genre
+  // Add separate trackers for fiction and non-fiction selected sub-genres
+  String _selectedFictionSubGenre = "All Stories";
+  String _selectedNonFictionSubGenre = "All Stories";
   
   // List to store available sub-genres
   List<String> _availableSubGenres = ["All Stories"];
@@ -254,6 +257,15 @@ class HomeInitialPageState extends State<HomeInitialPage> {
     
     // Get the sub-genres for the current fiction/non-fiction selection
     final subGenres = await _storyService.getAvailableSubGenres(_isFictionSelected);
+    
+    // Update the current selected sub-genre based on the fiction/non-fiction state
+    if (_isFictionSelected) {
+      // If switching to fiction, use the fiction sub-genre
+      _selectedSubGenre = _selectedFictionSubGenre;
+    } else {
+      // If switching to non-fiction, use the non-fiction sub-genre
+      _selectedSubGenre = _selectedNonFictionSubGenre;
+    }
     
     List<Story> filteredStories;
     
@@ -1009,6 +1021,12 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                       onTap: () {
                         setState(() {
                           _selectedSubGenre = subGenre;
+                          // Also update the category-specific selected sub-genre
+                          if (_isFictionSelected) {
+                            _selectedFictionSubGenre = subGenre;
+                          } else {
+                            _selectedNonFictionSubGenre = subGenre;
+                          }
                         });
                         _updateDisplayedStories(); // Update stories when sub-genre is selected
                       },

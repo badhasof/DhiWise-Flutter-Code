@@ -3,11 +3,18 @@ import '../../core/app_export.dart';
 import '../../services/demo_timer_service.dart';
 import '../../services/subscription_status_manager.dart';
 import '../../services/user_service.dart';
+import '../../services/user_feedback_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
-  const FeedbackScreen({Key? key}) : super(key: key);
+  final bool fromSettings;
+  
+  const FeedbackScreen({
+    Key? key,
+    this.fromSettings = false,
+  }) : super(key: key);
 
   static Widget builder(BuildContext context) {
+    // When called from routes, create with default settings
     return FeedbackScreen();
   }
 
@@ -25,11 +32,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   bool _isDemoDone = false;
   bool _isPremium = false;
   bool _isLoading = true;
+  bool _fromSettings = false;
 
   @override
   void initState() {
     debugPrint('[FeedbackScreen] initState called.'); // Log initState
     super.initState();
+    
+    // Check if coming from settings based on the key
+    _fromSettings = widget.fromSettings || widget.key.toString().contains('fromSettings');
+    
     // Reset the navigation flag in the demo timer service
     // This prevents duplicate navigations if the timer expires while on this screen
     DemoTimerService.instance.resetNavigationFlag();
@@ -40,6 +52,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   
   Future<void> _checkDemoStatus() async {
     debugPrint('[FeedbackScreen] _checkDemoStatus started.'); // Log start
+    
+    // If coming from settings, skip redirection logic
+    if (_fromSettings) {
+      setState(() {
+        _isLoading = false;
+        _isDemoDone = true; // Pretend demo is done to show the form
+      });
+      return;
+    }
+    
     // Check if demo timer is finished in Firebase
     _isDemoDone = await DemoTimerService.instance.isDemoMarkedAsDone();
     debugPrint('[FeedbackScreen] isDemoDone: $_isDemoDone');
@@ -69,7 +91,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     }
     
     // If demo isn't marked as done in Firebase or user has premium, redirect to home
-    if (!_isDemoDone || _isPremium) {
+    // But only if not coming from settings
+    if ((!_isDemoDone || _isPremium) && !_fromSettings) {
       debugPrint('[FeedbackScreen] Condition met for redirection. Redirecting to Home...');
       // Short delay to allow screen to initialize
       Future.delayed(Duration(milliseconds: 300), () {
@@ -116,12 +139,22 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     debugPrint('[FeedbackScreen] Building main content.');
     return Scaffold(
       backgroundColor: Color(0xFFFFF9F4),
+      // Add AppBar with back button when coming from settings
+      appBar: _fromSettings ? AppBar(
+        backgroundColor: Color(0xFFFFF9F4),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Color(0xFF37251F)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: null,
+      ) : null,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(16.h),
           child: Column(
             children: [
-              SizedBox(height: 24.h),
+              SizedBox(height: _fromSettings ? 0 : 24.h), // Adjust top padding when using AppBar
               _buildHeader(),
               SizedBox(height: 32.h),
               _buildTextField("Name", _nameController),
@@ -321,7 +354,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               return;
             }
             
-            // Submit feedback
+            // Submit feedback and mark as completed
+            await UserFeedbackService().markAsCompleted();
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Feedback submitted. Thank you!')),
             );
@@ -332,6 +367,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             // Navigate to subscription/pricing screen only if user doesn't have premium
             Future.delayed(Duration(milliseconds: 1500), () {
               if (!isPremium) {
+                // Go directly to subscription screen
                 Navigator.pushNamed(
                   context,
                   AppRoutes.subscriptionScreen,

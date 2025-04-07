@@ -4,6 +4,7 @@ import '../core/app_export.dart';
 import '../core/utils/pref_utils.dart';
 import 'subscription_status_manager.dart';
 import 'user_service.dart';
+import 'user_feedback_service.dart';
 
 /// A global service to monitor the demo timer across the entire app
 class DemoTimerService {
@@ -184,17 +185,29 @@ class DemoTimerService {
       debugPrint('[DemoTimerService] Attempting to navigate to FeedbackScreen...');
       _hasNavigatedToFeedback = true;
       // Delay navigation slightly to prevent multiple navigations
-      Future.delayed(Duration(milliseconds: 500), () {
-        final currentContext = NavigatorService.navigatorKey.currentContext;
-        if (currentContext != null) {
-          debugPrint('[DemoTimerService] Context found. Navigating to ${AppRoutes.feedbackScreen}');
-          Navigator.of(currentContext).pushNamedAndRemoveUntil(
-            AppRoutes.feedbackScreen,
-            (route) => false,
-          );
-          debugPrint('[DemoTimerService] Navigation command issued.');
-        } else {
-          debugPrint('❌ [DemoTimerService] ERROR: Navigator context is null. Cannot navigate.');
+      Future.delayed(Duration(milliseconds: 500), () async {
+        try {
+          // Mark feedback as prompted right before navigating
+          debugPrint('[DemoTimerService] Setting feedback status to PROMPTED');
+          await UserFeedbackService().markAsPrompted();
+          
+          // Double-check the feedback status was actually set
+          final feedbackStatus = await UserFeedbackService().getFeedbackStatus();
+          debugPrint('[DemoTimerService] Feedback status after marking: ${feedbackStatus.value}');
+          
+          final currentContext = NavigatorService.navigatorKey.currentContext;
+          if (currentContext != null) {
+            debugPrint('[DemoTimerService] Context found. Navigating to ${AppRoutes.feedbackScreen}');
+            Navigator.of(currentContext).pushNamedAndRemoveUntil(
+              AppRoutes.feedbackScreen,
+              (route) => false,
+            );
+            debugPrint('[DemoTimerService] Navigation command issued.');
+          } else {
+            debugPrint('❌ [DemoTimerService] ERROR: Navigator context is null. Cannot navigate.');
+          }
+        } catch (e) {
+          debugPrint('❌ [DemoTimerService] ERROR during feedback navigation: $e');
         }
       });
     } else {
