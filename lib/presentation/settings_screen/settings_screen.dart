@@ -339,6 +339,79 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
         ),
+        
+        // Orange Restore Purchases button
+        SizedBox(height: 8.h),
+        Container(
+          decoration: BoxDecoration(
+            color: appTheme.deepOrangeA200,
+            borderRadius: BorderRadius.circular(12.h),
+            border: Border(
+              bottom: BorderSide(color: Color(0xFFD84918), width: 4),
+            ),
+          ),
+          child: CustomElevatedButton(
+            height: 48.h,
+            text: "Restore Purchases",
+            buttonStyle: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(appTheme.deepOrangeA200),
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.h),
+                ),
+              ),
+            ),
+            buttonTextStyle: TextStyle(
+              color: Colors.white,
+              fontSize: 16.fSize,
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+            ),
+            onPressed: () async {
+              try {
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => Center(
+                    child: CircularProgressIndicator(
+                      color: appTheme.deepOrangeA200,
+                    ),
+                  ),
+                );
+                
+                // Restore purchases using RevenueCat
+                final success = await SubscriptionStatusManager.instance.restorePurchases();
+                
+                // Close loading indicator
+                Navigator.pop(context);
+                
+                if (context.mounted) {
+                  // Show success or error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success 
+                          ? 'Purchases restored successfully.' 
+                          : 'No purchases found to restore.',
+                      ),
+                      backgroundColor: success ? Colors.green : Colors.orange,
+                    )
+                  );
+                }
+              } catch (e) {
+                // Close loading indicator and show error message
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to restore purchases: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          ),
+        ),
       ],
     );
   }
