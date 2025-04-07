@@ -380,10 +380,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             // Navigate to subscription/pricing screen only if user doesn't have premium
             Future.delayed(Duration(milliseconds: 1500), () {
               if (!isPremium) {
-                Navigator.pushNamedAndRemoveUntil(
+                Navigator.pushNamed(
                   context,
                   AppRoutes.subscriptionScreen,
-                  (route) => false,
+                  arguments: {'fromFeedback': true} // Pass data to identify this navigation path
                 );
               } else {
                 // User already has premium, navigate to home screen instead

@@ -27,6 +27,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _isMonthlySelected = true;
   bool _isProcessingPurchase = false;
   String _purchaseStatus = '';
+  bool _fromFeedback = false; // Track if we came from feedback screen
   
   // New RevenueCat offering manager
   final RevenueCatOfferingManager _revenueCatManager = RevenueCatOfferingManager();
@@ -38,6 +39,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   void initState() {
     super.initState();
+    // Check if we came from feedback screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['fromFeedback'] == true) {
+        setState(() {
+          _fromFeedback = true;
+        });
+      }
+    });
+    
     // Load products immediately when screen is displayed
     _initializeSubscriptions();
     
@@ -239,7 +250,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: Color(0xFF37251F)),
           onPressed: () {
-            Navigator.pop(context);
+            if (_fromFeedback) {
+              // If we came from feedback, navigate to home and clear the stack
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.homeScreen,
+                (route) => false,
+              );
+            } else {
+              // Normal navigation behavior
+              Navigator.pop(context);
+            }
           },
         ),
         title: null,
