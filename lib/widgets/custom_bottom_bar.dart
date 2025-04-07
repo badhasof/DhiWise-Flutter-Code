@@ -26,13 +26,13 @@ class CustomBottomBarState extends State<CustomBottomBar> {
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavVocabularyGray600,
-      activeIcon: ImageConstant.imgNavVocabularyGray600,
+      activeIcon: ImageConstant.imgNavVocabularyFilled,
       title: "Vocabulary",
       type: BottomBarEnum.Vocabulary,
     ),
     BottomMenuModel(
       icon: ImageConstant.imgNavProgress,
-      activeIcon: ImageConstant.imgNavProgress,
+      activeIcon: ImageConstant.imgNavProgressFilled,
       title: "Progress",
       type: BottomBarEnum.Progress,
     ),
@@ -95,14 +95,8 @@ class CustomBottomBarState extends State<CustomBottomBar> {
               children: [
                 CustomImageView(
                   imagePath: bottomMenuList[index].activeIcon,
-                  height: 4.h,
-                  width: 10.h,
-                  color: appTheme.deepOrangeA200,
-                ),
-                CustomImageView(
-                  imagePath: bottomMenuList[index].activeIcon,
                   height: 20.h,
-                  width: 20.h,
+                  width: 22.h,
                   color: appTheme.deepOrangeA200,
                 ),
                 Text(

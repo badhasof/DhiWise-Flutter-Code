@@ -99,12 +99,14 @@ class ImageConstant {
   static String imgNavHomeDeepOrangeA200 = '$imagePath/img_nav_home_deep_orange_a200.svg';
   
   static String imgNavVocabularyGray600 = '$imagePath/img_nav_vocabulary_gray_600.svg';
+  static String imgNavVocabularyFilled = '$imagePath/img_nav_vocabulary_filled.svg';
   
   static String imgNavLearning = '$imagePath/img_nav_learning.svg';
   
   static String imgNavProgress = '$imagePath/img_nav_progress.svg';
+  static String imgNavProgressFilled = '$imagePath/img_nav_progress_filled.svg';
   
-  static String imgNavProfile = '$imagePath/img_nav_profile.png';
+  static String imgNavProfile = '$imagePath/settings_icons/user_icon.svg';
   
   // Difficulty indicator images
   static String imgDifficultyBeginner = '$imagePath/difficulty/difficulty_beginner.svg';
