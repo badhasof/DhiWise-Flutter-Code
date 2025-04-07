@@ -105,12 +105,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _monthlyPackage = monthlyPackage;
           _lifetimePackage = lifetimePackage;
           _isProcessingPurchase = false;
+          _purchaseStatus = '';
           
           if (monthlyPackage == null && lifetimePackage == null) {
-            _purchaseStatus = 'No subscription products found. Try refreshing.';
+            // Show message in snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('No subscription products found. Try refreshing.'))
+            );
           } else {
-            _purchaseStatus = '';
-            
             // If only one type of package is available, pre-select it
             if (monthlyPackage != null && lifetimePackage == null) {
               _isMonthlySelected = true;
@@ -118,37 +120,47 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _isMonthlySelected = false;
             }
           }
-          
-          // Clear the status message after a delay if products were found
-          if (monthlyPackage != null || lifetimePackage != null) {
-            Future.delayed(Duration(seconds: 2), () {
-              if (mounted) {
-                setState(() {
-                  _purchaseStatus = '';
-                });
-              }
-            });
-          }
         });
       } else {
         debugPrint('❌ No valid offerings found');
         setState(() {
           _isProcessingPurchase = false;
-          _purchaseStatus = 'No subscription products found. Tap Retry.';
+          _purchaseStatus = '';
         });
+        
+        // Show message in snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No subscription products found. Tap Retry.'))
+        );
       }
     } on TimeoutException {
       debugPrint('⏱️ Product loading timed out');
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = 'Loading timed out. Please check your connection and tap Retry.';
+        _purchaseStatus = '';
       });
+      
+      // Show error in snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Loading timed out. Please check your connection and tap Retry.'),
+          backgroundColor: Colors.red,
+        )
+      );
     } catch (e) {
       debugPrint('❌ Error loading products: $e');
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = 'Error loading products. Please tap Retry.';
+        _purchaseStatus = '';
       });
+      
+      // Show error in snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading products. Please tap Retry.'),
+          backgroundColor: Colors.red,
+        )
+      );
     }
   }
   
@@ -195,7 +207,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _isProcessingPurchase = false;
           
           if (monthlyPackage == null && lifetimePackage == null) {
-            _purchaseStatus = 'No subscription products found. Try again later.';
+            _purchaseStatus = '';
+            
+            // Show error in snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('No subscription products found. Try again later.'))
+            );
           } else {
             _purchaseStatus = '';
             
@@ -206,36 +223,46 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _isMonthlySelected = false;
             }
           }
-          
-          // Clear the status message after a delay if products were found
-          if (monthlyPackage != null || lifetimePackage != null) {
-            Future.delayed(Duration(seconds: 2), () {
-              if (mounted) {
-                setState(() {
-                  _purchaseStatus = '';
-                });
-              }
-            });
-          }
         });
       } else {
         setState(() {
           _isProcessingPurchase = false;
-          _purchaseStatus = 'No subscription products found. Try again later.';
+          _purchaseStatus = '';
         });
+        
+        // Show error in snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No subscription products found. Try again later.'))
+        );
       }
     } on TimeoutException {
       debugPrint('⏱️ Product refresh timed out');
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = 'Refresh timed out. Please check your connection and try again.';
+        _purchaseStatus = '';
       });
+      
+      // Show error in snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Refresh timed out. Please check your connection and try again.'),
+          backgroundColor: Colors.red,
+        )
+      );
     } catch (e) {
       debugPrint('❌ Error refreshing products: $e');
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = 'Error refreshing products. Please try again.';
+        _purchaseStatus = '';
       });
+      
+      // Show error in snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error refreshing products: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        )
+      );
     }
   }
 
@@ -322,7 +349,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       _buildHeaderText(adjustedHeight),
                       SizedBox(height: standardSpacing),
                       Container(
-                        margin: EdgeInsets.only(right: 12.h), // Add right margin to shift content left
                         child: _buildSubscriptionOptions(adjustedHeight),
                       ),
                       SizedBox(height: standardSpacing),
@@ -341,9 +367,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w500,
                             fontSize: 15.fSize * adjustedHeight,
-                            color: _purchaseStatus.contains('Error') || _purchaseStatus.contains('canceled') 
-                                ? Colors.red 
-                                : Color(0xFF80706B),
+                            color: Color(0xFF80706B),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -417,34 +441,37 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       monthlyPrice = "${_revenueCatManager.getMonthlyPackage()!.storeProduct.priceString}/month";
     }
     
-    return Column(
-      children: [
-        // Lifetime option
-        _buildSubscriptionOption(
-          title: "Lifetime Access",
-          price: lifetimePrice,
-          isSelected: !_isMonthlySelected,
-          onTap: () {
-            setState(() {
-              _isMonthlySelected = false;
-            });
-          },
-          scale: scale,
-        ),
-        SizedBox(height: 18.h),
-        // Monthly option
-        _buildSubscriptionOption(
-          title: "Monthly",
-          price: monthlyPrice,
-          isSelected: _isMonthlySelected,
-          onTap: () {
-            setState(() {
-              _isMonthlySelected = true;
-            });
-          },
-          scale: scale,
-        ),
-      ],
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        children: [
+          // Lifetime option
+          _buildSubscriptionOption(
+            title: "Lifetime Access",
+            price: lifetimePrice,
+            isSelected: !_isMonthlySelected,
+            onTap: () {
+              setState(() {
+                _isMonthlySelected = false;
+              });
+            },
+            scale: scale,
+          ),
+          SizedBox(height: 18.h),
+          // Monthly option
+          _buildSubscriptionOption(
+            title: "Monthly",
+            price: monthlyPrice,
+            isSelected: _isMonthlySelected,
+            onTap: () {
+              setState(() {
+                _isMonthlySelected = true;
+              });
+            },
+            scale: scale,
+          ),
+        ],
+      ),
     );
   }
 
@@ -643,9 +670,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   // Process subscription purchase
   Future<void> _processPurchase() async {
     try {
-      // Clear purchase status
+      // Clear purchase status and show loading indicator
       setState(() {
-        _purchaseStatus = 'Preparing purchase...';
+        _purchaseStatus = '';
         _isProcessingPurchase = true;
       });
       
@@ -657,11 +684,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (selectedPackage == null) {
         setState(() {
           _isProcessingPurchase = false;
-          _purchaseStatus = 'Selected product not available. Try refreshing.';
+          _purchaseStatus = ''; // Clear the status instead of showing error
         });
         
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please refresh products before purchasing')),
+          SnackBar(content: Text('Selected product not available. Try refreshing.')),
         );
         return;
       }
@@ -669,16 +696,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       // Check if this is a lifetime purchase
       final bool isLifetime = !_isMonthlySelected;
       
-      setState(() {
-        _purchaseStatus = 'Starting purchase flow...';
-      });
+      // Log to console instead of showing in UI
+      debugPrint('🔄 Starting purchase flow...');
       
       // Purchase the selected package
       final result = await _revenueCatManager.purchasePackage(selectedPackage, isLifetime);
       
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = result.message;
+        // Only set success messages in the UI, errors will go in snackbar
+        _purchaseStatus = result.success ? result.message : '';
       });
       
       if (result.success) {
@@ -718,7 +745,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     } catch (e) {
       setState(() {
         _isProcessingPurchase = false;
-        _purchaseStatus = 'Error: ${e.toString()}';
+        _purchaseStatus = ''; // Clear the status instead of showing error
       });
       
       // Show error in snackbar
