@@ -959,11 +959,9 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
 
   // Subscription Navigation with smart refresh
   void _navigateToSubscriptionScreen(BuildContext context) {
-    Navigator.push(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (context) => SubscriptionScreen.builder(context),
-      ),
+      AppRoutes.subscriptionScreen,
     ).then((_) {
       // Only check subscription status again when returning from subscription screen
       // Don't reload all data unnecessarily

@@ -13,6 +13,7 @@ import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/app_bar/appbar_title.dart';
 import '../../widgets/custom_outlined_button.dart';
+import '../subscription_screen/subscription_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -260,13 +261,15 @@ class SettingsScreen extends StatelessWidget {
               icon: ImageConstant.imgChooseAPlanIcon,
               title: "Choose Plan",
               onTap: () async {
-                // Check if user already has premium before showing subscription screen
-                bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
-                
                 // Only navigate if needed
-                if (shouldShow && context.mounted) {
-                  Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
-                }
+                // if (shouldShow && context.mounted) {
+                 Navigator.of(context, rootNavigator: true).push(
+                   MaterialPageRoute(
+                     builder: (context) => SubscriptionScreen(),
+                     fullscreenDialog: true,
+                   ),
+                 );
+                // }
               },
               isFirst: true,
               isLast: true,
@@ -735,13 +738,13 @@ class SettingsScreen extends StatelessWidget {
             "Choose a plan",
             Icons.shopping_cart_outlined,
             () async {
-              // Check if user already has premium before showing subscription screen
-              bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
-              
-              // Only navigate if needed
-              if (shouldShow && context.mounted) {
-                Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
-              }
+              // Use direct navigation with MaterialPageRoute
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => SubscriptionScreen(),
+                  fullscreenDialog: true,
+                ),
+              );
             },
           ),
         ],
