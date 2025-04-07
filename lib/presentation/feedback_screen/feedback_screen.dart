@@ -16,7 +16,6 @@ class FeedbackScreen extends StatefulWidget {
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  int _selectedRating = 3; // Default to 3rd emoji (smile)
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _answer1Controller = TextEditingController();
@@ -125,8 +124,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               SizedBox(height: 24.h),
               _buildHeader(),
               SizedBox(height: 32.h),
-              _buildEmojiRatings(),
-              SizedBox(height: 32.h),
               _buildTextField("Name", _nameController),
               SizedBox(height: 16.h),
               _buildTextField("Email address", _emailController),
@@ -162,80 +159,35 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Column(
       children: [
         Text(
-          "Rate your experience!",
+          "No Sugarcoating!",
           style: TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w800,
-            fontSize: 24.fSize,
+            fontSize: 28.fSize,
             color: Color(0xFF37251F),
           ),
         ),
         SizedBox(height: 8.h),
         Text(
-          "The app is in beta stage and we are looking\nfor your valuable feedback",
-          textAlign: TextAlign.center,
+          "Tell us what sucked and what didn't.",
           style: TextStyle(
             fontFamily: 'Lato',
-            fontWeight: FontWeight.w500,
-            fontSize: 16.fSize,
-            color: Color(0xFF80706B),
+            fontWeight: FontWeight.w600,
+            fontSize: 18.fSize,
+            color: Color(0xFFFF6F3E),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 16.h),
+        Container(
+          width: 60.h,
+          height: 3.h,
+          decoration: BoxDecoration(
+            color: Color(0xFFEFECEB),
+            borderRadius: BorderRadius.circular(2.h),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildEmojiRatings() {
-    List<String> emojis = ["😞", "🙁", "😐", "🙂", "😊"];
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(
-        emojis.length,
-        (index) => _buildEmojiButton(emojis[index], index),
-      ),
-    );
-  }
-
-  Widget _buildEmojiButton(String emoji, int index) {
-    bool isSelected = _selectedRating == index;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedRating = index;
-        });
-      },
-      child: Container(
-        width: 50.h,
-        height: 50.h,
-        decoration: BoxDecoration(
-          color: Color(0xFFEFECEB),
-          shape: BoxShape.circle,
-          border: isSelected ? Border.all(
-            color: Color(0xFFFF6F3E),
-            width: 2.h,
-          ) : null,
-        ),
-        child: Center(
-          child: ColorFiltered(
-            colorFilter: isSelected 
-              ? ColorFilter.mode(Colors.transparent, BlendMode.multiply) // No filter for selected
-              : ColorFilter.matrix([
-                  0.2126, 0.7152, 0.0722, 0, 0,
-                  0.2126, 0.7152, 0.0722, 0, 0,
-                  0.2126, 0.7152, 0.0722, 0, 0,
-                  0, 0, 0, 1, 0,
-                ]), // Grayscale filter for unselected
-            child: Text(
-              emoji,
-              style: TextStyle(
-                fontSize: 28.fSize,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
