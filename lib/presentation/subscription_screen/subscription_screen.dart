@@ -62,7 +62,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Future<void> _initializeSubscriptions() async {
     setState(() {
       _isProcessingPurchase = true;
-      _purchaseStatus = 'Loading products...';
+      _purchaseStatus = '';
     });
     
     try {
@@ -98,7 +98,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           if (monthlyPackage == null && lifetimePackage == null) {
             _purchaseStatus = 'No subscription products found. Try refreshing.';
           } else {
-            _purchaseStatus = 'Products loaded successfully';
+            _purchaseStatus = '';
             
             // If only one type of package is available, pre-select it
             if (monthlyPackage != null && lifetimePackage == null) {
@@ -150,7 +150,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     // Show progress immediately
     setState(() {
       _isProcessingPurchase = true;
-      _purchaseStatus = 'Refreshing products...';
+      _purchaseStatus = '';
     });
     
     try {
@@ -186,7 +186,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           if (monthlyPackage == null && lifetimePackage == null) {
             _purchaseStatus = 'No subscription products found. Try again later.';
           } else {
-            _purchaseStatus = 'Products refreshed';
+            _purchaseStatus = '';
             
             // If only one type of package is available, pre-select it
             if (monthlyPackage != null && lifetimePackage == null) {
@@ -242,150 +242,111 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: Color(0xFF37251F)),
-            onPressed: _isProcessingPurchase ? null : _refreshProducts,
-          ),
-        ],
         title: null,
         centerTitle: false,
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshProducts,
-        child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Calculate spacing based on available height
-              final availableHeight = MediaQuery.of(context).size.height;
-              final topPadding = MediaQuery.of(context).padding.top;
-              final effectiveHeight = availableHeight - topPadding - 8.h;
-              
-              // Adjust spacing based on screen height
-              final initialSpacing = effectiveHeight > 700 ? 60.h : 52.h;
-              final standardSpacing = effectiveHeight > 700 ? 18.h : 14.h;
-              
-              return Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  // Background wave SVG positioned at the top
-                  Positioned(
-                    top: -1, // Negative value to ensure it covers the top edge
-                    left: -200, // Move SVG 200px to the left
-                    right: 0,
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate spacing based on available height
+            final availableHeight = constraints.maxHeight;
+            final effectiveHeight = availableHeight - 8.h;
+            
+            // Adjust scaling factor based on screen height
+            final scaleFactor = effectiveHeight / 700;
+            final adjustedHeight = effectiveHeight > 700 ? 1.0 : 0.9;
+            
+            // Scale down spacing
+            final initialSpacing = (effectiveHeight > 700 ? 42.h : 32.h) * adjustedHeight;
+            final standardSpacing = (effectiveHeight > 700 ? 12.h : 8.h) * adjustedHeight;
+            
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                // Background wave SVG positioned at the top
+                Positioned(
+                  top: -20, // Move higher up to ensure it covers the top edge
+                  left: -200, // Move SVG 200px to the left
+                  right: 0,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width + 300,
                     child: SvgPicture.asset(
                       'assets/images/background_wave.svg',
-                      width: MediaQuery.of(context).size.width + 200, // Increase width to maintain coverage
-                      fit: BoxFit.fitWidth,
+                      width: MediaQuery.of(context).size.width + 300,
+                      fit: BoxFit.fill,
                     ),
                   ),
-                  // Confetti decoration
-                  Positioned(
-                    top: 20,
-                    right: 0,
-                    left: 0,
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/images/confetti.svg',
-                        width: 500.h,
-                        height: 500.h,
-                        fit: BoxFit.contain,
+                ),
+                // Confetti decoration
+                Positioned(
+                  top: 20,
+                  right: 0,
+                  left: 0,
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/images/confetti.svg',
+                      width: 480.h * adjustedHeight, // Increased from 450 to 480
+                      height: 480.h * adjustedHeight, // Increased from 450 to 480
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                // Main content
+                Padding(
+                  padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
+                  child: Column(
+                    children: [
+                      SizedBox(height: initialSpacing),
+                      _buildHeaderText(adjustedHeight),
+                      SizedBox(height: standardSpacing),
+                      Container(
+                        margin: EdgeInsets.only(right: 12.h), // Add right margin to shift content left
+                        child: _buildSubscriptionOptions(adjustedHeight),
                       ),
-                    ),
-                  ),
-                  // Main content
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(16.h, 16.h, 16.h, 24.h),
-                    child: Column(
-                      children: [
-                        SizedBox(height: initialSpacing),
-                        _buildHeaderText(),
-                        SizedBox(height: standardSpacing),
-                        _buildSubscriptionOptions(),
-                        SizedBox(height: standardSpacing),
-                        _buildSubscriptionNotice(),
-                        SizedBox(height: standardSpacing),
-                        _buildSubscribeButton(),
-                        SizedBox(height: 12.h),
-                        _buildSecurityNote(),
-                        
-                        // Status message
-                        if (_purchaseStatus.isNotEmpty) ...[
-                          SizedBox(height: 12.h),
-                          Text(
-                            _purchaseStatus,
-                            style: TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15.fSize,
-                              color: _purchaseStatus.contains('Error') || _purchaseStatus.contains('canceled') 
-                                  ? Colors.red 
-                                  : Color(0xFF80706B),
-                            ),
-                            textAlign: TextAlign.center,
+                      SizedBox(height: standardSpacing),
+                      _buildSubscriptionNotice(),
+                      SizedBox(height: standardSpacing),
+                      _buildSubscribeButton(),
+                      SizedBox(height: 8.h * adjustedHeight),
+                      _buildSecurityNote(),
+                      
+                      // Status message
+                      if (_purchaseStatus.isNotEmpty) ...[
+                        SizedBox(height: 8.h * adjustedHeight),
+                        Text(
+                          _purchaseStatus,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15.fSize * adjustedHeight,
+                            color: _purchaseStatus.contains('Error') || _purchaseStatus.contains('canceled') 
+                                ? Colors.red 
+                                : Color(0xFF80706B),
                           ),
-                        ],
-                        
-                        // Restore purchases button
-                        SizedBox(height: 20.h),
-                        TextButton(
-                          onPressed: _isProcessingPurchase 
-                              ? null 
-                              : () => _restorePurchases(),
-                          child: Text(
-                            'Restore purchases',
-                            style: TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15.fSize,
-                              color: Color(0xFF80706B),
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        
-                        // Debug product test button (only visible in debug mode)
-                        SizedBox(height: 10.h),
-                        if (kDebugMode) 
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, AppRoutes.productTestScreen);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[300],
-                              foregroundColor: Colors.black87,
-                            ),
-                            child: Text(
-                              'Debug: Test Products',
-                              style: TextStyle(
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14.fSize,
-                              ),
-                            ),
-                          ),
                       ],
-                    ),
+                    ],
                   ),
-                ],
-              );
-            }
-          ),
+                ),
+              ],
+            );
+          }
         ),
       ),
     );
   }
 
-  Widget _buildHeaderText() {
+  Widget _buildHeaderText(double scale) {
     return Column(
       children: [
         SvgPicture.asset(
           'assets/images/gift_box.svg',
-          height: 115.h,
-          width: 115.h,
+          height: 120.h * scale, // Increased from 110 to 120
+          width: 120.h * scale, // Increased from 110 to 120
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 15.h * scale),
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Container(
@@ -396,7 +357,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               style: TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w800,
-                fontSize: 24.fSize,
+                fontSize: 25.fSize * scale,
                 color: Color(0xFF37251F),
               ),
               softWrap: true,
@@ -412,7 +373,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             style: TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w500,
-              fontSize: 15.fSize,
+              fontSize: 15.fSize * scale,
               color: Color(0xFF80706B),
             ),
             softWrap: true,
@@ -422,7 +383,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  Widget _buildSubscriptionOptions() {
+  Widget _buildSubscriptionOptions(double scale) {
     // Get pricing info from the package if available
     String lifetimePrice = "\$ 29.99";
     String monthlyPrice = "\$ 2.99/month";
@@ -447,6 +408,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _isMonthlySelected = false;
             });
           },
+          scale: scale,
         ),
         SizedBox(height: 18.h),
         // Monthly option
@@ -459,6 +421,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               _isMonthlySelected = true;
             });
           },
+          scale: scale,
         ),
       ],
     );
@@ -469,6 +432,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     required String price,
     required bool isSelected,
     required VoidCallback onTap,
+    required double scale,
   }) {
     return GestureDetector(
       onTap: _isProcessingPurchase ? null : onTap,
@@ -486,7 +450,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           boxShadow: [
             BoxShadow(
               color: isSelected ? Color(0xFFFF9E71) : Color(0xFFEFECEB),
-              offset: Offset(0, 4),
+              offset: Offset(0, 3), // Reduced from 4 to 3
               blurRadius: 0,
               spreadRadius: 0,
             ),
@@ -506,19 +470,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     style: TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,
-                      fontSize: 18.fSize,
+                      fontSize: 18.fSize * scale, // Increased from 17.fSize
                       color: Color(0xFF37251F),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 5.h),
+                  SizedBox(height: 4.h * scale), // Increased from 3.h
                   Text(
                     price,
                     style: TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w800,
-                      fontSize: 18.fSize,
+                      fontSize: 18.fSize * scale, // Increased from 17.fSize
                       color: Color(0xFFFF6F3E),
                       height: 1.0,
                     ),
@@ -528,10 +492,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ],
               ),
             ),
-            SizedBox(width: 16.h),
+            SizedBox(width: 12.h * scale),
             Container(
-              width: 30.h,
-              height: 30.h,
+              width: 28.h * scale, // Increased from 26.h
+              height: 28.h * scale, // Increased from 26.h
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -544,7 +508,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ? Icon(
                       Icons.check,
                       color: Colors.white,
-                      size: 17.h,
+                      size: 16.h * scale, // Increased from 15.h
                     )
                   : null,
             ),
@@ -567,13 +531,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       price = _isMonthlySelected ? "\$2.99" : "\$29.99";
     }
     
+    // Shorter text that fits on two lines
     return Text(
-      "Subscribe today and you'll be charged $price ${_isMonthlySelected ? 'per month' : ''}. ${_isMonthlySelected ? 'Cancel anytime.' : ''}",
+      "Subscribe today for $price${_isMonthlySelected ? ' per month' : ''}. ${_isMonthlySelected ? 'Cancel anytime.' : ''}",
       textAlign: TextAlign.center,
       style: TextStyle(
         fontFamily: 'Lato',
         fontWeight: FontWeight.w500,
-        fontSize: 16.fSize,
+        fontSize: 14.fSize, // Reduced from 15.fSize
         color: Color(0xFF80706B),
       ),
     );
@@ -582,7 +547,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget _buildSubscribeButton() {
     return Container(
       width: double.maxFinite,
-      height: 48.h,
+      height: 46.h,
       padding: EdgeInsets.only(bottom: 3.h),
       decoration: BoxDecoration(
         color: Color(0xFFD84918),
@@ -621,7 +586,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     style: TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,
-                      fontSize: 15.fSize,
+                      fontSize: 16.fSize,
                       color: Colors.white,
                     ),
                   ),
@@ -637,16 +602,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       children: [
         Icon(
           Icons.lock,
-          size: 16.h,
+          size: 15.h,
           color: Color(0xFF80706B),
         ),
-        SizedBox(width: 8.h),
+        SizedBox(width: 7.h),
         Text(
           "Secured by the App Store",
           style: TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w500,
-            fontSize: 15.fSize,
+            fontSize: 14.fSize,
             color: Color(0xFF80706B),
           ),
         ),
@@ -784,49 +749,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       }
     } catch (e) {
       debugPrint('❌ Error during subscription verification: $e');
-    }
-  }
-  
-  // Restore previous purchases
-  Future<void> _restorePurchases() async {
-    try {
-      setState(() {
-        _purchaseStatus = 'Restoring purchases...';
-        _isProcessingPurchase = true;
-      });
-      
-      // RevenueCat restore flow
-      final result = await _revenueCatManager.restorePurchases();
-      
-      setState(() {
-        _isProcessingPurchase = false;
-        _purchaseStatus = result.message;
-      });
-      
-      if (result.success) {
-        // Show success snackbar
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Purchases restored successfully!')),
-        );
-        
-        // Navigate back after successful restoration
-        Future.delayed(Duration(seconds: 2), () {
-          Navigator.pop(context);
-        });
-      } else {
-        // Show notification about no purchases found
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor: result.errorCode != null ? Colors.red : Colors.blue,
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _isProcessingPurchase = false;
-        _purchaseStatus = 'Error restoring purchases: ${e.toString()}';
-      });
     }
   }
 } 

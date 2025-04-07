@@ -92,6 +92,9 @@ class QuizScreen extends StatelessWidget {
     return CustomAppBar(
       leadingWidth: 40.h,
       leading: AppbarLeadingImage(
+        onTap: () {
+          Navigator.pop(context);
+        },
         imagePath: ImageConstant.imgArrowDown,
         margin: EdgeInsets.only(left: 16.h),
       ),

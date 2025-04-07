@@ -894,7 +894,33 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
                               // Manage/Upgrade button
                               TextButton(
                                 onPressed: () {
-                                  _navigateToSubscriptionScreen(context);
+                                  if (_statsManager.isPremium) {
+                                    // Show loading indicator
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (context) => Center(
+                                        child: CircularProgressIndicator(
+                                          color: appTheme.deepOrangeA200,
+                                        ),
+                                      ),
+                                    );
+                                    
+                                    // Try to open subscription management
+                                    SubscriptionStatusManager.instance.openSubscriptionManagement().then((success) {
+                                      // Hide loading dialog
+                                      Navigator.of(context, rootNavigator: true).pop();
+                                      
+                                      if (!success && mounted) {
+                                        // Show error message if failed
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Could not open subscription management. Please try again later.'))
+                                        );
+                                      }
+                                    });
+                                  } else {
+                                    _navigateToSubscriptionScreen(context);
+                                  }
                                 },
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.symmetric(

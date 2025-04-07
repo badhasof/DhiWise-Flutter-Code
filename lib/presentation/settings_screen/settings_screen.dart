@@ -237,8 +237,43 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
         ),
-        // Subscription status card
-        _buildSubscriptionStatusCard(context, SubscriptionStatusManager.instance.isSubscribed),
+        // White Choose Plan button
+        Container(
+          decoration: BoxDecoration(
+            color: appTheme.gray100,
+            borderRadius: BorderRadius.circular(12.h),
+            border: Border(
+              top: BorderSide(color: Color(0xFFE0E0E0), width: 1),
+              left: BorderSide(color: Color(0xFFE0E0E0), width: 1),
+              right: BorderSide(color: Color(0xFFE0E0E0), width: 1),
+              bottom: BorderSide(color: Color(0xFFE0E0E0), width: 4),
+            ),
+          ),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.h),
+            ),
+            child: _buildSettingItem(
+              context,
+              icon: ImageConstant.imgChooseAPlanIcon,
+              title: "Choose Plan",
+              onTap: () async {
+                // Check if user already has premium before showing subscription screen
+                bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
+                
+                // Only navigate if needed
+                if (shouldShow && context.mounted) {
+                  Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
+                }
+              },
+              isFirst: true,
+              isLast: true,
+            ),
+          ),
+        ),
+        // Orange Cancel Subscription button
         SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
@@ -250,7 +285,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           child: CustomElevatedButton(
             height: 48.h,
-            text: "Restore subscription",
+            text: "Cancel Subscription",
             buttonStyle: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(appTheme.deepOrangeA200),
               shape: MaterialStateProperty.all(
@@ -278,23 +313,23 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 );
                 
-                // Restore purchases
-                final success = await SubscriptionStatusManager.instance.restorePurchases();
+                // Open subscription management
+                final success = await SubscriptionStatusManager.instance.openSubscriptionManagement();
                 
-                // Close loading indicator and show appropriate message
+                // Close loading indicator
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success 
-                      ? 'Subscription restored successfully' 
-                      : 'No purchases to restore'),
-                  ),
-                );
+                
+                if (!success && context.mounted) {
+                  // Show error message if failed
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Could not open subscription management. Please try again later.'))
+                  );
+                }
               } catch (e) {
                 // Close loading indicator and show error message
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to restore subscription: ${e.toString()}')),
+                  SnackBar(content: Text('Failed to open subscription management: ${e.toString()}')),
                 );
               }
             },
@@ -694,128 +729,18 @@ class SettingsScreen extends StatelessWidget {
           Divider(color: Color(0xFFEFECEB)),
           SizedBox(height: 16.h),
           
-          // Manage subscription button
-          if (isSubscribed)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Additional info about subscription type
-                StreamBuilder<SubscriptionType>(
-                  stream: SubscriptionStatusManager.instance.subscriptionTypeStream,
-                  initialData: SubscriptionStatusManager.instance.subscriptionType,
-                  builder: (context, snapshot) {
-                    final subscriptionType = snapshot.data ?? SubscriptionType.none;
-                    
-                    if (subscriptionType == SubscriptionType.lifetime) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 16.h),
-                        child: Text(
-                          "You have lifetime access to all premium features. Thank you for your support!",
-                          style: TextStyle(
-                            color: appTheme.gray600,
-                            fontSize: 14.fSize,
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      );
-                    } else if (subscriptionType == SubscriptionType.monthly) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 16.h),
-                        child: Text(
-                          "Your monthly subscription is active. You can manage your subscription below.",
-                          style: TextStyle(
-                            color: appTheme.gray600,
-                            fontSize: 14.fSize,
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      );
-                    }
-                    
-                    return SizedBox.shrink();
-                  }
-                ),
-                
-                // Only show management buttons for monthly subscription
-                StreamBuilder<SubscriptionType>(
-                  stream: SubscriptionStatusManager.instance.subscriptionTypeStream,
-                  initialData: SubscriptionStatusManager.instance.subscriptionType,
-                  builder: (context, snapshot) {
-                    final subscriptionType = snapshot.data ?? SubscriptionType.none;
-                    
-                    if (subscriptionType == SubscriptionType.monthly) {
-                      return _buildManagementButton(
-                        context,
-                        "Manage Subscription",
-                        Icons.credit_card,
-                        () async {
-                          // Show loading
-                          _showLoadingDialog(context);
-                          
-                          // Try to open subscription management
-                          final success = await SubscriptionStatusManager.instance.openSubscriptionManagement();
-                          
-                          // Hide loading dialog
-                          Navigator.of(context, rootNavigator: true).pop();
-                          
-                          if (!success && context.mounted) {
-                            // Show error message if failed
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open subscription management. Please try again later.'))
-                            );
-                          }
-                        },
-                      );
-                    }
-                    
-                    return SizedBox.shrink();
-                  }
-                ),
-              ],
-            )
-          else
-            _buildManagementButton(
-              context,
-              "Choose a plan",
-              Icons.shopping_cart_outlined,
-              () async {
-                // Check if user already has premium before showing subscription screen
-                bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
-                
-                // Only navigate if needed
-                if (shouldShow && context.mounted) {
-                  Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
-                }
-              },
-            ),
-            
-          // Restore purchases button
-          SizedBox(height: 12.h),
+          // Choose plan button
           _buildManagementButton(
             context,
-            "Restore purchases",
-            Icons.restore,
+            "Choose a plan",
+            Icons.shopping_cart_outlined,
             () async {
-              // Show loading
-              _showLoadingDialog(context);
+              // Check if user already has premium before showing subscription screen
+              bool shouldShow = await SubscriptionStatusManager.instance.shouldShowSubscriptionScreen(context);
               
-              // Attempt to restore purchases
-              final success = await SubscriptionStatusManager.instance.restorePurchases();
-              
-              // Hide loading dialog
-              Navigator.of(context, rootNavigator: true).pop();
-              
-              if (context.mounted) {
-                // Show appropriate message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(
-                    success 
-                      ? 'Purchases restored successfully' 
-                      : 'No active purchases found to restore'
-                  ))
-                );
+              // Only navigate if needed
+              if (shouldShow && context.mounted) {
+                Navigator.pushNamed(context, AppRoutes.subscriptionScreen);
               }
             },
           ),
