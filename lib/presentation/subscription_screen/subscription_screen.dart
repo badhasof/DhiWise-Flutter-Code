@@ -699,13 +699,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       
       setState(() {
         _isProcessingPurchase = false;
-        // Only set success messages in the UI, errors will go in snackbar
-        _purchaseStatus = result.success ? result.message : '';
+        // Never set success messages in the UI, only in snackbar
+        _purchaseStatus = '';
       });
       
       if (result.success) {
         // Verify the subscription status after purchase
         await _verifySubscriptionStatusAfterPurchase(isLifetime);
+        
+        // Log success to console
+        debugPrint('✅ ${result.message}');
         
         // Show success snackbar
         ScaffoldMessenger.of(context).showSnackBar(
