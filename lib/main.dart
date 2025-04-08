@@ -18,6 +18,8 @@ import 'services/user_feedback_service.dart';
 import 'presentation/app_navigation_screen/app_navigation_screen.dart';
 import 'presentation/feedback_screen/feedback_screen.dart';
 import 'presentation/subscription_screen/subscription_screen.dart';
+import 'presentation/onboardimg_screen/onboardimg_screen.dart';
+import 'presentation/home_screen/home_screen.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -363,14 +365,19 @@ class _MyAppState extends State<MyApp> {
     // Priority order:
     // 1. Feedback screen (if needed)
     // 2. Subscription screen (if feedback completed and subscription needed)
-    // 3. Normal app navigation screen
+    // 3. Home screen if logged in, Onboarding screen if logged out
     
     if (_shouldShowFeedback) {
       return FeedbackScreen();
     } else if (_shouldShowSubscription) {
       return SubscriptionScreen();
     } else {
-      return AppNavigationScreen.builder(context);
+      // Check if user is logged in
+      if (FirebaseAuth.instance.currentUser != null) {
+        return HomeScreen.builder(context);
+      } else {
+        return OnboardimgScreen.builder(context);
+      }
     }
   }
 }
