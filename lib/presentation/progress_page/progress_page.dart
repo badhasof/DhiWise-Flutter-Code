@@ -26,12 +26,57 @@ class ProgressPage extends StatefulWidget {
         progressModelObj: ProgressModel(),
       ))
         ..add(ProgressInitialEvent()),
-      child: ProgressPage(),
+      child: ProgressPagePreloader(),
     );
   }
 
   @override
   State<ProgressPage> createState() => _ProgressPageState();
+}
+
+class ProgressPagePreloader extends StatefulWidget {
+  @override
+  State<ProgressPagePreloader> createState() => _ProgressPagePreloaderState();
+}
+
+class _ProgressPagePreloaderState extends State<ProgressPagePreloader> {
+  late Future<void> _preloadFuture;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Start preloading data as soon as this widget is created
+    _preloadFuture = _preloadData();
+  }
+  
+  Future<void> _preloadData() async {
+    // Preload all necessary data using the UserStatsManager
+    final statsManager = UserStatsManager();
+    await statsManager.prefetchAll();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _preloadFuture,
+      builder: (context, snapshot) {
+        // While preloading, show a minimal loading UI that looks like part of the splash screen
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Material(
+            color: appTheme.gray50,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(appTheme.deepOrangeA200),
+              ),
+            ),
+          );
+        }
+        
+        // Once preloaded, render the actual page
+        return ProgressPage();
+      },
+    );
+  }
 }
 
 class _ProgressPageState extends State<ProgressPage> {
@@ -82,31 +127,31 @@ class _ProgressPageState extends State<ProgressPage> {
     // Record today's login for streak tracking
     _prefUtils.recordTodayLogin();
     
-    // Initialize timer if needed
-    if (!_statsManager.isPremiumChecked) {
-      // If premium status hasn't been checked yet, check it
-      _checkPremiumStatus();
-    } else if (!_statsManager.isPremium) {
-      // If already checked and not premium, initialize timer
+    // Data has already been preloaded by ProgressPagePreloader,
+    // just initialize the timer if needed for non-premium users
+    if (!_statsManager.isPremium) {
       _initializeTimer();
     }
     
-    // Refresh stats if needed
-    _refreshStatsIfNeeded();
-    
     // Set up real-time listeners for automatic UI updates
     _setupRealTimeListeners();
+    
+    // Just update the state to reflect preloaded data
+    setState(() {
+      _isCheckingPremium = false;
+    });
   }
   
   Future<void> _checkPremiumStatus() async {
     try {
       // Check if user has premium access (using the stats manager)
-      if (!_statsManager.isPremiumChecked) {
-        await _statsManager.checkPremiumStatus();
-      }
+      // Force refresh from service every time
+      await _statsManager.checkPremiumStatus();
       
       if (mounted) {
-        setState(() {});
+        setState(() {
+          _isCheckingPremium = false;
+        });
       }
       
       // Only initialize timer for non-premium users
@@ -116,6 +161,12 @@ class _ProgressPageState extends State<ProgressPage> {
       
     } catch (e) {
       debugPrint('Error checking premium status: $e');
+      
+      if (mounted) {
+        setState(() {
+          _isCheckingPremium = false;
+        });
+      }
       
       // Initialize timer on error (default to free tier behavior)
       _initializeTimer();

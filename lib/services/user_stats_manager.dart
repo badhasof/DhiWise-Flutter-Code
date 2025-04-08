@@ -200,6 +200,18 @@ class UserStatsManager {
 
       debugPrint('🔍 UserStatsManager: Checking RevenueCat subscription status');
       
+      // Force RefreshSubscriptionStatusManager to refresh RevenueCat data first
+      try {
+        // Get the latest customer info directly from RevenueCat first
+        final customerInfo = await Purchases.getCustomerInfo();
+        debugPrint('✅ UserStatsManager: Forced refresh of customer info from RevenueCat');
+      } catch (e) {
+        debugPrint('❌ UserStatsManager: Error refreshing customer info from RevenueCat: $e');
+      }
+      
+      // Small delay to ensure data is properly updated
+      await Future.delayed(Duration(milliseconds: 300));
+      
       // Check status directly from RevenueCat's SubscriptionStatusManager
       final bool isSubscribed = await SubscriptionStatusManager.instance.checkSubscriptionStatus();
       final subscriptionType = SubscriptionStatusManager.instance.subscriptionType;
@@ -223,6 +235,9 @@ class UserStatsManager {
       debugPrint('✅ UserStatsManager: Subscription status: ${_isPremium ? 'PREMIUM' : 'FREE'}, Type: $_subscriptionType');
       debugPrint('✅ UserStatsManager: Using subscription type from SubscriptionStatusManager: $subscriptionType');
       _isPremiumChecked = true;
+      
+      // Notify any listeners that the premium status has changed
+      _notifyListeners();
       
     } catch (e) {
       debugPrint('❌ UserStatsManager: Unexpected error checking premium status: $e');
@@ -392,5 +407,33 @@ class UserStatsManager {
     }
     
     return level;
+  }
+  
+  // Add a method to prefetch all necessary data at once
+  Future<void> prefetchAll() async {
+    if (!_userService.isLoggedIn) return;
+    
+    try {
+      debugPrint('🔄 UserStatsManager: Prefetching all user data...');
+      
+      // Check premium status first
+      if (!_isPremiumChecked) {
+        await checkPremiumStatus();
+      }
+      
+      // Then fetch user profile if needed
+      if (!_isUserDataLoaded || isUserDataStale) {
+        await fetchUserProfile();
+      }
+      
+      // Finally fetch user stats if needed
+      if (!_isDataLoaded || isDataStale) {
+        await fetchUserStats();
+      }
+      
+      debugPrint('✅ UserStatsManager: Prefetched all user data successfully');
+    } catch (e) {
+      debugPrint('❌ UserStatsManager: Error prefetching all data: $e');
+    }
   }
 } 

@@ -10,6 +10,8 @@ import 'models/vocabulary_model.dart'; // ignore_for_file: must_be_immutable
 import '../../core/utils/pref_utils.dart';
 import '../../services/user_service.dart';
 import '../../services/demo_timer_service.dart';
+import '../../services/subscription_status_manager.dart';
+import '../../services/user_stats_manager.dart';
 
 class VocabularyPage extends StatefulWidget {
   const VocabularyPage({Key? key})
@@ -23,7 +25,7 @@ class VocabularyPage extends StatefulWidget {
         vocabularyModelObj: VocabularyModel(),
       ))
         ..add(VocabularyInitialEvent()),
-      child: VocabularyPage(),
+      child: VocabularyPagePreloader(),
     );
   }
 
@@ -31,41 +33,63 @@ class VocabularyPage extends StatefulWidget {
   State<VocabularyPage> createState() => _VocabularyPageState();
 }
 
+class VocabularyPagePreloader extends StatefulWidget {
+  @override
+  State<VocabularyPagePreloader> createState() => _VocabularyPagePreloaderState();
+}
+
+class _VocabularyPagePreloaderState extends State<VocabularyPagePreloader> {
+  late Future<void> _preloadFuture;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Start preloading data as soon as this widget is created
+    _preloadFuture = _preloadData();
+  }
+  
+  Future<void> _preloadData() async {
+    // Preload all necessary data using the UserStatsManager
+    final statsManager = UserStatsManager();
+    await statsManager.prefetchAll();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _preloadFuture,
+      builder: (context, snapshot) {
+        // While preloading, show a minimal loading UI that looks like part of the splash screen
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Material(
+            color: appTheme.gray50,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(appTheme.deepOrangeA200),
+              ),
+            ),
+          );
+        }
+        
+        // Once preloaded, render the actual page
+        return VocabularyPage();
+      },
+    );
+  }
+}
+
 class _VocabularyPageState extends State<VocabularyPage> {
   late PrefUtils _prefUtils;
-  bool _isPremium = false;
-  bool _isCheckingPremium = true;
-  late UserService _userService;
+  late UserStatsManager _statsManager;
   
   @override
   void initState() {
     super.initState();
     _prefUtils = PrefUtils();
-    _userService = UserService();
-    _checkPremiumStatus();
-  }
-  
-  Future<void> _checkPremiumStatus() async {
-    setState(() {
-      _isCheckingPremium = true;
-    });
+    _statsManager = UserStatsManager();
     
-    try {
-      // Check if user has premium access
-      bool isPremium = await _userService.hasPremiumAccess();
-      
-      setState(() {
-        _isPremium = isPremium;
-        _isCheckingPremium = false;
-      });
-      
-    } catch (e) {
-      print('Error checking premium status: $e');
-      setState(() {
-        _isCheckingPremium = false;
-        _isPremium = false;
-      });
-    }
+    // Data is already preloaded by the preloader, just make sure UI is updated
+    setState(() {});
   }
   
   @override
@@ -120,7 +144,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
       width: double.maxFinite,
       child: Column(
         children: [
-          if (!_isPremium && !_isCheckingPremium) // Only show timer for non-premium users
+          if (!_statsManager.isPremium) // Use the UserStatsManager for premium status
             Container(
               width: double.maxFinite,
               decoration: AppDecoration.fillGray,

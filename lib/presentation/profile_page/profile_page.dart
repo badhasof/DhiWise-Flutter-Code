@@ -27,7 +27,7 @@ class ProfilePage extends StatelessWidget {
         profileModelObj: ProfileModel(),
       ))
         ..add(ProfileInitialEvent()),
-      child: ProfilePage(),
+      child: ProfilePagePreloader(),
     );
   }
 
@@ -66,11 +66,9 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
       ));
     }
     
-    // Then refresh data if needed in the background
-    if (!_statsManager.isUserDataLoaded || _statsManager.isUserDataStale || 
-        !_statsManager.isPremiumChecked) {
-      _refreshDataIfNeeded();
-    }
+    // Since data is already preloaded by ProfilePagePreloader,
+    // we just need to make sure the UI is updated with the latest data
+    setState(() {});
   }
   
   // Refresh data if it's stale or not loaded
@@ -806,8 +804,9 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
 
   /// Subscription Status Section Widget
   Widget _buildSubscriptionStatusSection(BuildContext context) {
-    // Check if data loading is in progress
-    bool isCheckingSubscription = _isRefreshing || !_statsManager.isPremiumChecked;
+    // We no longer need to show loading state since data is preloaded
+    // Only show "Checking status..." if the data really isn't available yet
+    bool isCheckingSubscription = _isRefreshing && !_statsManager.isPremiumChecked;
     
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.h),
@@ -965,9 +964,8 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
         fullscreenDialog: true,
       ),
     ).then((_) {
-      // Only check subscription status again when returning from subscription screen
-      // Don't reload all data unnecessarily
-      _checkSubscriptionStatusOnly();
+      // When returning from subscription screen, do a thorough check of subscription status
+      _forceFullRefresh();
     });
   }
   
@@ -1120,5 +1118,51 @@ class _ProfilePageContentState extends State<_ProfilePageContent> {
         });
       }
     }
+  }
+}
+
+// Add new preloader widget after the ProfilePage class
+class ProfilePagePreloader extends StatefulWidget {
+  @override
+  State<ProfilePagePreloader> createState() => _ProfilePagePreloaderState();
+}
+
+class _ProfilePagePreloaderState extends State<ProfilePagePreloader> {
+  late Future<void> _preloadFuture;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Start preloading data as soon as this widget is created
+    _preloadFuture = _preloadData();
+  }
+  
+  Future<void> _preloadData() async {
+    // Preload all necessary data using the UserStatsManager
+    final statsManager = UserStatsManager();
+    await statsManager.prefetchAll();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _preloadFuture,
+      builder: (context, snapshot) {
+        // While preloading, show a minimal loading UI that looks like part of the splash screen
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Material(
+            color: appTheme.gray50,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(appTheme.deepOrangeA200),
+              ),
+            ),
+          );
+        }
+        
+        // Once preloaded, render the actual page
+        return ProfilePage();
+      },
+    );
   }
 }

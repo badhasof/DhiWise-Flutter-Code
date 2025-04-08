@@ -49,6 +49,13 @@ void main() {
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness: Brightness.light,
     ));
+    
+    // Initialize RevenueCat and subscription manager - don't await this
+    _initializeBackgroundServices();
+    
+    // Trigger background preloading of subscription data without awaiting
+    Future.microtask(() => _preloadSubscriptionData());
+    
     runApp(MyApp());
   });
 }
@@ -190,6 +197,15 @@ Future<void> initDependencies() async {
   
   // Log dependencies initialized
   debugPrint('♻️ Dependencies initialized');
+}
+
+// Preload subscription data as early as possible if user is logged in
+Future<void> _preloadSubscriptionData() async {
+  try {
+    await SubscriptionStatusManager.instance.prefetchSubscriptionStatus();
+  } catch (e) {
+    debugPrint('Error preloading subscription data: $e');
+  }
 }
 
 class MyApp extends StatefulWidget {

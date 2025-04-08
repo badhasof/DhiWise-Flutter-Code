@@ -53,6 +53,9 @@ class SubscriptionStatusManager {
   bool get isLifetime => _subscriptionType == SubscriptionType.lifetime;
   bool get isMonthly => _subscriptionType == SubscriptionType.monthly;
 
+  // A flag to track if we're in the process of refreshing
+  bool _isRefreshing = false;
+  
   // Initialize the subscription status manager
   Future<void> initialize() async {
     try {
@@ -219,17 +222,82 @@ class SubscriptionStatusManager {
     debugPrint('   - All Purchased Products: ${customerInfo.allPurchasedProductIdentifiers.join(', ')}');
   }
   
-  // Check subscription status using appropriate service
-  Future<bool> checkSubscriptionStatus() async {
+  // Add a method to prefetch subscription data in advance
+  Future<void> prefetchSubscriptionStatus() async {
+    if (_isRefreshing) return;
+    
     try {
-      debugPrint('🔍 Checking current subscription status directly from RevenueCat...');
-      // Force refresh from RevenueCat to ensure we have latest status
-      final customerInfo = await Purchases.getCustomerInfo();
-      _logCustomerInfo(customerInfo);
+      _isRefreshing = true;
+      debugPrint('🔄 Prefetching subscription status...');
       
-      // Update subscription status and type
+      // Only attempt if logged in
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        debugPrint('⚠️ Not prefetching - No user logged in');
+        return;
+      }
+      
+      // Get the basic customer info first
+      final customerInfo = await Purchases.getCustomerInfo();
       _updateSubscriptionFromCustomerInfo(customerInfo);
       
+      debugPrint('✅ Prefetched subscription status: ${_isSubscribed ? 'SUBSCRIBED' : 'NOT SUBSCRIBED'}');
+    } catch (e) {
+      debugPrint('❌ Error prefetching subscription status: $e');
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  // Check subscription status using appropriate service
+  Future<bool> checkSubscriptionStatus() async {
+    if (_isRefreshing) {
+      debugPrint('⚠️ Subscription status check already in progress, skipping');
+      return _isSubscribed; // Return current status if refresh is in progress
+    }
+    
+    _isRefreshing = true;
+    
+    try {
+      debugPrint('🔍 Checking current subscription status directly from RevenueCat...');
+      
+      // Try to refresh customer info more thoroughly in case of caching issues
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        try {
+          // First try to log out and back in to force a complete refresh
+          await Purchases.logOut();
+          debugPrint('✅ Logged out from RevenueCat');
+          
+          // Small delay to ensure the logout is processed
+          await Future.delayed(Duration(milliseconds: 200));
+          
+          // Log back in with the user ID
+          final logInResult = await Purchases.logIn(user.uid);
+          debugPrint('✅ Logged back in to RevenueCat with user ID: ${user.uid}');
+          
+          // Get customer info from login result
+          final customerInfo = logInResult.customerInfo;
+          _logCustomerInfo(customerInfo);
+          
+          // Update subscription status and type based on this fresh data
+          _updateSubscriptionFromCustomerInfo(customerInfo);
+        } catch (e) {
+          debugPrint('❌ Error during RevenueCat logout/login cycle: $e');
+          
+          // Fallback to standard refresh if login/logout cycle fails
+          final customerInfo = await Purchases.getCustomerInfo();
+          _logCustomerInfo(customerInfo);
+          _updateSubscriptionFromCustomerInfo(customerInfo);
+        }
+      } else {
+        // No logged-in user, just refresh customer info
+        final customerInfo = await Purchases.getCustomerInfo();
+        _logCustomerInfo(customerInfo);
+        _updateSubscriptionFromCustomerInfo(customerInfo);
+      }
+      
+      // Return current subscription status after refresh
       return _isSubscribed;
     } on PlatformException catch (e) {
       debugPrint('❌ Error checking subscription status: ${e.message}');
@@ -237,6 +305,8 @@ class SubscriptionStatusManager {
     } catch (e) {
       debugPrint('❌ Unexpected error checking subscription status: $e');
       return _isSubscribed; // Return current status on error
+    } finally {
+      _isRefreshing = false;
     }
   }
   
