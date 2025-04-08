@@ -1,0 +1,4 @@
+# Exclude Python script files
+*.py
+__pycache__/
+*.pyc 
