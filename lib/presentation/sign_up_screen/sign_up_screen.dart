@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import '../../core/app_export.dart';
 import '../../core/utils/validation_functions.dart';
 import '../../theme/custom_button_style.dart';
@@ -601,7 +605,7 @@ class SignUpScreen extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            // Apple sign up logic would go here
+            _signUpWithApple(context);
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
@@ -766,13 +770,110 @@ class SignUpScreen extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Successfully signed up with Facebook')),
         );
+      } else if (result.status == LoginStatus.cancelled) {
+        // User cancelled the login
+        print("Facebook Sign-Up cancelled by user.");
+        // No loading indicator was shown here, so no pop needed yet.
+        // Optionally show a gentle message instead of an error
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Facebook sign-up cancelled.')),
+        // );
       } else {
-        throw Exception('Facebook login failed: ${result.status}');
+        // Handle other errors
+        // Log the specific error message from Facebook
+        print("Facebook Sign-Up Error Status: ${result.status}, Message: ${result.message}");
+        throw Exception('Facebook login failed: ${result.message ?? result.status.toString()}');
       }
     } catch (e) {
       print("Facebook Sign-Up Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
+  // Helper function to generate a random nonce
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
+  }
+
+  // Helper function to compute SHA256 hash
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  void _signUpWithApple(BuildContext context) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: appTheme.deepOrangeA200,
+            ),
+          );
+        },
+      );
+
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+
+      // Request credential for the currently signed in Apple account.
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
+
+      // Create an OAuthCredential from the credential returned by Apple.
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      // Sign in the user with Firebase.
+      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+
+      // Initialize user data in Firestore
+      final userService = UserService();
+      await userService.initializeUserDataIfNeeded();
+
+      // Initialize feedback data
+      final feedbackService = UserFeedbackService();
+      await feedbackService.initializeFeedbackDataIfNeeded();
+
+      // Dismiss loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+
+      // Navigate to create profile screen
+      Navigator.pushNamed(context, AppRoutes.createProfileTwoScreen);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Successfully signed up with Apple')),
+      );
+    } catch (e) {
+      // Dismiss loading dialog if it's showing
+      try {
+        Navigator.of(context, rootNavigator: true).pop();
+      } catch (_) {}
+
+      print("Apple Sign-Up Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

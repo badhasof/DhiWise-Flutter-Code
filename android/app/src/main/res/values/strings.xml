@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">badhaso_s_application2</string>
-
+    <string name="facebook_app_id">1193863762192341</string>
+    <string name="fb_login_protocol_scheme">fb1193863762192341</string>
 </resources>

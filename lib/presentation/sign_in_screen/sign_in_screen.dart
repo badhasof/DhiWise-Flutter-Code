@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import '../../services/user_service.dart';
 import '../../services/user_feedback_service.dart';
 import '../../core/app_export.dart';
@@ -431,7 +435,7 @@ class SignInScreen extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            // Apple sign in logic would go here
+            _signInWithApple(context);
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.h),
@@ -632,23 +636,14 @@ class SignInScreen extends StatelessWidget {
 
   void _signInWithFacebook(BuildContext context) async {
     try {
-      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext dialogContext) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: appTheme.deepOrangeA200,
-            ),
-          );
-        },
+        builder: (_) => Center(
+          child: CircularProgressIndicator(color: appTheme.deepOrangeA200),
+        ),
       );
-      
-      // Import the flutter_facebook_auth package
       final LoginResult result = await FacebookAuth.instance.login();
-      
-      // Check if the login was successful
       if (result.status == LoginStatus.success) {
         // Get the access token
         final AccessToken accessToken = result.accessToken!;
@@ -686,10 +681,13 @@ class SignInScreen extends StatelessWidget {
           AppRoutes.homeScreen,
           (route) => false,
         );
-      } else {
-        // Dismiss loading dialog
+      } else if (result.status == LoginStatus.cancelled) {
+        // User cancelled Facebook login
         Navigator.of(context, rootNavigator: true).pop();
-        
+        return;
+      } else {
+        // Other Facebook login errors
+        Navigator.of(context, rootNavigator: true).pop();
         throw Exception('Facebook login failed: ${result.message}');
       }
     } catch (e) {
@@ -704,6 +702,56 @@ class SignInScreen extends StatelessWidget {
           content: Text(e.toString()),
           backgroundColor: Colors.red,
         ),
+      );
+    }
+  }
+
+  // Helper function to generate a random nonce
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  // Helper function to compute SHA256
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  void _signInWithApple(BuildContext context) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Center(child: CircularProgressIndicator(color: appTheme.deepOrangeA200)),
+      );
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+        nonce: nonce,
+      );
+      final oauthCredential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+        accessToken: appleCredential.authorizationCode,
+      );
+      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      final userService = UserService();
+      await userService.initializeUserDataIfNeeded();
+      final feedbackService = UserFeedbackService();
+      await feedbackService.initializeFeedbackDataIfNeeded();
+      Navigator.of(context, rootNavigator: true).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Successfully signed in with Apple'), backgroundColor: Colors.green),
+      );
+      NavigatorService.navigatorKey.currentState!.pushNamedAndRemoveUntil(AppRoutes.homeScreen, (_) => false);
+    } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
     }
   }

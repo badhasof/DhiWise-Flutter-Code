@@ -156,4 +156,5 @@ class ImageConstant {
   
   // Flag icons
   static String imgAmericanFlag = '$imagePath/img_american_flag.png';
+  static String imgArabLeagueFlag = '$imagePath/58c0ce2929e86d9e01b8785dd687a95a80c4185f82c3652d3b787fe749787200.png';
 }

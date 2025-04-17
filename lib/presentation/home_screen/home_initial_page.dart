@@ -20,6 +20,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/utils/pref_utils.dart';
 import '../../services/user_reading_service.dart';
+import '../../core/utils/image_constant.dart';
 
 class HomeInitialPage extends StatefulWidget {
   const HomeInitialPage({Key? key})
@@ -41,9 +42,13 @@ class HomeInitialPage extends StatefulWidget {
 }
 
 class HomeInitialPageState extends State<HomeInitialPage> {
+  // Define a constant identifier for the MSA flag image
+  static const String kMsaFlagIdentifier = "msa_flag";
+  
   // Flag emoji container state
   bool _isFlagPressed = false;
-  String _selectedFlag = "🇺🇸"; // Add variable to track selected flag
+  // Use the identifier for the default selected flag
+  String _selectedFlag = kMsaFlagIdentifier;
   String _currentDialect = "msa"; // Track the current dialect
   
   // Shared Preferences key for dialect
@@ -60,17 +65,17 @@ class HomeInitialPageState extends State<HomeInitialPage> {
   int _storiesNeededForNextLevel = 3;
   int _storiesCompletedInCurrentLevel = 0;
   
-  // Map flags to dialects
+  // Map flags/identifiers to dialects
   final Map<String, String> _flagToDialect = {
-    "🇺🇸": "msa",     // MSA (Modern Standard Arabic) with US flag
+    kMsaFlagIdentifier: "msa", // Use identifier for MSA
     "🇪🇬": "egyptian", // Egyptian dialect
     "🇯🇴": "jordanian", // Jordanian dialect
     "🇲🇦": "moroccan"  // Moroccan dialect
   };
   
-  // Map dialects to flags (reverse mapping)
+  // Map dialects to flags/identifiers (reverse mapping)
   late final Map<String, String> _dialectToFlag = {
-    "msa": "🇺🇸",
+    "msa": kMsaFlagIdentifier, // Use identifier for MSA
     "egyptian": "🇪🇬",
     "jordanian": "🇯🇴",
     "moroccan": "🇲🇦"
@@ -596,13 +601,21 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                       children: [
                                         Padding(
                                           padding: EdgeInsets.only(left: 8.h),
-                                          child: Text(
-                                            _selectedFlag,
-                                            style: TextStyle(
-                                              fontSize: 28.h,
-                                              height: 1.0,
-                                            ),
-                                          ),
+                                          // Conditionally display image or emoji based on the identifier
+                                          child: _selectedFlag == kMsaFlagIdentifier
+                                              ? CustomImageView(
+                                                  imagePath: ImageConstant.imgArabLeagueFlag,
+                                                  height: 28.h, // Match emoji size
+                                                  width: 28.h, // Match emoji size
+                                                  fit: BoxFit.contain,
+                                                )
+                                              : Text(
+                                                  _selectedFlag,
+                                                  style: TextStyle(
+                                                    fontSize: 28.h,
+                                                    height: 1.0,
+                                                  ),
+                                                ),
                                         ),
                                         Padding(
                                           padding: EdgeInsets.only(right: 8.h),
@@ -623,7 +636,8 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                     PopupMenuItem<String>(
                                       height: 24.h,
                                       padding: EdgeInsets.zero,
-                                      value: "🇺🇸",
+                                      // Use the identifier for the value
+                                      value: kMsaFlagIdentifier,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.vertical(top: Radius.circular(16.h)),
                                         child: Material(
@@ -638,12 +652,12 @@ class HomeInitialPageState extends State<HomeInitialPage> {
                                               ),
                                             ),
                                             child: Center(
-                                              child: Text(
-                                                "🇺🇸",
-                                                style: TextStyle(
-                                                  fontSize: 24.h,
-                                                  height: 1.0,
-                                                ),
+                                              // Display the image for MSA
+                                              child: CustomImageView(
+                                                imagePath: ImageConstant.imgArabLeagueFlag,
+                                                height: 24.h, // Match other item sizes
+                                                width: 24.h, // Match other item sizes
+                                                fit: BoxFit.contain,
                                               ),
                                             ),
                                           ),

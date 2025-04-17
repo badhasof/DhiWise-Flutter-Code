@@ -37,14 +37,14 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>fb123456789</string>
+				<string>fb1193863762192341</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>FacebookAppID</key>
-	<string>123456789</string>
+	<string>1193863762192341</string>
 	<key>FacebookClientToken</key>
 	<string>YOUR-CLIENT-TOKEN</string>
 	<key>FacebookDisplayName</key>
